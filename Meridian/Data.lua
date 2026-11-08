@@ -44,10 +44,10 @@ function Data.eligible(q, p)
     return true
 end
 
--- uiMapID -> array of {x, y} (0..1) for the given NPC and object IDs.
+-- uiMapID -> array of {x, y, sourceId} (0..1; sourceId is the NPC id, or the negated object id) for the given IDs.
 local function bucket(db, zones, npcIds, objectIds)
     local out = {}
-    local function take(spawns)
+    local function take(spawns, sourceId)
         if not spawns then return end
         for areaId, list in pairs(spawns) do
             local ui = zones:GetUiMapIdByAreaId(areaId)
@@ -55,13 +55,13 @@ local function bucket(db, zones, npcIds, objectIds)
                 local b = out[ui]
                 if not b then b = {}; out[ui] = b end
                 for _, c in ipairs(list) do
-                    if c[1] and c[1] >= 0 then b[#b + 1] = { c[1] / 100, c[2] / 100 } end
+                    if c[1] and c[1] >= 0 then b[#b + 1] = { c[1] / 100, c[2] / 100, sourceId } end
                 end
             end
         end
     end
-    for _, id in ipairs(npcIds) do take(db.Npc.spawns(id)) end
-    for _, id in ipairs(objectIds) do take(db.Object.spawns(id)) end
+    for _, id in ipairs(npcIds) do take(db.Npc.spawns(id), id) end
+    for _, id in ipairs(objectIds) do take(db.Object.spawns(id), -id) end
     return out
 end
 
@@ -165,7 +165,7 @@ function Data:BuildStarters(onDone)
                 for ui, pts in pairs(bucket(db, zones, sb[1] or {}, sb[2] or {})) do
                     local list = starters[ui]
                     if not list then list = {}; starters[ui] = list end
-                    for _, p in ipairs(pts) do list[#list + 1] = { id, p[1], p[2] } end
+                    for _, p in ipairs(pts) do list[#list + 1] = { id, p[1], p[2], p[3] } end
                 end
             end
         end
@@ -202,10 +202,40 @@ function Data:Available(uiMapID, state)
         if not seen[id .. ":" .. s[2] .. ":" .. s[3]] then
             seen[id .. ":" .. s[2] .. ":" .. s[3]] = true
             local q = questInfo(db, id)
-            if Data.eligible(q, state) then out[#out + 1] = { questID = id, x = s[2], y = s[3], name = q.name, level = q.level } end
+            if Data.eligible(q, state) then out[#out + 1] = { questID = id, x = s[2], y = s[3], name = q.name, level = q.level, npc = s[4] } end
         end
     end
     return out
 end
 
 function Data:PlayerState() return playerState(_G.LibQuestieDB) end
+
+-- Static info for a quest (name, levels, prerequisite ids), or nil without QuestieDB.
+function Data:QuestInfo(id)
+    local db = _G.LibQuestieDB
+    return db and questInfo(db, id)
+end
+
+function Data:QuestName(id)
+    local db = _G.LibQuestieDB
+    return db and db.Quest.name(id) or nil
+end
+
+-- Name and level range of a quest-giver NPC (positive id) or object (negative id); every lookup is optional.
+function Data:SourceInfo(id)
+    local db = _G.LibQuestieDB
+    if not (db and id) then return nil end
+    local t = id < 0 and db.Object or db.Npc
+    local key = math.abs(id)
+    local function try(fn) if fn then local ok, v = pcall(fn, key); if ok then return v end end end
+    return { name = try(t.name), minLevel = try(t.minLevel), maxLevel = try(t.maxLevel), isObject = id < 0 }
+end
+
+-- Next quest(s) in a chain, if the database knows them.
+function Data:NextInChain(id)
+    local db = _G.LibQuestieDB
+    local fn = db and db.Quest.nextQuestInChain
+    if not fn then return nil end
+    local ok, v = pcall(fn, id)
+    if ok and v and v ~= 0 then return v end
+end

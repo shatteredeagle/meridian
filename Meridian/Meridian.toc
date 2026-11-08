@@ -12,6 +12,7 @@ Widgets.lua
 Canvas.lua
 Geometry.lua
 Data.lua
+Tooltips.lua
 Overlay.lua
 Waypoints.lua
 UI.lua

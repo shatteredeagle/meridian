@@ -139,3 +139,20 @@ assert(#rows == 4 and rows[1].header == "Elwynn" and rows[1].count == 2 and rows
 assert(rows[4].header == "Westfall" and rows[4].collapsed and rows[4].count == 2, "collapsed zone has header only")
 assert(#T.buildRows(ents(), "level") == 4, "flat rows")
 print("quest list ok")
+
+-- tooltip text builders (Tooltips.lua creates one event frame at load, so stub CreateFrame for the load)
+CreateFrame = function() return { RegisterEvent = function() end, SetScript = function() end } end
+local TipM = {}
+assert(loadfile("Meridian/Tooltips.lua"))("Meridian", TipM)
+CreateFrame = nil
+local Tip = TipM.Tip
+assert(Tip.moneyText(12345) == "1g 23s 45c" and Tip.moneyText(100) == "1s" and Tip.moneyText(0) == nil, "money")
+local names = { [10] = "Wolves", [11] = "Boars", [12] = "Bears" }
+local nameOf = function(id) return names[id] end
+local lines = Tip.chainLines({ reqLevel = 8, group = { 10, 11 }, single = { 12 }, exclusive = { 99 } }, nameOf, 11)
+assert(lines[1] == "Requires level 8" and lines[2] == "After all of: Wolves, Boars" and lines[3] == "After: Bears", "chain lines")
+assert(lines[4] == "Not with: Quest 99" and lines[5] == "Leads to: Boars", "chain tail")
+assert(Tip.chainLines({ single = { 10, 11 } }, nameOf)[1] == "After one of: Wolves, Boars", "one of")
+assert(#Tip.chainLines({}, nameOf) == 0, "no chain")
+assert(Tip.levelRange(12, 14) == "12-14" and Tip.levelRange(12, 12) == "12" and Tip.levelRange(nil) == nil, "level range")
+print("tooltips ok")

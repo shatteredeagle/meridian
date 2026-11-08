@@ -55,16 +55,21 @@ function Overlay:AcquireMarker()
         m:RegisterForClicks("AnyUp")
         m.tex = m:CreateTexture(nil, "OVERLAY")
         m.tex:SetAllPoints()
-        m:SetScript("OnEnter", function(s)
+        local function show(s)
             self.markerHover = true
             local sp = s.spec
             GameTooltip:SetOwner(s, "ANCHOR_RIGHT")
             GameTooltip:SetText(sp.title or "", sp.r or 1, sp.g or 0.82, sp.b or 0)
-            for _, l in ipairs(sp.lines or {}) do GameTooltip:AddLine(l, 1, 1, 1, true) end
+            local lines = sp.lines
+            if type(lines) == "function" then lines = lines(sp) end
+            for _, l in ipairs(lines or {}) do GameTooltip:AddLine(l, 1, 1, 1, true) end
+            if sp.detail then sp.detail(GameTooltip, sp) end
             if sp.hint then GameTooltip:AddLine(sp.hint, 0.6, 0.6, 0.6, true) end
             GameTooltip:Show()
-        end)
-        m:SetScript("OnLeave", function() self.markerHover = nil; GameTooltip:Hide() end)
+            M.Tip.Track(function() show(s) end)
+        end
+        m:SetScript("OnEnter", show)
+        m:SetScript("OnLeave", function() self.markerHover = nil; M.Tip.Track(nil); GameTooltip:Hide() end)
         m:SetScript("OnClick", function(s, btn) if s.spec and s.spec.onClick then s.spec.onClick(s, btn) end end)
     end
     m:SetFrameLevel(self.canvas.pinLayer:GetFrameLevel() + 10)
@@ -165,8 +170,19 @@ local function giverSource(self, c)
     local state = M.Data:PlayerState()
     for zoneID in pairs(c.zones) do
         for _, g in ipairs(M.Data:Available(zoneID, state)) do
+            local npc = g.npc
             self:AddMarker(zoneID, { x = g.x, y = g.y, pin = "give", size = 16, r = 1, g = 0.85, b = 0.1,
-                title = g.name or "Quest", lines = { "Level " .. (g.level or "?") }, kind = "give", questID = g.questID })
+                title = g.name or "Quest", kind = "give", questID = g.questID,
+                lines = function()
+                    local out = { "Level " .. (g.level or "?") }
+                    local src = npc and M.Data:SourceInfo(npc)
+                    if src and src.name then
+                        local lv = M.Tip.levelRange(src.minLevel, src.maxLevel)
+                        out[#out + 1] = (src.isObject and "Object: " or "From: ") .. src.name .. (lv and (" (level " .. lv .. ")") or "")
+                    end
+                    return out
+                end,
+                detail = function(tt) M.Tip.details(tt, g.questID, false) end })
         end
     end
 end
@@ -180,7 +196,8 @@ local function turninSource(self, c)
             for zoneID in pairs(c.zones) do
                 for _, p in ipairs(M.Data:QuestFinishers(q.questID)[zoneID] or {}) do
                     self:AddMarker(zoneID, { x = p[1], y = p[2], pin = "turnin", size = 18, r = 0.5, g = 1, b = 0.5,
-                        title = q.title or "Quest", lines = { "Ready to turn in" }, kind = "turnin", questID = q.questID })
+                        title = q.title or "Quest", lines = { "Ready to turn in" }, kind = "turnin", questID = q.questID,
+                        detail = function(tt) M.Tip.details(tt, q.questID, true) end })
                 end
             end
         end
@@ -240,7 +257,9 @@ local function fillTip(ids)
         for _, o in ipairs(C_QuestLog.GetQuestObjectives(id) or {}) do
             if o.text and o.text ~= "" and not o.finished then GameTooltip:AddLine("  " .. o.text, 0.8, 0.8, 0.8) end
         end
+        if IsShiftKeyDown() then M.Tip.details(GameTooltip, id, true) end
     end
+    if not IsShiftKeyDown() then GameTooltip:AddLine("Hold Shift for rewards and prerequisites", 0.5, 0.5, 0.5) end
     GameTooltip:Show()
 end
 
@@ -256,7 +275,7 @@ function Overlay:AttachHover()
             local px, py = self.canvas:CursorOnCanvas()
             if px then ids = self:QuestsAt(px, py) end
         end
-        local key = table.concat(ids, ",")
+        local key = table.concat(ids, ",") .. (IsShiftKeyDown() and "S" or "")
         if key == self.hoverKey then return end
         self.hoverKey = key
         if #ids == 0 then

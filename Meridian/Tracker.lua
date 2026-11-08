@@ -177,11 +177,13 @@ local function showTip(row)
     end
     local party = partyOn(e.questID)
     if #party > 0 then GameTooltip:AddLine("Party on this quest: " .. table.concat(party, ", "), 0.5, 0.8, 1, true) end
-    GameTooltip:AddLine("Shift-click: point arrow (and Blizzard's marker). Ctrl-click: focus.", 0.6, 0.6, 0.6, true)
+    if IsShiftKeyDown() then M.Tip.details(GameTooltip, e.questID, true) end
+    GameTooltip:AddLine("Shift-click: point arrow (and Blizzard's marker). Ctrl-click: focus. Hold Shift: details.", 0.6, 0.6, 0.6, true)
     if not Tracker.overlay.questPos[e.questID] then
         GameTooltip:AddLine("No known location on this map", 1, 0.3, 0.3)
     end
     GameTooltip:Show()
+    M.Tip.Track(function() showTip(row) end)
 end
 
 function Tracker:Row(i)
@@ -210,6 +212,7 @@ function Tracker:Row(i)
         Tracker.overlay:SetHighlight({ [s.entry.questID] = true })
     end)
     r:SetScript("OnLeave", function()
+        M.Tip.Track(nil)
         GameTooltip:Hide()
         Tracker.overlay:SetHighlight(nil)
     end)
