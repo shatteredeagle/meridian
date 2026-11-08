@@ -49,6 +49,9 @@ function UI:Create()
     btn("R", 148, function() self:ToggleReveal() end)
     btn("Z", 120, function() self:GoToPlayer(true) end)
 
+    self:CreatePlayerMarker(f, c)
+    self:CreateReadout(f, c)
+
     local ev = CreateFrame("Frame")
     ev:RegisterEvent("QUEST_LOG_UPDATE")
     ev:RegisterEvent("QUEST_POI_UPDATE")
@@ -92,6 +95,63 @@ function UI:GoToPlayer(zoneOnly)
         local px, py = self.canvas:ZoneToCanvas(zone, x, y)
         if px then self.canvas:CenterOnCanvas(px, py) end
     end
+end
+
+-- Player arrow: constant on-screen size (counter-scaled), rotated to facing.
+function UI:CreatePlayerMarker(f, c)
+    local m = CreateFrame("Frame", nil, c.pinLayer)
+    m:SetSize(24, 24)
+    m:SetFrameLevel(c.pinLayer:GetFrameLevel() + 50)
+    m.tex = m:CreateTexture(nil, "OVERLAY")
+    m.tex:SetAllPoints()
+    m.tex:SetTexture("Interface\\Minimap\\MinimapArrow")
+    self.marker = m
+    local acc = 0
+    f:HookScript("OnUpdate", function(_, dt)
+        acc = acc + dt
+        if acc < 0.1 then return end
+        acc = 0
+        self:UpdatePlayerMarker()
+    end)
+    local prev = c.OnChanged
+    c.OnChanged = function(...) if prev then prev(...) end; self:UpdatePlayerMarker() end
+end
+
+function UI:UpdatePlayerMarker()
+    local m, c = self.marker, self.canvas
+    if not (m and c.mapID) then return end
+    local zone = C_Map.GetBestMapForUnit("player")
+    local pos = zone and c.zones[zone] and C_Map.GetPlayerMapPosition(zone, "player")
+    if not pos then return m:Hide() end
+    local x, y = pos:GetXY()
+    local px, py = c:ZoneToCanvas(zone, x, y)
+    local s = 1 / c.zoom
+    m:SetScale(s)
+    m:ClearAllPoints()
+    m:SetPoint("CENTER", c.pinLayer, "TOPLEFT", px / s, -py / s)
+    m.tex:SetRotation(GetPlayerFacing() or 0)
+    m:Show()
+end
+
+-- Bottom-left readout: zone name and map coordinates under the cursor.
+function UI:CreateReadout(f, c)
+    local fs = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    fs:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 10, 6)
+    local acc = 0
+    f:HookScript("OnUpdate", function(_, dt)
+        acc = acc + dt
+        if acc < 0.05 then return end
+        acc = 0
+        local px, py = c:CursorOnCanvas()
+        local id, x, y = nil
+        if px then id, x, y = c:ZoneAt(px, py) end
+        if id then
+            local info = C_Map.GetMapInfo(id)
+            fs:SetFormattedText("%s  %.1f, %.1f", info and info.name or id, x * 100, y * 100)
+        else
+            fs:SetText("")
+        end
+    end)
 end
 
 function UI:ToggleReveal()

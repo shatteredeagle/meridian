@@ -283,6 +283,27 @@ function Canvas:SetMap(uiMapID)
     self:Fit()
 end
 
+-- Canvas px under the cursor (unzoomed), or nil if the cursor is outside the view.
+function Canvas:CursorOnCanvas()
+    local cx, cy = self:CursorInView()
+    if cx < 0 or cy < 0 or cx > self.view:GetWidth() or cy > self.view:GetHeight() then return nil end
+    return (cx - self.offX) / self.zoom, (cy - self.offY) / self.zoom
+end
+
+-- Smallest zone rect containing a canvas point -> uiMapID, zone-normalized x, y.
+function Canvas:ZoneAt(px, py)
+    local best, bestArea
+    for id, z in pairs(self.zones) do
+        if px >= z.x and px <= z.x + z.w and py >= z.y and py <= z.y + z.h then
+            local a = z.w * z.h
+            if not bestArea or a < bestArea then best, bestArea = id, a end
+        end
+    end
+    if not best then return nil end
+    local z = self.zones[best]
+    return best, (px - z.x) / z.w, (py - z.y) / z.h
+end
+
 -- Zone-normalized position -> canvas px (nil if that zone isn't on the canvas).
 function Canvas:ZoneToCanvas(uiMapID, nx, ny)
     local z = self.zones[uiMapID]
