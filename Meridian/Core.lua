@@ -1,13 +1,14 @@
 local ADDON, M = ...
 _G.Meridian = M
 
-M.defaults = { zoomMin = 0.5, zoomMax = 4, overlayAlpha = 0.25, reveal = "full", width = 900, height = 600 }
+M.defaults = { zoomMin = 0.5, zoomMax = 4, overlayAlpha = 0.25, reveal = "full", overlays = true, tracker = true, mini = false, miniSize = 220, miniZoom = 1.5, width = 900, height = 600 }
 
 local function initDB()
     MeridianDB = MeridianDB or {}
     for k, v in pairs(M.defaults) do
         if MeridianDB[k] == nil then MeridianDB[k] = v end
     end
+    MeridianDB.hidden = MeridianDB.hidden or {}
     M.db = MeridianDB
 end
 
@@ -30,6 +31,8 @@ SlashCmdList.MERIDIAN = function(msg)
     msg = (msg or ""):lower()
     if msg == "reset" then
         M.UI:ResetView()
+    elseif msg == "mini" then
+        M.UI:ToggleMini()
     elseif msg == "reveal" then
         M.UI:ToggleReveal()
     elseif msg == "data" then

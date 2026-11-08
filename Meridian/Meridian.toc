@@ -13,3 +13,5 @@ Geometry.lua
 Data.lua
 Overlay.lua
 UI.lua
+Tracker.lua
+Mini.lua

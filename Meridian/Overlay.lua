@@ -1,8 +1,9 @@
--- Quest-area overlays. Providers return {questID=, x=, y=, radius=} in normalized map coords.
--- Areas are drawn additive so overlapping quests visibly brighten.
+-- Quest-area overlays. Providers return {questID=, x=, y=, radius=} in zone-normalized coords.
+-- Areas are drawn additive so overlapping quests visibly brighten. One Overlay instance per Canvas.
 local ADDON, M = ...
 
 local Overlay = {}
+Overlay.__index = Overlay
 M.Overlay = Overlay
 
 local DEFAULT_RADIUS = 0.03 -- fraction of map width; used for point-only data
@@ -10,7 +11,7 @@ local CIRCLE = "Interface\\CharacterFrame\\TempPortraitAlphaMaskSmall"
 
 Overlay.providers = {}
 
--- Provider 1: Blizzard quest POIs. Point data only, so draw a fixed-size area.
+-- Fallback provider: Blizzard quest POIs. Point data only, so draw a fixed-size area.
 Overlay.providers.blizzard = function(uiMapID)
     local out = {}
     for _, q in ipairs(C_QuestLog.GetQuestsOnMap(uiMapID) or {}) do
@@ -29,10 +30,9 @@ local function color(questID)
 end
 Overlay.color = color
 
-function Overlay:Init(canvas)
-    self.canvas = canvas
-    self.pool, self.active = {}, {}
-    canvas.OnChanged = function() self:Rescale() end
+function Overlay:New(canvas)
+    local o = setmetatable({ canvas = canvas, pool = {}, active = {}, questPos = {} }, Overlay)
+    return o
 end
 
 function Overlay:Acquire()
@@ -49,27 +49,30 @@ end
 function Overlay:Clear()
     for _, p in ipairs(self.active) do p:Hide(); self.pool[#self.pool + 1] = p end
     wipe(self.active)
+    wipe(self.questPos)
 end
 
 function Overlay:Refresh()
     local c = self.canvas
     if not c.mapID then return end
     self:Clear()
+    if not M.db.overlays then return end
     -- Prefer real quest areas (QuestieDB); fall back to Blizzard's single-point markers.
     local useDB = M.Data:Available()
     for zoneID, rect in pairs(c.zones) do
         local list = useDB and M.Data:Provider(zoneID) or self.providers.blizzard(zoneID)
         for _, a in ipairs(list) do
             local px, py = c:ZoneToCanvas(zoneID, a.x, a.y)
-            local p = self:Acquire()
-            local r, g, b = color(a.questID)
-            p:SetVertexColor(r, g, b, M.db.overlayAlpha)
-            local d = a.radius * 2 * math.abs(rect.w)
-            p:SetSize(d, d)
-            c:PlacePinAt(p, px, py)
-            self.active[#self.active + 1] = p
+            if not self.questPos[a.questID] then self.questPos[a.questID] = { px, py } end
+            if not M.db.hidden[a.questID] then
+                local p = self:Acquire()
+                local r, g, b = color(a.questID)
+                p:SetVertexColor(r, g, b, M.db.overlayAlpha)
+                local d = a.radius * 2 * math.abs(rect.w)
+                p:SetSize(d, d)
+                c:PlacePinAt(p, px, py)
+                self.active[#self.active + 1] = p
+            end
         end
     end
 end
-
-function Overlay:Rescale() end -- areas scale with the canvas; point markers (later) counter-scale here
