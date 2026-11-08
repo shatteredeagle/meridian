@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "wow-api": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "wow-api-mcp@1.0.1"
+      ],
+      "env": {
+        "WOW_API_EXT_PATH": "/home/jesse/.local/share/wow-api-ext"
+      }
+    }
+  }
+}
