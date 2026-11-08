@@ -73,5 +73,17 @@ Nothing below has been run in WoW; the code was written without a client. Work t
 ## 15. Localization
 - [ ] On a German client, a few toolbar tooltips and key binding names switch to German; everything else stays English.
 
+## 16. Dungeon maps (Dungeons.lua)
+- [ ] Login with no Lua errors, with and without ForeverDungeonJournal loaded. `/mm dungeons` toggles (chat says on/off); doorway toolbar icon glows gold with a check mark when on; Options has the "Dungeon maps" checkbox.
+- [ ] Continent view and a zone with a known dungeon (Dun Morogh/Gnomeregan, Barrens/Razorfen, Deadmines in Westfall): castle-gate markers at the entrances, tooltip names the dungeon. Markers are not on the minimap.
+- [ ] Click a marker: the canvas switches to the dungeon map (art drawn, not blank). Check one with client art and one that uses the journal's own art (Hall of Thanes, Ruins of Lordaeron, Dalaran Underbelly).
+- [ ] Multi-floor dungeon (Gnomeregan, Blackrock Depths, Scarlet Monastery): floor buttons 1..n appear, the current one is bracketed and disabled, switching changes the art. Hover shows the floor label. Report floor order wrong or reversed (map group `relativeHeightIndex` is unverified).
+- [ ] Back returns to the zone/continent you came from; with no previous map it goes to the entrance zone. Scarlet Monastery: clicking the shared entrance cycles Library, Armory, Cathedral, Graveyard.
+- [ ] Search "gnom", "dead", "scarlet": `[Dungeon]` rows; click opens the dungeon. With the option off, no dungeon rows.
+- [ ] Standing inside an instance: `Find me` or the zone icon opens that floor; the player arrow shows (report if the client returns no position or a different map ID than the journal's `uiMapID`).
+- [ ] Inside a dungeon view: entrance portal marker (journal data), quest areas for logged dungeon quests (QuestieDB or Blizzard POIs), "?" at the hand-in NPC after completing a dungeon quest, "!" at the NPC for an available one. Ctrl-click prints "Waypoints need a real map" on a custom-art floor.
+- [ ] Reveal toggle, resize and `/reload` keep the dungeon view sane (reload returns to the usual map). Options > Dungeon maps off hides markers and the floor bar.
+- [ ] Report: which C_Map scan results looked wrong (extra/missing dungeons, duplicates of journal ones), and whether `C_EncounterJournal.GetDungeonEntrancesForMap` returned positions.
+
 ## Previously untested (from README)
 - [ ] Quest list, minimap, drill-down (double-click a zone), quest givers, direction arrow, saved positions.
