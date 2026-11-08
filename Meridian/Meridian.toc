@@ -1,4 +1,4 @@
-## Interface: 120105, 11508, 20505
+## Interface: 16001
 ## Title: Meridian
 ## Notes: Pan/zoom world map with overlapping quest areas (Carbonite-style). Built for WoW Forever.
 ## Author: jesse

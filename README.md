@@ -9,5 +9,5 @@ Test offline: `lua tests/math_test.lua`
 
 ## Status
 - Done: canvas tiling, pan/zoom, resize, player centering, additive per-quest overlays from Blizzard POIs.
-- Unverified in-client: TOC interface number for Forever, tile layout, `GetQuestsOnMap` behaviour. No WoW install on Orion.
+- Unverified in-client: tile layout, `GetQuestsOnMap` behaviour. No WoW install on Orion.
 - Next: quest database provider (real area radii), then phase 3 (minimap, tracker).
