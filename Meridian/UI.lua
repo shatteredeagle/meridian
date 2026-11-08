@@ -65,7 +65,7 @@ end
 
 -- Text of the "/way" line for a position (zone name resolved from the map).
 function UI:WayText(uiMapID, x, y)
-    local info = uiMapID and C_Map.GetMapInfo(uiMapID)
+    local info = uiMapID and uiMapID > 0 and C_Map.GetMapInfo(uiMapID)
     return M.Way.format(info and info.name, x, y)
 end
 
@@ -114,7 +114,7 @@ function UI:CreateReadout(f, c)
         local id, x, y = nil
         if px then id, x, y = c:ZoneAt(px, py) end
         if id then
-            local info = C_Map.GetMapInfo(id)
+            local info = id > 0 and C_Map.GetMapInfo(id)
             cur.fs:SetFormattedText("%s  %.1f, %.1f", info and info.name or id, x * 100, y * 100)
             self.lastCursorWay = self:WayText(id, x, y)
         elseif not cur:IsMouseOver() then
@@ -230,6 +230,8 @@ function UI:Create()
         function() self:ToggleOverlays() end, function() return M.db.overlays end)
     add("givers", L["Quest givers"], L["Markers for quests you can pick up now."],
         function() self:ToggleGivers() end, function() return M.db.avail end)
+    add("dungeons", L["Dungeon maps"], L["Dungeon entrances on the map (click one to open that dungeon's map, with its floors). Also /mm dungeons."],
+        function() M.Dungeons:Toggle() end, function() return M.db.dungeons end)
     add("arrow", L["Direction arrow"], L["Points to the nearest quest area. Shift-click a quest in the list to pick one."],
         function() M.Arrow:Toggle() end, function() return M.db.arrow end)
     gap()
@@ -360,14 +362,21 @@ function UI:LayoutView()
 end
 
 function UI:SetMap(uiMapID)
+    local prev = self.canvas.mapID
     self.canvas:SetMap(uiMapID)
     self.overlay:Refresh()
+    M.Dungeons:OnMapChanged(uiMapID, prev)
 end
 
 -- zoneOnly=true shows just the player's zone instead of the stitched continent.
 function UI:GoToPlayer(zoneOnly)
     local zone = C_Map.GetBestMapForUnit("player")
     if not zone then return M:Print("No map for current location.") end
+    if M.Dungeons:OpenForMap(zone) then -- inside an instance: show its floor
+        local dx, dy = self:PlayerCanvasPos(self.canvas)
+        if dx then self.canvas:CenterOnCanvas(dx, dy) end
+        return
+    end
     self:SetMap((not zoneOnly and continentOf(zone)) or zone)
     local px, py = self:PlayerCanvasPos(self.canvas)
     if px then self.canvas:CenterOnCanvas(px, py) end

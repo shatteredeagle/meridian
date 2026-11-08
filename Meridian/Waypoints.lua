@@ -228,6 +228,7 @@ function Way:AddFromCursor(canvas)
     if not px then return end
     local id, x, y = canvas:ZoneAt(px, py)
     if not id then return end
+    if id <= 0 then return M:Print("Waypoints need a real map; this floor has none.") end
     local info = C_Map.GetMapInfo(id)
     if info and info.mapType == Enum.UIMapType.Continent then return M:Print("Zoom into a zone (double-click it) to place a waypoint.") end
     self:Add(id, x, y)

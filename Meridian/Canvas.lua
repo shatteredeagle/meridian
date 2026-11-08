@@ -235,6 +235,8 @@ function Canvas:DrawZone(uiMapID, rect, zi)
     for _, t in ipairs(f.tiles) do t:Hide() end
     for _, t in ipairs(f.fog) do t:Hide() end
 
+    local custom = M.Dungeons and M.Dungeons:CustomFloor(uiMapID)
+    if custom then return self:DrawCustom(f, custom, rect) end
     local layers = C_Map.GetMapArtLayers(uiMapID)
     local layer = layers and layers[1]
     local files = layer and C_Map.GetMapArtLayerTextures(uiMapID, 1)
@@ -251,12 +253,42 @@ function Canvas:DrawZone(uiMapID, rect, zi)
         t:ClearAllPoints()
         t:SetPoint("TOPLEFT", rect.x + col * tw, -(rect.y + row * th))
         t:SetTexture(file)
+        t:SetTexCoord(0, 1, 0, 1)
         t:SetVertexColor(dim, dim, dim)
         t:Show()
     end
     local n = 0
     for _, ov in ipairs(overlaysFor(uiMapID, full)) do
         n = drawOverlay(self, f, rect, k, layer, ov, n)
+    end
+end
+
+-- A dungeon floor the client has no map for, drawn from its own art: a 4x3 tile grid (file prefix + 1..12) or one
+-- texture whose art sits in its top-left (texRight/texBottom). See Dungeons.lua.
+function Canvas:DrawCustom(f, floor, rect)
+    local Dg = M.Dungeons
+    local cw, ch = Dg.customSize(floor)
+    local kx, ky = rect.w / cw, rect.h / ch
+    if floor.tiles then
+        for _, s in ipairs(Dg.tileSpecs(cw, ch, 256, 4, 3)) do
+            local t = getTex(f.tiles, f, "BACKGROUND", s.index, self.mask)
+            t:SetTexture(floor.tiles .. s.index)
+            t:SetTexCoord(0, s.u, 0, s.v)
+            t:SetVertexColor(1, 1, 1)
+            t:SetSize(s.w * kx, s.h * ky)
+            t:ClearAllPoints()
+            t:SetPoint("TOPLEFT", rect.x + s.x * kx, -(rect.y + s.y * ky))
+            t:Show()
+        end
+    elseif floor.texture then
+        local t = getTex(f.tiles, f, "BACKGROUND", 1, self.mask)
+        t:SetTexture(floor.texture)
+        t:SetTexCoord(0, floor.texRight or 1, 0, floor.texBottom or 1)
+        t:SetVertexColor(1, 1, 1)
+        t:SetSize(rect.w, rect.h)
+        t:ClearAllPoints()
+        t:SetPoint("TOPLEFT", rect.x, -rect.y)
+        t:Show()
     end
 end
 
@@ -311,9 +343,14 @@ end
 
 function Canvas:BuildSingle(uiMapID)
     self.stitch = nil
-    local layers = C_Map.GetMapArtLayers(uiMapID)
+    local custom = M.Dungeons and M.Dungeons:CustomFloor(uiMapID)
+    local layers = not custom and uiMapID > 0 and C_Map.GetMapArtLayers(uiMapID) or nil
     local layer = layers and layers[1]
-    self.cw, self.ch = layer and layer.layerWidth or 1002, layer and layer.layerHeight or 668
+    if custom then
+        self.cw, self.ch = M.Dungeons.customSize(custom)
+    else
+        self.cw, self.ch = layer and layer.layerWidth or 1002, layer and layer.layerHeight or 668
+    end
     self.canvas:SetSize(self.cw, self.ch)
     local rect = { x = 0, y = 0, w = self.cw, h = self.ch }
     self.zones[uiMapID] = rect
@@ -334,7 +371,7 @@ function Canvas:SetMap(uiMapID)
     self.mapID = uiMapID
     for _, f in ipairs(self.zoneFrames) do f:Hide() end
     self.zones = {}
-    local info = C_Map.GetMapInfo(uiMapID)
+    local info = uiMapID > 0 and C_Map.GetMapInfo(uiMapID)
     if not (info and info.mapType == Enum.UIMapType.Continent and self:BuildContinent(uiMapID)) then
         self:BuildSingle(uiMapID)
     end

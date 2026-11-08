@@ -17,3 +17,4 @@ Sizes: S under half a day, M ~1 day, L multi-day.
 13. [DONE] **Search/journey**: find a zone, NPC or quest by name and jump to it; "available quests in this zone" list. Size M.
 14. [PARTIAL] **Other pin sources (HandyNotes-style)**: flight paths, rares, vignettes, POIs with per-type toggles. Size L. API: `C_TaxiMap`, `C_Vignette`, `C_AreaPoiInfo`.
 15. [PARTIAL] **Localization + in-client verification of untested items** (quest list, minimap, drill-down, givers, arrow per README): add locale table scaffolding and a test checklist. Size M.
+16. [DONE, untested in-client] **Dungeon / instance maps**: entrance markers, dungeon view with floors, search, quest overlays inside (Dungeons.lua). Size L.

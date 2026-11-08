@@ -18,6 +18,7 @@ local OPTIONS = {
     { "check", "overlays", L["Show quest areas"], after = "map" },
     { "check", "avail", L["Show quest givers"], after = "map" },
     { "check", "turnin", L["Show turn-in markers"], after = "map" },
+    { "check", "dungeons", L["Dungeon maps (entrances on zone maps, multi-floor dungeon views)"], after = "map" },
     { "slider", "greyRange", L["Hide grey quests below (levels)"], 0, 30, 1, "%d", after = "map" },
     { "header", L["Extra pins (off by default)"] },
     { "check", "pinTaxi", L["Flight paths (remembered at flight masters; continent view)"], after = "pins" },

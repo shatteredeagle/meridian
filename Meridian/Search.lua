@@ -10,8 +10,8 @@ M.Search = Search
 -- Pure helpers
 ---------------------------------------------------------------------------------
 
-local KIND_ORDER = { zone = 1, npc = 2, quest = 3 }
-local KIND_LABEL = { zone = "Zone", npc = "NPC", quest = "Quest" }
+local KIND_ORDER = { zone = 1, dungeon = 2, npc = 3, quest = 4 }
+local KIND_LABEL = { zone = "Zone", dungeon = "Dungeon", npc = "NPC", quest = "Quest" }
 Search.KIND_LABEL = KIND_LABEL
 
 -- 100 exact, 80 prefix, 60 start of a later word, 40 anywhere; nil for no match. Case-insensitive.
@@ -65,7 +65,13 @@ end
 
 function Search:Candidates()
     local items = {}
-    for _, m in ipairs(M.Way:MapList(true)) do items[#items + 1] = { kind = "zone", name = m.name, map = m.id } end
+    local dungeons = M.db.dungeons and M.Dungeons
+    for _, m in ipairs(M.Way:MapList(true)) do
+        if not (dungeons and dungeons:ForMap(m.id)) then items[#items + 1] = { kind = "zone", name = m.name, map = m.id } end
+    end
+    if dungeons then
+        for _, it in ipairs(dungeons.searchItems(dungeons:List())) do items[#items + 1] = it end
+    end
     local inLog = {}
     for _, q in ipairs(M.Data:LogQuests()) do
         inLog[q.questID] = true
@@ -112,6 +118,9 @@ function Search:Jump(it)
         ui:SetMap(map)
         self:SetTarget(nil)
         return
+    elseif it.kind == "dungeon" then
+        self:SetTarget(nil)
+        return M.Dungeons:Open(it.dungeon)
     elseif it.kind == "npc" then
         for _, s in ipairs(M.Data.starters[map] or {}) do
             if s[4] == it.npc then x, y = s[2], s[3]; break end
@@ -199,7 +208,7 @@ function Search:Here()
     local c = M.UI.canvas
     local zone = C_Map.GetBestMapForUnit("player")
     if not (zone and c.zones[zone]) then
-        local info = c.mapID and C_Map.GetMapInfo(c.mapID)
+        local info = c.mapID and c.mapID > 0 and C_Map.GetMapInfo(c.mapID)
         zone = info and info.mapType ~= Enum.UIMapType.Continent and c.mapID or nil
     end
     if not zone then return M:Print("Open a zone first (double-click one on the continent).") end

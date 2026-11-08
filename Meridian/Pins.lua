@@ -42,7 +42,7 @@ local function poiSource(self, c)
     if not M.db.pinPoi then return end
     local cr, cg, cb = M.Overlay.markerColor("poi")
     for zoneID in pairs(c.zones) do
-        for _, p in ipairs(areaPois(zoneID)) do
+        for _, p in ipairs(zoneID > 0 and areaPois(zoneID) or {}) do
             self:AddMarker(zoneID, { x = p.x, y = p.y, pin = "poi", size = 16, r = cr, g = cg, b = cb, title = p.name,
                 lines = p.description and p.description ~= "" and { p.description } or nil, kind = "poi" })
         end
