@@ -99,3 +99,8 @@ assert(WM.Way.matchName("storm", maps) == 1, "prefix")
 assert(WM.Way.matchName("pass", maps) == 3, "substring")
 assert(WM.Way.matchName("zzz", maps) == nil, "no match")
 print("waypoints ok")
+
+-- scale change keeps the window centre fixed on screen: screen position = center * scale
+local rx, ry = Math.rescaleCenter(400, 300, 1, 1.25)
+eq(rx * 1.25, 400, "rescale x"); eq(ry * 1.25, 300, "rescale y")
+print("rescale ok")

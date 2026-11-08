@@ -9,3 +9,5 @@ Unreleased (all items untested in-client unless noted; see docs/test-checklist.m
 - Punchlist 3: Key bindings (Bindings.xml, header Meridian): toggle map, minimap, arrow, quest list, center on player. New UI:CenterOnPlayer shared with the Find me button.
 
 - Punchlist 4: Options page (Options.lua): opacity, marker size, reveal default, quest area/giver/turn-in toggles, grey range, arrow on/style/arrival distance, Blizzard waypoint mirror, /way claim, minimap on/size/zoom/shape. Registers via Settings.RegisterCanvasLayoutCategory if present, else InterfaceOptions_AddCategory, else opens its own window. Reachable from the new gear toolbar icon and /mm config. Settings apply live (UI:ApplySettings); arrow has a classic and a bold style. Other modules extend the page with Options.Add.
+
+- Punchlist 5: Window scale (0.7-1.5, centre stays put), window opacity and a lock toggle (window, minimap and arrow positions; hides the resize grip) on the options page, plus Reset window. Quest list visibility was already saved (db.tracker).

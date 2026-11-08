@@ -18,7 +18,12 @@ local OPTIONS = {
     { "check", "avail", "Show quest givers", after = "map" },
     { "check", "turnin", "Show turn-in markers", after = "map" },
     { "slider", "greyRange", "Hide grey quests below (levels)", 0, 30, 1, "%d", after = "map" },
-    { "header", "Arrow and waypoints" },
+    { "header", "Window" },
+    { "slider", "scale", "Window scale", 0.7, 1.5, 0.05, "%.2fx" },
+    { "slider", "alpha", "Window opacity", 0.3, 1, 0.05, "%.2f" },
+    { "check", "locked", "Lock window, minimap and arrow positions" },
+    { "button", "Reset window position and size", function() M.UI:ResetWindow() end },
+    { "header", "Arrow and waypoints", newcol = true },
     { "check", "arrow", "Direction arrow" },
     { "choice", "arrowStyle", "Arrow style", { { 1, "Classic" }, { 2, "Bold" } } },
     { "slider", "wayArrive", "Waypoint arrival distance (yds)", 5, 60, 5, "%d" },
@@ -105,6 +110,15 @@ local function makeChoice(panel, opt, key, label, values)
     return b
 end
 
+local function makeButton(panel, label, fn)
+    local b = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate")
+    b:SetSize(COL_W - 30, 22)
+    b:SetText(label)
+    b:SetScript("OnClick", fn)
+    b.Refresh = function() end
+    return b
+end
+
 function Options:Build()
     if self.panel then return self.panel end
     local p = CreateFrame("Frame", "MeridianOptionsPanel")
@@ -116,13 +130,13 @@ function Options:Build()
     title:SetPoint("TOPLEFT", 16, -16)
     title:SetText("Meridian")
 
-    -- two columns, filled top to bottom; a header starts a new group
+    -- two columns, filled top to bottom; a header with newcol starts the second one
     local col, y = 0, -50
     for _, o in ipairs(OPTIONS) do
         local kind = o[1]
         local x = 16 + col * COL_W
         if kind == "header" then
-            if y < -50 and col == 0 and y < -250 then col, y, x = 1, -50, 16 + COL_W end
+            if o.newcol then col, y, x = 1, -50, 16 + COL_W end
             local fs = p:CreateFontString(nil, "ARTWORK", "GameFontNormal")
             fs:SetPoint("TOPLEFT", x, y)
             fs:SetText(o[2])
@@ -131,7 +145,8 @@ function Options:Build()
             local w
             if kind == "check" then w = makeCheck(p, o, o[2], o[3]); y = y - 2
             elseif kind == "slider" then w = makeSlider(p, o, o[2], o[3], o[4], o[5], o[6], o[7])
-            elseif kind == "choice" then w = makeChoice(p, o, o[2], o[3], o[4]) end
+            elseif kind == "choice" then w = makeChoice(p, o, o[2], o[3], o[4])
+            elseif kind == "button" then w = makeButton(p, o[2], o[3]) end
             w:SetPoint("TOPLEFT", x + (kind == "check" and 0 or 4), y)
             self.controls[#self.controls + 1] = w
             y = y - (kind == "slider" and ROW_H + 6 or 28)

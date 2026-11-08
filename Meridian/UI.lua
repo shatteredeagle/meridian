@@ -93,13 +93,15 @@ function UI:Create()
     else
         f:SetPoint("CENTER")
     end
+    f:SetScale(M.db.scale)
+    f:SetAlpha(M.db.alpha)
     f:SetMovable(true)
     f:SetResizable(true)
     if f.SetResizeBounds then f:SetResizeBounds(680, 420) end
     f:SetClampedToScreen(true)
     f:EnableMouse(true)
     f:RegisterForDrag("LeftButton")
-    f:SetScript("OnDragStart", f.StartMoving)
+    f:SetScript("OnDragStart", function() if not M.db.locked then f:StartMoving() end end)
     f:SetScript("OnDragStop", function() f:StopMovingOrSizing(); savePosition(f) end)
     tinsert(UISpecialFrames, "MeridianFrame")
     f:Hide()
@@ -142,7 +144,8 @@ function UI:Create()
     grip:SetSize(16, 16)
     grip:SetPoint("BOTTOMRIGHT", -2, 2)
     grip:SetNormalTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Up")
-    grip:SetScript("OnMouseDown", function() f:StartSizing("BOTTOMRIGHT") end)
+    grip:SetScript("OnMouseDown", function() if not M.db.locked then f:StartSizing("BOTTOMRIGHT") end end)
+    self.grip = grip
     grip:SetScript("OnMouseUp", function()
         f:StopMovingOrSizing()
         M.db.width, M.db.height = f:GetWidth(), f:GetHeight()
@@ -234,8 +237,38 @@ function UI:SyncToolbar()
     for _, t in ipairs(self.toggles or {}) do t[1]:SetActive(t[2]()) end
 end
 
+-- Window scale (centre stays put), overall opacity and lock state.
+function UI:ApplyWindow()
+    local f = self.frame
+    local old, new = f:GetScale(), M.db.scale
+    if math.abs(old - new) > 0.001 then
+        local cx, cy = f:GetCenter()
+        f:SetScale(new)
+        if cx then
+            cx, cy = M.Math.rescaleCenter(cx, cy, old, new)
+            f:ClearAllPoints()
+            f:SetPoint("CENTER", UIParent, "BOTTOMLEFT", cx, cy)
+            savePosition(f)
+        end
+    end
+    f:SetAlpha(M.db.alpha)
+    self.grip:SetShown(not M.db.locked)
+end
+
+function UI:ResetWindow()
+    M.db.scale, M.db.alpha, M.db.pos = 1, 1, nil
+    M.db.width, M.db.height = M.defaults.width, M.defaults.height
+    local f = self.frame
+    f:SetSize(M.db.width, M.db.height)
+    f:SetScale(1)
+    f:ClearAllPoints()
+    f:SetPoint("CENTER")
+    self:ApplySettings()
+end
+
 -- Apply saved settings to the live frames. `after`: "map" re-reads pins, "rebuild" redraws map art, "reload" nothing more.
 function UI:ApplySettings(after)
+    self:ApplyWindow()
     self.overlay:ApplyAlpha()
     if self.mini then self.mini.overlay:ApplyAlpha() end
     if M.Tracker.SyncSlider then M.Tracker:SyncSlider() end

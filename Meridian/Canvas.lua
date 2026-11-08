@@ -47,6 +47,9 @@ function Math.worldAxes(p00, p10, p01)
     return ax, sx, ay, sy
 end
 
+-- A frame's center (in its own scale units) after its scale changes, so it stays put on screen.
+function Math.rescaleCenter(cx, cy, oldScale, newScale) return cx * oldScale / newScale, cy * oldScale / newScale end
+
 -- Normalized map coords (0..1) <-> canvas px (unzoomed).
 function Math.toCanvas(nx, ny, cw, ch) return nx * cw, ny * ch end
 function Math.toNormalized(px, py, cw, ch) return px / cw, py / ch end
