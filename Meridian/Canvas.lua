@@ -255,7 +255,8 @@ function Canvas:DrawZone(uiMapID, rect, zi)
     local tw, th = layer.tileWidth * k, layer.tileHeight * k
     local cols = math.ceil(layer.layerWidth / layer.tileWidth)
     local full = M.db.reveal == "full"
-    local dim = full and 1 or 0.3
+    -- Maps with no exploration overlays in any source (cities, many instances) can't be "explored", so never dim them.
+    local dim = (full or #overlaysFor(uiMapID, true) == 0) and 1 or 0.3
     for i, file in ipairs(files) do
         local t = getTex(f.tiles, f, "BACKGROUND", i, self.mask)
         local col, row = (i - 1) % cols, math.floor((i - 1) / cols)
