@@ -67,6 +67,7 @@ M.Canvas = Canvas
 
 function Canvas:New(parent, opts)
     local self = setmetatable({}, Canvas)
+    self.zones = {}
     local view = CreateFrame("Frame", nil, parent)
     view:SetClipsChildren(true)
     view:EnableMouse(true)
