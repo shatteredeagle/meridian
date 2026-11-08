@@ -23,7 +23,7 @@ Blizzard's map shows one quest at a time. Meridian shows all of them, overlappin
 - Focus mode (Ctrl-click a quest) fades everything else.
 
 **Navigation**
-- Waypoints: Ctrl-click the map, or `/way x y`, `/way Zone x y`. Works alongside TomTom and syncs with Blizzard's own waypoint.
+- Waypoints: right-click the map to drop a pin and the arrow points the way (Ctrl-click works too), or `/way x y`, `/way Zone x y`. Works alongside TomTom and syncs with Blizzard's own waypoint.
 - A direction arrow that points to the nearest quest area, a completed quest's hand-in, or your waypoint.
 - A follow-me minimap (square or round) and a launcher button on Blizzard's minimap.
 - Cursor and player coordinates; click to get a ready-to-use `/way` line.

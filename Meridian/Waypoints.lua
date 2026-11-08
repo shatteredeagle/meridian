@@ -1,4 +1,4 @@
--- Waypoints: Ctrl-click the map or use /way (TomTom syntax). Keeps its own list, mirrors the newest one
+-- Waypoints: right-click or Ctrl-click the map, or use /way (TomTom syntax). Keeps its own list, mirrors the newest one
 -- to Blizzard's user waypoint, and hands everything to TomTom when TomTom is installed. Parsing is pure (tested offline).
 local ADDON, M = ...
 
@@ -177,7 +177,7 @@ function Way:Slash(msg)
     local r, err = Way.parse(msg)
     if not r then return M:Print(err) end
     if r.cmd == "help" then
-        M:Print("/way x y [title] | /way Zone x y [title] | /way #mapID x y | /way list | /way clear. Ctrl-click the map to drop one.")
+        M:Print("/way x y [title] | /way Zone x y [title] | /way #mapID x y | /way list | /way clear. Right-click (or Ctrl-click) the map to drop one.")
     elseif r.cmd == "clear" then
         self:Clear()
     elseif r.cmd == "list" then
@@ -232,4 +232,5 @@ function Way:AddFromCursor(canvas)
     local info = C_Map.GetMapInfo(id)
     if info and info.mapType == Enum.UIMapType.Continent then return M:Print("Zoom into a zone (double-click it) to place a waypoint.") end
     self:Add(id, x, y)
+    return true
 end

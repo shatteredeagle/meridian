@@ -274,6 +274,11 @@ function UI:Create()
     c.view:SetScript("OnMouseUp", function(_, btnName)
         local d = c.dragging
         c.dragging = nil
+        if btnName == "RightButton" then
+            -- right-click empty map: drop a pin and make sure the arrow is on so it points the way
+            if M.Way:AddFromCursor(c) and not M.db.arrow then M.Arrow:Toggle() end
+            return
+        end
         if btnName == "LeftButton" and d and IsControlKeyDown() and math.abs(c.offX - d.ox) + math.abs(c.offY - d.oy) < 4 then
             return M.Way:AddFromCursor(c) -- Ctrl-click drops a waypoint
         end

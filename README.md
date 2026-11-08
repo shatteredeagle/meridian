@@ -14,7 +14,7 @@ Double-click a zone on the continent view to drill into it. Hold Shift over any 
 Minimap button: sits on Blizzard's minimap; left-click map, right-click options, drag to move. Meridian minimap: `/mm mini`, shows N and your coordinates. Follows you; drag to pan (stops following), the locate icon re-follows, top strip moves the frame.
 
 Coordinates: bottom of the map shows the cursor's and your own; click one to copy it as a `/way` line (Ctrl-C from the box), Shift-click to drop it in chat.
-Waypoints: Ctrl-click the map (zone view, or any zone on the continent). `/way x y [title]`, `/way Zone x y`, `/way #mapID x y`, `/way list`, `/way clear` (same as `/mm way ...`; if TomTom is installed it keeps `/way` and also receives ours). Pin: left-click points the arrow, right-click removes. The arrow follows the newest waypoint until you arrive (10 yds).
+Waypoints: right-click the map (or Ctrl-click) to drop a pin; the arrow turns on and points the way, and arrives-and-clears when you get there (zone view, or any zone on the continent). `/way x y [title]`, `/way Zone x y`, `/way #mapID x y`, `/way list`, `/way clear` (same as `/mm way ...`; if TomTom is installed it keeps `/way` and also receives ours). Pin: left-click points the arrow, right-click removes. The arrow follows the newest waypoint until you arrive (10 yds).
 
 Keys (Options > Keybindings > Meridian, unbound by default): toggle map, minimap, direction arrow, quest list, center on player.
 

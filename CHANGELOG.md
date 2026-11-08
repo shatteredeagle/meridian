@@ -2,6 +2,8 @@
 
 Unreleased (all items untested in-client unless noted; see docs/test-checklist.md).
 
+- Right-click the map to drop a waypoint pin; the direction arrow is switched on and points to it (Ctrl-click still works). Right-clicking an existing pin removes it.
+
 - Pin the map to your character: toolbar pin toggle, `/mm pin`, options checkbox and a key binding. While on, the main map stays centred on you every 0.1 s and follows you into other zones (continent view stays continent, zone view follows the zone). Dragging the map unpins it. New icon `pin.tga` needs a full client restart.
 
 - Explored-only mode no longer dims maps that have no overlay data at all (Stormwind and other cities looked permanently foggy).
