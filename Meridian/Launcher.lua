@@ -1,5 +1,6 @@
 -- Launcher button on Blizzard's minimap: left-click toggles the map, right-click opens options, drag moves it around the edge.
 local ADDON, M = ...
+local L = M.L
 
 local Launcher = {}
 M.Launcher = Launcher
@@ -44,9 +45,9 @@ function Launcher:Create()
     b:SetScript("OnEnter", function(s)
         GameTooltip:SetOwner(s, "ANCHOR_LEFT")
         GameTooltip:SetText("Meridian", 1, 1, 1)
-        GameTooltip:AddLine("Left-click: toggle map", 0.75, 0.75, 0.75)
-        GameTooltip:AddLine("Right-click: options", 0.75, 0.75, 0.75)
-        GameTooltip:AddLine("Drag: move this button", 0.75, 0.75, 0.75)
+        GameTooltip:AddLine(L["Left-click: toggle map"], 0.75, 0.75, 0.75)
+        GameTooltip:AddLine(L["Right-click: options"], 0.75, 0.75, 0.75)
+        GameTooltip:AddLine(L["Drag: move this button"], 0.75, 0.75, 0.75)
         GameTooltip:Show()
     end)
     b:SetScript("OnLeave", function() GameTooltip:Hide() end)

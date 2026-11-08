@@ -1,4 +1,5 @@
 local ADDON, M = ...
+local L = M.L
 
 local UI = {}
 M.UI = UI
@@ -215,29 +216,29 @@ function UI:Create()
         sep:SetPoint("LEFT", tb, "LEFT", x + 3, 0)
         x = x + 12
     end
-    add("plus", "Zoom in", "Mouse wheel also zooms at the cursor.", function() c:SetZoom(c.zoom * 1.4) end)
-    add("minus", "Zoom out", nil, function() c:SetZoom(c.zoom / 1.4) end)
-    add("fit", "Fit to window", "Show the whole map.", function() c:Fit() end)
+    add("plus", L["Zoom in"], L["Mouse wheel also zooms at the cursor."], function() c:SetZoom(c.zoom * 1.4) end)
+    add("minus", L["Zoom out"], nil, function() c:SetZoom(c.zoom / 1.4) end)
+    add("fit", L["Fit to window"], L["Show the whole map."], function() c:Fit() end)
     gap()
-    add("continent", "Continent view", "All zones stitched together, centered on you.", function() self:GoToPlayer() end)
-    add("zone", "Zone view", "Just the zone you are in. Double-click any zone on the continent to open it.", function() self:GoToPlayer(true) end)
-    add("locate", "Find me", "Center on your position.", function() self:CenterOnPlayer() end)
+    add("continent", L["Continent view"], L["All zones stitched together, centered on you."], function() self:GoToPlayer() end)
+    add("zone", L["Zone view"], L["Just the zone you are in. Double-click any zone on the continent to open it."], function() self:GoToPlayer(true) end)
+    add("locate", L["Find me"], L["Center on your position."], function() self:CenterOnPlayer() end)
     gap()
-    add("reveal", "Reveal map", "On: whole map revealed. Off: only areas you have explored.",
+    add("reveal", L["Reveal map"], L["On: whole map revealed. Off: only areas you have explored."],
         function() self:ToggleReveal() end, function() return M.db.reveal == "full" end)
-    add("areas", "Quest areas", "Colored areas where your quest objectives are. Overlaps add up; hover for names.",
+    add("areas", L["Quest areas"], L["Colored areas where your quest objectives are. Overlaps add up; hover for names."],
         function() self:ToggleOverlays() end, function() return M.db.overlays end)
-    add("givers", "Quest givers", "Markers for quests you can pick up now.",
+    add("givers", L["Quest givers"], L["Markers for quests you can pick up now."],
         function() self:ToggleGivers() end, function() return M.db.avail end)
-    add("arrow", "Direction arrow", "Points to the nearest quest area. Shift-click a quest in the list to pick one.",
+    add("arrow", L["Direction arrow"], L["Points to the nearest quest area. Shift-click a quest in the list to pick one."],
         function() M.Arrow:Toggle() end, function() return M.db.arrow end)
     gap()
-    add("list", "Quest list", "Show or hide the quest panel.",
+    add("list", L["Quest list"], L["Show or hide the quest panel."],
         function() self:ToggleTracker() end, function() return M.db.tracker end)
-    add("minimap", "Minimap", "A small map that follows you.",
+    add("minimap", L["Minimap"], L["A small map that follows you."],
         function() self:ToggleMini() end, function() return M.db.mini end)
     gap()
-    add("gear", "Options", "Opacity, marker size, arrow, minimap and more. Also /mm config.", function() M.Options:Open() end)
+    add("gear", L["Options"], L["Opacity, marker size, arrow, minimap and more. Also /mm config."], function() M.Options:Open() end)
 
     M.Search:Create(tb)
     self:AttachMarker(f, c)

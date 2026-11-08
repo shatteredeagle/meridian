@@ -16,4 +16,4 @@ Sizes: S under half a day, M ~1 day, L multi-day.
 12. [PARTIAL] **Controller support**: gamepad stick pan, triggers zoom, face buttons to cycle quests; needs focus handling for toolbar. Size L. API: gamepad query functions not found in MCP search; verify in client with wow-controller-support skill.
 13. [DONE] **Search/journey**: find a zone, NPC or quest by name and jump to it; "available quests in this zone" list. Size M.
 14. [PARTIAL] **Other pin sources (HandyNotes-style)**: flight paths, rares, vignettes, POIs with per-type toggles. Size L. API: `C_TaxiMap`, `C_Vignette`, `C_AreaPoiInfo`.
-15. **Localization + in-client verification of untested items** (quest list, minimap, drill-down, givers, arrow per README): add locale table scaffolding and a test checklist. Size M.
+15. [PARTIAL] **Localization + in-client verification of untested items** (quest list, minimap, drill-down, givers, arrow per README): add locale table scaffolding and a test checklist. Size M.

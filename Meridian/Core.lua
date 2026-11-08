@@ -1,4 +1,5 @@
 local ADDON, M = ...
+local L = M.L
 _G.Meridian = M
 
 M.defaults = { zoomMin = 0.5, zoomMax = 4, opacity = 0.75, reveal = "full", overlays = true, tracker = true, mini = false, miniSize = 220, miniZoom = 1.5, miniRound = true, avail = false, turnin = true, greyRange = 7, arrow = false, blizzWay = true, claimWay = true, wayArrive = 10, arrowStyle = 1, iconScale = 1, sortMode = "zone", palette = "default", fontScale = 1, controller = false, pinTaxi = false, pinRare = false, pinPoi = false, contrast = false, superTrack = true, launcher = true, launcherAngle = 225, miniCoords = true, scale = 1, alpha = 1, locked = false, width = 900, height = 600 }
@@ -17,11 +18,11 @@ end
 
 -- Key binding labels (Bindings.xml)
 BINDING_HEADER_MERIDIAN = "Meridian"
-BINDING_NAME_MERIDIAN_TOGGLE = "Toggle map"
-BINDING_NAME_MERIDIAN_MINIMAP = "Toggle minimap"
-BINDING_NAME_MERIDIAN_ARROW = "Toggle direction arrow"
-BINDING_NAME_MERIDIAN_CENTER = "Center map on player"
-BINDING_NAME_MERIDIAN_LIST = "Toggle quest list"
+BINDING_NAME_MERIDIAN_TOGGLE = L["Toggle map"]
+BINDING_NAME_MERIDIAN_MINIMAP = L["Toggle minimap"]
+BINDING_NAME_MERIDIAN_ARROW = L["Toggle direction arrow"]
+BINDING_NAME_MERIDIAN_CENTER = L["Center map on player"]
+BINDING_NAME_MERIDIAN_LIST = L["Toggle quest list"]
 
 function M:Print(...) print("|cff66ccffMeridian|r:", ...) end
 

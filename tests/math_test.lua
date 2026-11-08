@@ -115,6 +115,7 @@ print("edge ok")
 
 -- quest list: progress text, labels, sorting, zone grouping
 local TM = {}
+assert(loadfile("Meridian/Locale.lua"))("Meridian", TM)
 assert(loadfile("Meridian/Tracker.lua"))("Meridian", TM)
 local T = TM.Tracker
 assert(T.progress({ { text = "a", finished = true }, { text = "b" }, { text = "" } }) == "1/2", "progress")
@@ -218,3 +219,23 @@ ax_, ay_ = PinM.Pins.xy({ GetXY = function() return 0.5, 0.6 end })
 eq(ax_, 0.5, "xy method"); eq(ay_, 0.6, "xy method y")
 assert(PinM.Pins.xy(nil) == nil and PinM.Pins.xy({}) == nil, "xy missing")
 print("pins ok")
+
+-- localization: missing keys fall back to the English text; every L["..."] in the code is listed in enUS.lua
+local LM = {}
+assert(loadfile("Meridian/Locale.lua"))("Meridian", LM)
+assert(LM.L["Anything at all"] == "Anything at all", "fallback returns the key")
+GetLocale = function() return "deDE" end
+assert(loadfile("Meridian/Locales/deDE.lua"))("Meridian", LM)
+GetLocale = nil
+assert(LM.L["Zoom in"] ~= "Zoom in" and LM.L["Fit to window"] == "Fit to window", "translated and untranslated keys")
+local en = {}
+for k in io.open("Meridian/Locales/enUS.lua"):read("*a"):gmatch('\nL%["(.-)"%] = ') do en[k] = true end
+local missing = {}
+local files = io.popen("ls Meridian/*.lua"):read("*a")
+for path in files:gmatch("%S+") do
+    for k in io.open(path):read("*a"):gmatch('%f[%w_]L%["(.-)"%]') do
+        if not en[k] then missing[#missing + 1] = path .. ": " .. k end
+    end
+end
+assert(#missing == 0, "strings missing from enUS.lua (run tools/extract_strings.py): " .. table.concat(missing, "; "))
+print("locale ok")

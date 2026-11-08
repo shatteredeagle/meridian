@@ -7,6 +7,9 @@
 ## SavedVariables: MeridianDB
 ## IconTexture: Interface\Icons\INV_Misc_Map_01
 
+Locale.lua
+Locales\enUS.lua
+Locales\deDE.lua
 Core.lua
 Widgets.lua
 Canvas.lua

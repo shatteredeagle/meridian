@@ -1,12 +1,13 @@
 -- Quest list panel: toggle each quest's overlay, click to center on it (shift-click: set arrow target), hover for objectives.
 local ADDON, M = ...
+local L = M.L
 
 local Tracker = {}
 M.Tracker = Tracker
 
 local function rowH() return math.max(18, math.floor((M.Widgets.fontSize or 11) + 7)) end
 local SORTS = { "zone", "level", "distance", "log" }
-local SORT_NAMES = { zone = "Zone", level = "Level", distance = "Distance", log = "Quest log" }
+local SORT_NAMES = { zone = L["Zone"], level = L["Level"], distance = L["Distance"], log = L["Quest log"] }
 
 ---------------------------------------------------------------------------------
 -- Pure list logic (tested offline)
@@ -277,7 +278,7 @@ function Tracker:Refresh()
     local rows = Tracker.buildRows(list, mode, M.db.collapsed)
     self.orderIds = {} -- quests in display order, for controller cycling
     for _, item in ipairs(rows) do if item.entry then self.orderIds[#self.orderIds + 1] = item.entry.questID end end
-    self.sortButton:SetText("Sort: " .. (SORT_NAMES[mode] or mode))
+    self.sortButton:SetText(L["Sort:"] .. " " .. (SORT_NAMES[mode] or mode))
 
     local visible = math.max(5, math.floor(((self.panel:GetHeight() or 0) - 24 - 52) / rowH()))
     self.scroll = math.max(0, math.min(self.scroll or 0, math.max(0, #rows - visible)))
