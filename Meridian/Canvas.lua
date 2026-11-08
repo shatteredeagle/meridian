@@ -152,8 +152,6 @@ function Math.pow2(n)
     return p
 end
 
-local TILE = 256
-
 local function getTex(list, frame, layer, n, mask)
     local t = list[n]
     if not t then
@@ -164,8 +162,56 @@ local function getTex(list, frame, layer, n, mask)
     return t
 end
 
--- Draw one zone's art into the canvas rect {x,y,w,h} inside its own frame (frame level = draw order).
--- In "explored" mode the base art is dimmed and Blizzard's explored overlays are drawn at full brightness.
+-- Draw a set of overlay tile files ({fileIDs, w, h, offX, offY}) at full brightness.
+local function drawOverlay(self, f, rect, k, layer, ov, n)
+    local tw, th = layer.tileWidth, layer.tileHeight
+    local wide, tall = math.ceil(ov.w / tw), math.ceil(ov.h / th)
+    for j = 1, tall do
+        for c = 1, wide do
+            local fid = ov.ids[(j - 1) * wide + c]
+            if fid then
+                local pw = c < wide and tw or ((ov.w % tw == 0) and tw or ov.w % tw)
+                local ph = j < tall and th or ((ov.h % th == 0) and th or ov.h % th)
+                local fw, fh = Math.pow2(pw), Math.pow2(ph)
+                n = n + 1
+                local t = getTex(f.fog, f, "ARTWORK", n, self.mask)
+                t:SetTexture(fid, nil, nil, "TRILINEAR")
+                t:SetTexCoord(0, pw / fw, 0, ph / fh)
+                t:SetVertexColor(1, 1, 1)
+                t:SetSize(pw * k, ph * k)
+                t:ClearAllPoints()
+                t:SetPoint("TOPLEFT", rect.x + (ov.x + (c - 1) * tw) * k, -(rect.y + (ov.y + (j - 1) * th) * k))
+                t:Show()
+            end
+        end
+    end
+    return n
+end
+
+-- Overlays the player has discovered, plus (for a fully revealed map) the rest from Zygor's installed
+-- Foglight data, which lists every overlay per uiMapID. Returns an array of {ids, w, h, x, y}.
+local function overlaysFor(uiMapID, full)
+    local out, have = {}, {}
+    for _, e in ipairs(C_MapExplorationInfo.GetExploredMapTextures(uiMapID) or {}) do
+        if e.textureWidth and e.textureWidth > 0 then
+            out[#out + 1] = { ids = e.fileDataIDs, w = e.textureWidth, h = e.textureHeight, x = e.offsetX, y = e.offsetY }
+            if e.fileDataIDs[1] then have[e.fileDataIDs[1]] = true end
+        end
+    end
+    if full then
+        local zgv = _G.ZGV
+        local data = zgv and zgv.Foglight and zgv.Foglight.DataProvider and zgv.Foglight.DataProvider.data
+        for _, e in ipairs(data and data[uiMapID] or {}) do
+            if not have[e[1][1]] then out[#out + 1] = { ids = e[1], w = e[2], h = e[3], x = e[4], y = e[5] } end
+        end
+    end
+    return out
+end
+M.OverlaysFor = overlaysFor
+
+-- Draw one zone's art into the canvas rect inside its own frame (frame level = draw order).
+-- Base tiles first, then explored overlays; "full" adds every remaining overlay so nothing is fogged.
+-- In "explored" mode the base art is dimmed so undiscovered ground reads as unexplored.
 function Canvas:DrawZone(uiMapID, rect, zi)
     local f = self.zoneFrames[zi]
     if not f then
@@ -186,8 +232,8 @@ function Canvas:DrawZone(uiMapID, rect, zi)
     local k = rect.w / layer.layerWidth
     local tw, th = layer.tileWidth * k, layer.tileHeight * k
     local cols = math.ceil(layer.layerWidth / layer.tileWidth)
-    local explored = M.db.reveal == "explored"
-    local dim = explored and 0.3 or 1
+    local full = M.db.reveal == "full"
+    local dim = full and 1 or 0.3
     for i, file in ipairs(files) do
         local t = getTex(f.tiles, f, "BACKGROUND", i, self.mask)
         local col, row = (i - 1) % cols, math.floor((i - 1) / cols)
@@ -198,31 +244,9 @@ function Canvas:DrawZone(uiMapID, rect, zi)
         t:SetVertexColor(dim, dim, dim)
         t:Show()
     end
-    if not explored then return end
-
     local n = 0
-    for _, ov in ipairs(C_MapExplorationInfo.GetExploredMapTextures(uiMapID) or {}) do
-        local wide, tall = math.ceil(ov.textureWidth / TILE), math.ceil(ov.textureHeight / TILE)
-        for j = 1, tall do
-            for c = 1, wide do
-                local idx = (j - 1) * wide + c
-                local fid = ov.fileDataIDs[idx]
-                if fid then
-                    local pw = c < wide and TILE or ((ov.textureWidth % TILE == 0) and TILE or ov.textureWidth % TILE)
-                    local ph = j < tall and TILE or ((ov.textureHeight % TILE == 0) and TILE or ov.textureHeight % TILE)
-                    local fw, fh = Math.pow2(pw), Math.pow2(ph)
-                    n = n + 1
-                    local t = getTex(f.fog, f, "ARTWORK", n, self.mask)
-                    t:SetTexture(fid, nil, nil, "TRILINEAR")
-                    t:SetTexCoord(0, pw / fw, 0, ph / fh)
-                    t:SetVertexColor(1, 1, 1)
-                    t:SetSize(pw * k, ph * k)
-                    t:ClearAllPoints()
-                    t:SetPoint("TOPLEFT", rect.x + (ov.offsetX + (c - 1) * TILE) * k, -(rect.y + (ov.offsetY + (j - 1) * TILE) * k))
-                    t:Show()
-                end
-            end
-        end
+    for _, ov in ipairs(overlaysFor(uiMapID, full)) do
+        n = drawOverlay(self, f, rect, k, layer, ov, n)
     end
 end
 

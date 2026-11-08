@@ -7,7 +7,7 @@ Overlay.__index = Overlay
 M.Overlay = Overlay
 
 local DEFAULT_RADIUS = 0.03 -- fraction of map width; used for point-only data
-local CIRCLE = "Interface\\CharacterFrame\\TempPortraitAlphaMaskSmall"
+local CIRCLE = "Interface\\AddOns\\Meridian\\Media\\area" -- soft disc with a crisp rim, tinted per quest
 
 Overlay.providers = {}
 
@@ -34,6 +34,7 @@ function Overlay:New(canvas)
     local o = setmetatable({ canvas = canvas, pool = {}, active = {}, questPos = {}, areas = {}, markerPool = {}, markers = {} }, Overlay)
     local prev = canvas.OnChanged
     canvas.OnChanged = function(...) if prev then prev(...) end; o:Rescale() end
+    o:AttachHover()
     return o
 end
 
@@ -50,12 +51,13 @@ function Overlay:AcquireMarker()
         m.tex:SetAllPoints()
         m.tex:SetTexture("Interface\\GossipFrame\\AvailableQuestIcon")
         m:SetScript("OnEnter", function(s)
+            self.markerHover = true
             GameTooltip:SetOwner(s, "ANCHOR_RIGHT")
             GameTooltip:SetText(s.name or "Quest", 1, 0.82, 0)
             if s.level then GameTooltip:AddLine("Level " .. s.level, 1, 1, 1) end
             GameTooltip:Show()
         end)
-        m:SetScript("OnLeave", GameTooltip_Hide)
+        m:SetScript("OnLeave", function() self.markerHover = nil; GameTooltip:Hide() end)
     end
     m:SetFrameLevel(self.canvas.pinLayer:GetFrameLevel() + 10)
     m:Show()
@@ -107,15 +109,15 @@ function Overlay:Refresh()
             self.areas[#self.areas + 1] = { questID = a.questID, zone = zoneID, x = a.x, y = a.y }
             if not M.db.hidden[a.questID] then
                 local p = self:Acquire()
-                local r, g, b = color(a.questID)
-                p:SetVertexColor(r, g, b, M.db.overlayAlpha)
                 local d = a.radius * 2 * math.abs(rect.w)
+                p.questID, p.px, p.py, p.r = a.questID, px, py, d / 2
                 p:SetSize(d, d)
                 c:PlacePinAt(p, px, py)
                 self.active[#self.active + 1] = p
             end
         end
     end
+    self:ApplyAlpha()
     self:RefreshGivers()
 end
 
@@ -140,4 +142,79 @@ function Overlay:RefreshGivers()
         end
     end
     self:Rescale()
+end
+
+
+-- Tint and fade every pin. A highlighted quest (hover) is drawn bright, the rest are pushed back.
+function Overlay:ApplyAlpha()
+    local hl, base = self.highlight, M.db.opacity
+    for _, p in ipairs(self.active) do
+        local r, g, b = color(p.questID)
+        local a = base
+        if hl then a = hl[p.questID] and math.min(1, base * 1.35) or base * 0.3 end
+        p:SetVertexColor(r, g, b, a)
+    end
+end
+
+-- set: table {[questID]=true} or nil to clear.
+function Overlay:SetHighlight(set)
+    self.highlight = set
+    self:ApplyAlpha()
+end
+
+-- Quests whose area contains the canvas point, smallest area first (so the topmost reads first).
+function Overlay:QuestsAt(px, py)
+    local hits = {}
+    for _, p in ipairs(self.active) do
+        local dx, dy = px - p.px, py - p.py
+        if dx * dx + dy * dy <= p.r * p.r then hits[#hits + 1] = p end
+    end
+    table.sort(hits, function(a, b) return a.r < b.r end)
+    local out, seen = {}, {}
+    for _, p in ipairs(hits) do
+        if not seen[p.questID] then seen[p.questID] = true; out[#out + 1] = p.questID end
+    end
+    return out
+end
+
+local function fillTip(ids)
+    GameTooltip:ClearLines()
+    if #ids > 1 then GameTooltip:AddLine(#ids .. " overlapping quests", 0.7, 0.7, 0.7) end
+    for i, id in ipairs(ids) do
+        local r, g, b = color(id)
+        GameTooltip:AddLine(C_QuestLog.GetTitleForQuestID(id) or ("Quest " .. id), r, g, b)
+        for _, o in ipairs(C_QuestLog.GetQuestObjectives(id) or {}) do
+            if o.text and o.text ~= "" and not o.finished then GameTooltip:AddLine("  " .. o.text, 0.8, 0.8, 0.8) end
+        end
+    end
+    GameTooltip:Show()
+end
+
+-- Tooltip + highlight for the quest areas under the cursor (all of them where circles overlap).
+function Overlay:AttachHover()
+    local view, acc = self.canvas.view, 0
+    view:HookScript("OnUpdate", function(_, dt)
+        acc = acc + dt
+        if acc < 0.05 then return end
+        acc = 0
+        local ids = {}
+        if view:IsMouseOver() and not self.markerHover and not self.canvas.dragging then
+            local px, py = self.canvas:CursorOnCanvas()
+            if px then ids = self:QuestsAt(px, py) end
+        end
+        local key = table.concat(ids, ",")
+        if key == self.hoverKey then return end
+        self.hoverKey = key
+        if #ids == 0 then
+            if self.hoverShown then GameTooltip:Hide(); self.hoverShown = nil end
+            self:SetHighlight(self.pinned)
+            return
+        end
+        local set = {}
+        for _, id in ipairs(ids) do set[id] = true end
+        self:SetHighlight(set)
+        GameTooltip:SetOwner(view, "ANCHOR_CURSOR_RIGHT")
+        fillTip(ids)
+        self.hoverShown = true
+    end)
 end

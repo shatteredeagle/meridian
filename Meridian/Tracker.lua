@@ -4,7 +4,7 @@ local ADDON, M = ...
 local Tracker = {}
 M.Tracker = Tracker
 
-local ROW_H, MAX_ROWS = 18, 30
+local ROW_H, MAX_ROWS = 18, 22
 
 function Tracker:Create(host, canvas, overlay)
     self.canvas, self.overlay = canvas, overlay
@@ -17,6 +17,21 @@ function Tracker:Create(host, canvas, overlay)
     p.bg:SetColorTexture(0, 0, 0, 0.35)
     p:SetShown(M.db.tracker)
     self.panel, self.rows = p, {}
+
+    local sl = CreateFrame("Slider", nil, p, "OptionsSliderTemplate")
+    sl:SetPoint("BOTTOMLEFT", 10, 22)
+    sl:SetPoint("BOTTOMRIGHT", -10, 22)
+    sl:SetMinMaxValues(0.2, 1)
+    sl:SetValueStep(0.05)
+    sl:SetObeyStepOnDrag(true)
+    sl:SetValue(M.db.opacity)
+    if sl.Text then sl.Text:SetText("Overlay opacity") end
+    if sl.Low then sl.Low:SetText("") end
+    if sl.High then sl.High:SetText("") end
+    sl:SetScript("OnValueChanged", function(_, v)
+        M.db.opacity = v
+        overlay:ApplyAlpha()
+    end)
 end
 
 local function showTip(row)
@@ -55,8 +70,14 @@ function Tracker:Row(i)
     r.text:SetPoint("RIGHT")
     r.text:SetJustifyH("LEFT")
     r.text:SetWordWrap(false)
-    r:SetScript("OnEnter", showTip)
-    r:SetScript("OnLeave", GameTooltip_Hide)
+    r:SetScript("OnEnter", function(s)
+        showTip(s)
+        Tracker.overlay:SetHighlight({ [s.questID] = true })
+    end)
+    r:SetScript("OnLeave", function()
+        GameTooltip:Hide()
+        Tracker.overlay:SetHighlight(nil)
+    end)
     r:SetScript("OnClick", function()
         if IsShiftKeyDown() then
             M.db.target = (M.db.target ~= r.questID) and r.questID or nil

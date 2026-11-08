@@ -1,7 +1,7 @@
 local ADDON, M = ...
 _G.Meridian = M
 
-M.defaults = { zoomMin = 0.5, zoomMax = 4, overlayAlpha = 0.25, reveal = "full", overlays = true, tracker = true, mini = false, miniSize = 220, miniZoom = 1.5, miniRound = true, avail = false, greyRange = 7, arrow = false, width = 900, height = 600 }
+M.defaults = { zoomMin = 0.5, zoomMax = 4, opacity = 0.75, reveal = "full", overlays = true, tracker = true, mini = false, miniSize = 220, miniZoom = 1.5, miniRound = true, avail = false, greyRange = 7, arrow = false, width = 900, height = 600 }
 
 local function initDB()
     MeridianDB = MeridianDB or {}
@@ -45,7 +45,8 @@ SlashCmdList.MERIDIAN = function(msg)
     elseif msg == "data" then
         M:Print("QuestieDB:", _G.LibQuestieDB and "found" or "missing",
             "| ZoneDB:", (_G.QuestieLoader and _G.QuestieLoader:ImportModule("ZoneDB")) and "found" or "missing",
-            "| source:", M.Data:Available() and "QuestieDB areas" or "Blizzard POIs")
+            "| source:", M.Data:Available() and "QuestieDB areas" or "Blizzard POIs",
+            "| reveal data:", (_G.ZGV and _G.ZGV.Foglight and _G.ZGV.Foglight.DataProvider.data) and "Zygor Foglight" or "none (explored areas only)")
     else
         M.UI:Toggle()
     end
