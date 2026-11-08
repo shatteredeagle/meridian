@@ -149,6 +149,7 @@ end
 function Overlay:RefreshMarkers()
     for _, src in ipairs(Overlay.sources) do src.fn(self, self.canvas) end
     self:Rescale()
+    if M.db.focus then self:ApplyAlpha() end
 end
 
 -- Quest-giver markers for quests the player could accept now (needs the QuestieDB starter index).
@@ -190,7 +191,17 @@ Overlay.RegisterSource("turnins", turninSource)
 
 -- Tint and fade every pin. A highlighted quest (hover) is drawn bright, the rest are pushed back.
 function Overlay:ApplyAlpha()
-    local hl, base = self.highlight, M.db.opacity
+    local focus = M.db.focus
+    if not focus then
+        self.focusSet = nil
+    elseif not (self.focusSet and self.focusSet[focus]) then
+        self.focusSet = { [focus] = true }
+    end
+    local hl, base = self.highlight or self.focusSet, M.db.opacity
+    for _, m in ipairs(self.markers) do
+        local q = m.spec and m.spec.questID
+        m:SetAlpha((focus and q and q ~= focus) and 0.25 or 1)
+    end
     for _, p in ipairs(self.active) do
         local r, g, b = color(p.questID)
         local a = base

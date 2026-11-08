@@ -27,6 +27,7 @@ local OPTIONS = {
     { "check", "arrow", "Direction arrow" },
     { "choice", "arrowStyle", "Arrow style", { { 1, "Classic" }, { 2, "Bold" } } },
     { "slider", "wayArrive", "Waypoint arrival distance (yds)", 5, 60, 5, "%d" },
+    { "check", "superTrack", "Also super-track the picked quest (Blizzard arrow)" },
     { "check", "blizzWay", "Also set Blizzard's waypoint" },
     { "check", "claimWay", "Handle /way (needs reload; TomTom keeps it)", after = "reload" },
     { "header", "Minimap" },

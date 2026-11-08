@@ -13,3 +13,5 @@ Unreleased (all items untested in-client unless noted; see docs/test-checklist.m
 - Punchlist 5: Window scale (0.7-1.5, centre stays put), window opacity and a lock toggle (window, minimap and arrow positions; hides the resize grip) on the options page, plus Reset window. Quest list visibility was already saved (db.tracker).
 
 - Punchlist 6: Launcher button on Blizzard's minimap (left-click toggles the map, right-click opens options, drag moves it around the edge; can be turned off in options). Meridian's own minimap now shows a fixed N marker and your coordinates.
+
+- Punchlist 7: Super-track integration. Shift-click in the quest list also calls C_SuperTrack.SetSuperTrackedQuestID so Blizzard's arrow matches (option; clears with the arrow target). Ctrl-click focuses a quest: other quest areas and quest markers fade (Questie-style); the focused row is marked with >.

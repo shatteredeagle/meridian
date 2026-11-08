@@ -54,6 +54,7 @@ local function showTip(row)
             if o.finished then GameTooltip:AddLine(o.text, 0.5, 0.5, 0.5) else GameTooltip:AddLine(o.text, 1, 0.82, 0) end
         end
     end
+    GameTooltip:AddLine("Shift-click: point arrow (and Blizzard's marker). Ctrl-click: focus.", 0.6, 0.6, 0.6, true)
     if not Tracker.overlay.questPos[row.questID] then
         GameTooltip:AddLine("No known location on this map", 1, 0.3, 0.3)
     end
@@ -95,13 +96,24 @@ function Tracker:Row(i)
             M.db.target = (M.db.target ~= r.questID) and r.questID or nil
             M.Way:SetActive(nil)
             M.Arrow.areas = nil
+            Tracker:SuperTrack(M.db.target)
             M:Print(M.db.target and ("Arrow target: " .. r.title) or "Arrow target: nearest quest")
+        elseif IsControlKeyDown() then
+            M.db.focus = (M.db.focus ~= r.questID) and r.questID or nil
+            M:Print(M.db.focus and ("Focus: " .. r.title) or "Focus off")
+            M.UI:RefreshAll()
         else
             Tracker:Focus(r.questID)
         end
     end)
     self.rows[i] = r
     return r
+end
+
+-- Keep Blizzard's own super-tracked quest (on-screen arrow and marker) in step with our arrow target.
+function Tracker:SuperTrack(questID)
+    if not (M.db.superTrack and C_SuperTrack and C_SuperTrack.SetSuperTrackedQuestID) then return end
+    C_SuperTrack.SetSuperTrackedQuestID(questID or 0)
 end
 
 function Tracker:Focus(questID)
@@ -121,7 +133,7 @@ function Tracker:Refresh()
             n = n + 1
             local r = self:Row(n)
             r.questID, r.title = info.questID, info.title or ("Quest " .. info.questID)
-            r.text:SetText(r.title)
+            r.text:SetText((M.db.focus == info.questID and "> " or "") .. r.title)
             r.swatch:SetColorTexture(M.Overlay.color(info.questID))
             r.check:SetChecked(not M.db.hidden[info.questID])
             r:Show()
