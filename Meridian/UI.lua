@@ -239,6 +239,7 @@ function UI:Create()
     gap()
     add("gear", "Options", "Opacity, marker size, arrow, minimap and more. Also /mm config.", function() M.Options:Open() end)
 
+    M.Search:Create(tb)
     self:AttachMarker(f, c)
     self:CreateReadout(f, c)
     M.Tracker:Create(f, c, self.overlay)

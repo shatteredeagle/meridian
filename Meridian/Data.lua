@@ -239,3 +239,14 @@ function Data:NextInChain(id)
     local ok, v = pcall(fn, id)
     if ok and v and v ~= 0 then return v end
 end
+
+-- Where a quest can be picked up, from the starter index: array of {map, x, y, npc}. Empty until the index is built.
+function Data:StarterLocations(questID)
+    local out = {}
+    for ui, list in pairs(self.starters or {}) do
+        for _, s in ipairs(list) do
+            if s[1] == questID then out[#out + 1] = { map = ui, x = s[2], y = s[3], npc = s[4] } end
+        end
+    end
+    return out
+end

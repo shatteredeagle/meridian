@@ -15,6 +15,7 @@ Data.lua
 Tooltips.lua
 Overlay.lua
 Waypoints.lua
+Search.lua
 UI.lua
 Tracker.lua
 Mini.lua

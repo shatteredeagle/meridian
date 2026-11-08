@@ -71,25 +71,36 @@ local function mapName(id)
     return info and info.name
 end
 
--- Every named zone-level map on the player's continent and the world's continents.
-function Way:Resolve(name)
+-- Named maps on the player's continent and the world's continents, as {name, id}. Continents only when asked.
+function Way:MapList(withContinents)
     local maps, seen = {}, {}
+    local function add(id, name)
+        if id and name and not seen[id] then
+            seen[id] = true
+            maps[#maps + 1] = { name = name, id = id }
+        end
+    end
     local function addKids(parent)
         for _, k in ipairs(C_Map.GetMapChildrenInfo(parent, nil, true) or {}) do
-            if not seen[k.mapID] and k.mapType ~= Enum.UIMapType.Continent then
-                seen[k.mapID] = true
-                maps[#maps + 1] = { name = k.name, id = k.mapID }
-            end
+            if k.mapType ~= Enum.UIMapType.Continent then add(k.mapID, k.name) end
         end
     end
     local here = C_Map.GetBestMapForUnit("player")
     local cont = here and M.UI.continentOf(here)
-    if cont then addKids(cont) end
-    for _, root in ipairs({ 946, 947 }) do -- cosmic / Azeroth roots; harmless if absent
-        for _, k in ipairs(C_Map.GetMapChildrenInfo(root, Enum.UIMapType.Continent, true) or {}) do addKids(k.mapID) end
+    if cont then
+        if withContinents then add(cont, mapName(cont)) end
+        addKids(cont)
     end
-    return Way.matchName(name, maps)
+    for _, root in ipairs({ 946, 947 }) do -- cosmic / Azeroth roots; harmless if absent
+        for _, k in ipairs(C_Map.GetMapChildrenInfo(root, Enum.UIMapType.Continent, true) or {}) do
+            if withContinents then add(k.mapID, k.name) end
+            addKids(k.mapID)
+        end
+    end
+    return maps
 end
+
+function Way:Resolve(name) return Way.matchName(name, self:MapList()) end
 
 local function blizzardPoint(map, x, y)
     if UiMapPoint and UiMapPoint.CreateFromCoordinates then return UiMapPoint.CreateFromCoordinates(map, x, y) end

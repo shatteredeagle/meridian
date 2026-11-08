@@ -190,3 +190,21 @@ local hx = Pd.panDelta(0.6, 0, 1, 100)
 assert(hx > -25 and hx < 0, "squared response is gentle")
 assert(Pd.cycle(nil, 3, 1) == 1 and Pd.cycle(nil, 3, -1) == 3 and Pd.cycle(3, 3, 1) == 1 and Pd.cycle(1, 3, -1) == 3 and Pd.cycle(2, 0, 1) == nil, "cycle")
 print("controller ok")
+
+-- search ranking
+local SM = { Overlay = { RegisterSource = function() end } }
+assert(loadfile("Meridian/Search.lua"))("Meridian", SM)
+local Se = SM.Search
+assert(Se.score("wolf", "Wolf") == 100 and Se.score("wo", "Wolf") == 80 and Se.score("pack", "Wolf Pack") == 60 and Se.score("olf", "Wolf") == 40, "score tiers")
+assert(Se.score("zzz", "Wolf") == nil and Se.score("", "Wolf") == nil, "score miss")
+local items = {
+    { kind = "quest", name = "Wolves of the Pack" }, { kind = "zone", name = "Wolf Hollow" },
+    { kind = "npc", name = "Wolf Tender" }, { kind = "quest", name = "Wolf" }, { kind = "quest", name = "Boars" },
+}
+local ranked = Se.rank("wolf", items, 10)
+assert(#ranked == 3 and ranked[1].name == "Wolf", "exact first")
+assert(ranked[2].kind == "zone" and ranked[3].kind == "npc", "kind order within a tier")
+assert(#Se.rank("wolf", items, 2) == 2, "limit")
+assert(Se.rank("  wolf  ", items, 10)[1].name == "Wolf", "trims")
+assert(Se.rowText({ kind = "quest", name = "Wolf", level = 5 }) == "[Quest] Wolf (5)" and Se.rowText({ kind = "zone", name = "X" }) == "[Zone] X", "row text")
+print("search ok")

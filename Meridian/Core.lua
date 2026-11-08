@@ -56,6 +56,13 @@ SlashCmdList.MERIDIAN = function(raw)
         M.Arrow:Toggle()
     elseif msg == "givers" then
         M.UI:ToggleGivers()
+    elseif msg == "find" or msg == "search" then
+        M.UI.frame:Show()
+        M.Search.box:SetText(rest)
+        M.Search.box:SetFocus()
+    elseif msg == "here" then
+        M.UI.frame:Show()
+        M.Search:Here()
     elseif msg == "pad" then
         M.db.controller = not M.db.controller
         M.Pad:Apply()
