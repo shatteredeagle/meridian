@@ -31,9 +31,19 @@ function Tracker:Create(host, canvas, overlay)
     if sl.Low then sl.Low:SetText("") end
     if sl.High then sl.High:SetText("") end
     sl:SetScript("OnValueChanged", function(_, v)
+        if self.syncing then return end
         M.db.opacity = v
-        overlay:ApplyAlpha()
+        M.UI:ApplySettings()
     end)
+    self.slider = sl
+end
+
+-- Keep the panel slider in step when opacity changes elsewhere (options page).
+function Tracker:SyncSlider()
+    if not self.slider then return end
+    self.syncing = true
+    self.slider:SetValue(M.db.opacity)
+    self.syncing = nil
 end
 
 local function showTip(row)

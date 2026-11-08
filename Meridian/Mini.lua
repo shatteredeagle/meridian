@@ -35,6 +35,7 @@ function UI:CreateMini()
         local point, _, rel, x, y = f:GetPoint()
         M.db.miniPos = { point, rel, x, y }
     end)
+    mini.grab = grab
     grab.tex = grab:CreateTexture(nil, "OVERLAY")
     grab.tex:SetAllPoints()
     grab.tex:SetColorTexture(1, 1, 1, 0.12)
@@ -62,6 +63,18 @@ function UI:CreateMini()
         end
     end)
     f:SetShown(M.db.mini)
+end
+
+-- Size and zoom from settings (live).
+function UI:ApplyMini()
+    local mini = self.mini
+    local s = M.db.miniSize
+    mini.frame:SetSize(s, s)
+    mini.grab:SetWidth(s - 30)
+    if mini.canvas.mapID and mini.canvas.zoom ~= M.db.miniZoom and mini.zoomApplied ~= M.db.miniZoom then
+        mini.zoomApplied = M.db.miniZoom
+        mini.canvas:SetZoom(M.db.miniZoom)
+    end
 end
 
 function UI:ToggleMini()

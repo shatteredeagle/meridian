@@ -1,7 +1,7 @@
 local ADDON, M = ...
 _G.Meridian = M
 
-M.defaults = { zoomMin = 0.5, zoomMax = 4, opacity = 0.75, reveal = "full", overlays = true, tracker = true, mini = false, miniSize = 220, miniZoom = 1.5, miniRound = true, avail = false, turnin = true, greyRange = 7, arrow = false, blizzWay = true, claimWay = true, wayArrive = 10, iconScale = 1, width = 900, height = 600 }
+M.defaults = { zoomMin = 0.5, zoomMax = 4, opacity = 0.75, reveal = "full", overlays = true, tracker = true, mini = false, miniSize = 220, miniZoom = 1.5, miniRound = true, avail = false, turnin = true, greyRange = 7, arrow = false, blizzWay = true, claimWay = true, wayArrive = 10, arrowStyle = 1, iconScale = 1, width = 900, height = 600 }
 
 local function initDB()
     MeridianDB = MeridianDB or {}
@@ -32,6 +32,7 @@ f:SetScript("OnEvent", function(_, event, name)
     elseif event == "PLAYER_LOGIN" then
         M.UI:Create()
         M.Way:Init()
+        M.Options:Register()
     end
 end)
 
@@ -42,6 +43,8 @@ SlashCmdList.MERIDIAN = function(raw)
     local msg = cmd:lower()
     if msg == "way" then
         M.Way:Slash(rest)
+    elseif msg == "config" or msg == "options" or msg == "settings" then
+        M.Options:Open()
     elseif msg == "reset" then
         M.UI:ResetView()
     elseif msg == "arrow" then

@@ -48,6 +48,8 @@ ICONS = {
     "arrow": union(tri(.5, .1, .82, .52, .18, .52), box(.4, .5, .6, .88)),
     "list": union(*[union(disc(.2, y, .055), line(.34, y, .84, y, .075)) for y in (.25, .5, .75)]),
     "minimap": union(ring(.5, .5, .38, .08), disc(.5, .5, .08), line(.5, .12, .5, .22, .07)),
+    "gear": union(ring(.5, .5, .27, .14), *[line(.5 + .3 * math.cos(a * math.pi / 4), .5 + .3 * math.sin(a * math.pi / 4),
+                                          .5 + .43 * math.cos(a * math.pi / 4), .5 + .43 * math.sin(a * math.pi / 4), .14) for a in range(8)]),
     "close": union(line(.24, .24, .76, .76, .095), line(.76, .24, .24, .76, .095)),
 }
 

@@ -7,3 +7,5 @@ Unreleased (all items untested in-client unless noted; see docs/test-checklist.m
 - Punchlist 2: Turn-in markers. Green "?" pin (own silhouette, not just colour) at the finisher NPC/object of every completed log quest, from QuestieDB finishedBy (guarded if the DB lacks it). The arrow now points completed quests at their hand-in. /mm turnins toggles.
 
 - Punchlist 3: Key bindings (Bindings.xml, header Meridian): toggle map, minimap, arrow, quest list, center on player. New UI:CenterOnPlayer shared with the Find me button.
+
+- Punchlist 4: Options page (Options.lua): opacity, marker size, reveal default, quest area/giver/turn-in toggles, grey range, arrow on/style/arrival distance, Blizzard waypoint mirror, /way claim, minimap on/size/zoom/shape. Registers via Settings.RegisterCanvasLayoutCategory if present, else InterfaceOptions_AddCategory, else opens its own window. Reachable from the new gear toolbar icon and /mm config. Settings apply live (UI:ApplySettings); arrow has a classic and a bold style. Other modules extend the page with Options.Add.

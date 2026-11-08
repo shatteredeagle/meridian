@@ -184,6 +184,8 @@ function UI:Create()
         function() self:ToggleTracker() end, function() return M.db.tracker end)
     add("minimap", "Minimap", "A small map that follows you.",
         function() self:ToggleMini() end, function() return M.db.mini end)
+    gap()
+    add("gear", "Options", "Opacity, marker size, arrow, minimap and more. Also /mm config.", function() M.Options:Open() end)
 
     self:AttachMarker(f, c)
     self:CreateReadout(f, c)
@@ -230,6 +232,24 @@ end
 -- Re-read every toggle's state into its button.
 function UI:SyncToolbar()
     for _, t in ipairs(self.toggles or {}) do t[1]:SetActive(t[2]()) end
+end
+
+-- Apply saved settings to the live frames. `after`: "map" re-reads pins, "rebuild" redraws map art, "reload" nothing more.
+function UI:ApplySettings(after)
+    self.overlay:ApplyAlpha()
+    if self.mini then self.mini.overlay:ApplyAlpha() end
+    if M.Tracker.SyncSlider then M.Tracker:SyncSlider() end
+    self.overlay:Rescale()
+    if self.mini then self.mini.overlay:Rescale(); self:ApplyMini() end
+    M.Arrow:ApplyStyle()
+    self.mini.frame:SetShown(M.db.mini)
+    if M.db.arrow ~= M.Arrow.frame:IsShown() then M.Arrow.frame:SetShown(M.db.arrow); M.Arrow.areas = nil end
+    if after == "rebuild" then
+        self.canvas:Rebuild()
+        if self.mini then self.mini.canvas:Rebuild() end
+    end
+    if after == "map" or after == "rebuild" then self:RefreshAll() end
+    self:SyncToolbar()
 end
 
 function UI:RefreshAll()

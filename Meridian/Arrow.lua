@@ -26,9 +26,10 @@ function Arrow:Create(overlay)
     f.tex = f:CreateTexture(nil, "ARTWORK")
     f.tex:SetAllPoints()
     f.tex:SetTexture("Interface\\Minimap\\MinimapArrow")
+    self.frame = f
+    self:ApplyStyle()
     f.text = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     f.text:SetPoint("TOP", f, "BOTTOM", 0, -2)
-    self.frame = f
     f:SetShown(M.db.arrow)
 
     local acc, since = 0, 0
@@ -43,6 +44,18 @@ function Arrow:Create(overlay)
     ev:RegisterEvent("QUEST_LOG_UPDATE")
     ev:RegisterEvent("ZONE_CHANGED_NEW_AREA")
     ev:SetScript("OnEvent", function() self.areas = nil end)
+end
+
+-- 1 = Blizzard's minimap arrow, 2 = Meridian's bold arrow glyph (tinted gold).
+function Arrow:ApplyStyle()
+    local f = self.frame
+    if M.db.arrowStyle == 2 then
+        f.tex:SetTexture("Interface\\AddOns\\Meridian\\Media\\icons\\arrow")
+        f.tex:SetVertexColor(1, 0.82, 0.2)
+    else
+        f.tex:SetTexture("Interface\\Minimap\\MinimapArrow")
+        f.tex:SetVertexColor(1, 1, 1)
+    end
 end
 
 -- Areas of all logged quests on the player's continent: {questID, title, zone, x, y}.
