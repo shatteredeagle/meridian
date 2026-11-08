@@ -275,6 +275,8 @@ function Tracker:Refresh()
         return pos and math.sqrt((pos[1] - ppx) ^ 2 + (pos[2] - ppy) ^ 2) or nil
     end)
     local rows = Tracker.buildRows(list, mode, M.db.collapsed)
+    self.orderIds = {} -- quests in display order, for controller cycling
+    for _, item in ipairs(rows) do if item.entry then self.orderIds[#self.orderIds + 1] = item.entry.questID end end
     self.sortButton:SetText("Sort: " .. (SORT_NAMES[mode] or mode))
 
     local visible = math.max(5, math.floor(((self.panel:GetHeight() or 0) - 24 - 52) / rowH()))

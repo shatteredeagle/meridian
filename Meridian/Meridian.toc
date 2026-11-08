@@ -20,4 +20,5 @@ Tracker.lua
 Mini.lua
 Arrow.lua
 Options.lua
+Controller.lua
 Launcher.lua

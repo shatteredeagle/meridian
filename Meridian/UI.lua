@@ -323,6 +323,7 @@ function UI:ApplySettings(after)
     if self.mini then self.mini.overlay:ApplyAlpha() end
     if M.Tracker.SyncSlider then M.Tracker:SyncSlider() end
     M.Launcher:Apply()
+    M.Pad:Apply()
     self.overlay:Rescale()
     if self.mini then self.mini.overlay:Rescale(); self:ApplyMini() end
     M.Arrow:ApplyStyle()

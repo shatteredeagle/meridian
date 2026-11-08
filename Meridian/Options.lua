@@ -22,6 +22,7 @@ local OPTIONS = {
     { "choice", "palette", "Colours", { { "default", "Standard" }, { "cb", "Colour-blind safe" } }, after = "map" },
     { "slider", "fontScale", "Text size", 0.9, 1.6, 0.1, "%.1fx", after = "map" },
     { "check", "contrast", "High contrast (outlined text, white borders)" },
+    { "check", "controller", "Controller support (experimental)", after = "pad" },
     { "header", "Window" },
     { "slider", "scale", "Window scale", 0.7, 1.5, 0.05, "%.2fx" },
     { "slider", "alpha", "Window opacity", 0.3, 1, 0.05, "%.2f" },

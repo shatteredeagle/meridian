@@ -175,3 +175,18 @@ local gr = O.markerColor("give", "cb")
 local gd = O.markerColor("give", "default")
 assert(gr ~= gd, "marker palettes differ")
 print("palette ok")
+
+-- controller math
+local PM = { Math = Math }
+assert(loadfile("Meridian/Controller.lua"))("Meridian", PM)
+local Pd = PM.Pad
+local dx0, dy0 = Pd.panDelta(0.1, 0.1, 0.1, 600)
+assert(dx0 == 0 and dy0 == 0, "dead zone")
+local dx1, dy1 = Pd.panDelta(1, 0, 0.1, 600)
+eq(dx1, -60, "full right pans canvas left"); eq(dy1, 0, "no vertical")
+local _, dy2 = Pd.panDelta(0, 1, 0.5, 600)
+eq(dy2, 300, "full up moves canvas down")
+local hx = Pd.panDelta(0.6, 0, 1, 100)
+assert(hx > -25 and hx < 0, "squared response is gentle")
+assert(Pd.cycle(nil, 3, 1) == 1 and Pd.cycle(nil, 3, -1) == 3 and Pd.cycle(3, 3, 1) == 1 and Pd.cycle(1, 3, -1) == 3 and Pd.cycle(2, 0, 1) == nil, "cycle")
+print("controller ok")
