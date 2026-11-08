@@ -83,6 +83,8 @@ function Tracker:Row(i)
     r:SetScript("OnClick", function()
         if IsShiftKeyDown() then
             M.db.target = (M.db.target ~= r.questID) and r.questID or nil
+            M.Way:SetActive(nil)
+            M.Arrow.areas = nil
             M:Print(M.db.target and ("Arrow target: " .. r.title) or "Arrow target: nearest quest")
         else
             Tracker:Focus(r.questID)

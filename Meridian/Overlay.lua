@@ -39,37 +39,62 @@ function Overlay:New(canvas)
 end
 
 local MAX_MARKERS = 500
+local PINS = "Interface\\AddOns\\Meridian\\Media\\pins\\"
+function Overlay.pin(name) return PINS .. name end
 
--- Giver marker: a frame so it can counter-scale and take a tooltip.
+-- Marker sources add pins (givers, turn-ins, waypoints, ...) after the areas are drawn.
+-- Each is fn(overlay, canvas) and must return at once when its feature is off, so unused modules cost nothing.
+Overlay.sources = {}
+function Overlay.RegisterSource(name, fn) Overlay.sources[#Overlay.sources + 1] = { name = name, fn = fn } end
+
+-- Marker: a button so it can counter-scale, take a tooltip and be clicked.
 function Overlay:AcquireMarker()
     local m = table.remove(self.markerPool)
     if not m then
-        m = CreateFrame("Frame", nil, self.canvas.pinLayer)
-        m:SetSize(14, 14)
-        m:EnableMouse(true)
+        m = CreateFrame("Button", nil, self.canvas.pinLayer)
+        m:RegisterForClicks("AnyUp")
         m.tex = m:CreateTexture(nil, "OVERLAY")
         m.tex:SetAllPoints()
-        m.tex:SetTexture("Interface\\GossipFrame\\AvailableQuestIcon")
         m:SetScript("OnEnter", function(s)
             self.markerHover = true
+            local sp = s.spec
             GameTooltip:SetOwner(s, "ANCHOR_RIGHT")
-            GameTooltip:SetText(s.name or "Quest", 1, 0.82, 0)
-            if s.level then GameTooltip:AddLine("Level " .. s.level, 1, 1, 1) end
+            GameTooltip:SetText(sp.title or "", sp.r or 1, sp.g or 0.82, sp.b or 0)
+            for _, l in ipairs(sp.lines or {}) do GameTooltip:AddLine(l, 1, 1, 1, true) end
+            if sp.hint then GameTooltip:AddLine(sp.hint, 0.6, 0.6, 0.6, true) end
             GameTooltip:Show()
         end)
         m:SetScript("OnLeave", function() self.markerHover = nil; GameTooltip:Hide() end)
+        m:SetScript("OnClick", function(s, btn) if s.spec and s.spec.onClick then s.spec.onClick(s, btn) end end)
     end
     m:SetFrameLevel(self.canvas.pinLayer:GetFrameLevel() + 10)
     m:Show()
     return m
 end
 
+-- spec: x, y (zone-normalized), pin (texture name), size, r/g/b (tint, also the tooltip title colour),
+-- title, lines, hint, onClick(marker, button).
+function Overlay:AddMarker(zoneID, spec)
+    if #self.markers >= MAX_MARKERS then return end
+    local px, py = self.canvas:ZoneToCanvas(zoneID, spec.x, spec.y)
+    if not px then return end
+    local m = self:AcquireMarker()
+    m.spec, m.px, m.py = spec, px, py
+    m.base = spec.size or 16
+    m.tex:SetTexture(PINS .. spec.pin)
+    m.tex:SetVertexColor(spec.r or 1, spec.g or 1, spec.b or 1)
+    self.markers[#self.markers + 1] = m
+    return m
+end
+
 function Overlay:Rescale()
     local s = 1 / self.canvas.zoom
+    local k = M.db.iconScale or 1
     for _, m in ipairs(self.markers) do
-        m:SetScale(s)
+        m:SetSize(m.base, m.base)
+        m:SetScale(s * k)
         m:ClearAllPoints()
-        m:SetPoint("CENTER", self.canvas.pinLayer, "TOPLEFT", m.px / s, -m.py / s)
+        m:SetPoint("CENTER", self.canvas.pinLayer, "TOPLEFT", m.px / (s * k), -m.py / (s * k))
     end
 end
 
@@ -98,7 +123,7 @@ function Overlay:Refresh()
     local c = self.canvas
     if not c.mapID then return end
     self:Clear()
-    if not M.db.overlays then return self:RefreshGivers() end
+    if not M.db.overlays then return self:RefreshMarkers() end
     -- Prefer real quest areas (QuestieDB); fall back to Blizzard's single-point markers.
     local useDB = M.Data:Available()
     for zoneID, rect in pairs(c.zones) do
@@ -118,11 +143,16 @@ function Overlay:Refresh()
         end
     end
     self:ApplyAlpha()
-    self:RefreshGivers()
+    self:RefreshMarkers()
+end
+
+function Overlay:RefreshMarkers()
+    for _, src in ipairs(Overlay.sources) do src.fn(self, self.canvas) end
+    self:Rescale()
 end
 
 -- Quest-giver markers for quests the player could accept now (needs the QuestieDB starter index).
-function Overlay:RefreshGivers()
+local function giverSource(self, c)
     if not (M.db.avail and M.Data:Available()) then return end
     if not M.Data.starters then
         if not M.Data.building then
@@ -131,18 +161,15 @@ function Overlay:RefreshGivers()
         end
         return
     end
-    local c, state = self.canvas, M.Data:PlayerState()
+    local state = M.Data:PlayerState()
     for zoneID in pairs(c.zones) do
         for _, g in ipairs(M.Data:Available(zoneID, state)) do
-            if #self.markers >= MAX_MARKERS then return self:Rescale() end
-            local m = self:AcquireMarker()
-            m.px, m.py = c:ZoneToCanvas(zoneID, g.x, g.y)
-            m.name, m.level = g.name, g.level
-            self.markers[#self.markers + 1] = m
+            self:AddMarker(zoneID, { x = g.x, y = g.y, pin = "give", size = 16, r = 1, g = 0.85, b = 0.1,
+                title = g.name or "Quest", lines = { "Level " .. (g.level or "?") }, kind = "give", questID = g.questID })
         end
     end
-    self:Rescale()
 end
+Overlay.RegisterSource("givers", giverSource)
 
 
 -- Tint and fade every pin. A highlighted quest (hover) is drawn bright, the rest are pushed back.

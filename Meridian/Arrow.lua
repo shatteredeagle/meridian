@@ -69,7 +69,14 @@ function Arrow:Update()
     local pp = zone and C_Map.GetPlayerMapPosition(zone, "player")
     local cont = zone and M.UI.continentOf(zone)
     if not (pp and cont) then return f.text:SetText("") end
-    self.areas = self.areas or self:CollectAreas(cont)
+    local wp = M.Way:Active()
+    local cands
+    if wp then
+        cands = { { way = wp, zone = wp.map, x = wp.x, y = wp.y, title = wp.title or "Waypoint" } }
+    else
+        self.areas = self.areas or self:CollectAreas(cont)
+        cands = self.areas
+    end
 
     local px, py = pp:GetXY()
     local me, world = M.WorldPos(zone, px, py)
@@ -80,8 +87,8 @@ function Arrow:Update()
     local ax, sx, ay, sy = Math.worldAxes(p00, p10, p01)
 
     local best, bestD
-    for _, a in ipairs(self.areas) do
-        if not M.db.target or a.questID == M.db.target then
+    for _, a in ipairs(cands) do
+        if a.way or not M.db.target or a.questID == M.db.target then
             local t, w = M.WorldPos(a.zone, a.x, a.y)
             if t and w == world then
                 local dx, dy = (t[ax] - me[ax]) * sx, (t[ay] - me[ay]) * sy
@@ -93,6 +100,10 @@ function Arrow:Update()
     if not best then
         f.tex:SetAlpha(0.3)
         return f.text:SetText("No quest area nearby")
+    end
+    if best.a.way and bestD < M.db.wayArrive then
+        M:Print("Arrived at " .. best.a.title)
+        return M.Way:Remove(best.a.way)
     end
     f.tex:SetAlpha(1)
     f.tex:SetRotation(Math.wrap(Math.bearing(best.dx, best.dy) - (GetPlayerFacing() or 0)))

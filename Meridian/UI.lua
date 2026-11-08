@@ -197,6 +197,9 @@ function UI:Create()
     c.view:SetScript("OnMouseUp", function(_, btnName)
         local d = c.dragging
         c.dragging = nil
+        if btnName == "LeftButton" and d and IsControlKeyDown() and math.abs(c.offX - d.ox) + math.abs(c.offY - d.oy) < 4 then
+            return M.Way:AddFromCursor(c) -- Ctrl-click drops a waypoint
+        end
         if btnName == "LeftButton" and d then
             local now = GetTime()
             if self.lastClick and now - self.lastClick < 0.3 and math.abs(c.offX - d.ox) + math.abs(c.offY - d.oy) < 4 then

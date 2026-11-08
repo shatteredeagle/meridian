@@ -51,17 +51,68 @@ ICONS = {
     "close": union(line(.24, .24, .76, .76, .095), line(.76, .24, .24, .76, .095)),
 }
 
+def arc(cx, cy, r, a0, a1, w=0.1):
+    """Part of a ring between angles a0..a1 (degrees, 0 = east, clockwise on screen)."""
+    def f(x, y):
+        if abs(math.hypot(x - cx, y - cy) - r) > w / 2: return False
+        a = math.degrees(math.atan2(y - cy, x - cx)) % 360
+        return (a - a0) % 360 <= (a1 - a0) % 360
+    return f
+def star(cx, cy, ro, ri, n=5):
+    pts = [(cx + (ro if i % 2 == 0 else ri) * math.sin(math.pi * i / n),
+            cy - (ro if i % 2 == 0 else ri) * math.cos(math.pi * i / n)) for i in range(2 * n)]
+    return union(*[tri(cx, cy, *pts[i], *pts[(i + 1) % (2 * n)]) for i in range(2 * n)])
+
+# Map pins: a white fill with a black outline (tinted by vertex color in-game; the outline stays dark).
+# Each has a distinct silhouette so type never depends on colour alone.
+PINS = {
+    "way": union(disc(.5, .36, .24), tri(.28, .5, .72, .5, .5, .94)),            # teardrop
+    "give": union(line(.5, .16, .5, .56, .2), disc(.5, .8, .1)),                  # !
+    "turnin": union(arc(.5, .33, .2, 180, 90, .17), line(.5, .53, .5, .62, .17), disc(.5, .84, .1)),  # ?
+    "taxi": union(tri(.5, .1, .9, .86, .5, .66), tri(.5, .1, .1, .86, .5, .66)),  # arrowhead
+    "rare": star(.5, .52, .44, .19),
+    "poi": union(tri(.5, .08, .92, .5, .08, .5), tri(.5, .92, .92, .5, .08, .5)),  # diamond
+    "party": union(box(.2, .2, .8, .8)),                                           # square
+}
+
+def write_tga(path, rows):
+    # TGA: bottom-left origin, so write rows bottom-up
+    hdr = struct.pack("<BBBHHBHHHHBB", 0, 0, 2, 0, 0, 0, 0, 0, S, S, 32, 8)
+    with open(path, "wb") as f:
+        f.write(hdr + b"".join(reversed(rows)))
+
+def cover(shape, px, py, grow=0.0):
+    hits = 0
+    for i in range(SS):
+        for j in range(SS):
+            x, y = (px + (i + .5) / SS) / S, (py + (j + .5) / SS) / S
+            if grow:
+                hit = any(shape(x + grow * math.cos(a * math.pi / 4), y + grow * math.sin(a * math.pi / 4)) for a in range(8)) or shape(x, y)
+            else:
+                hit = shape(x, y)
+            hits += hit
+    return hits / (SS * SS)
+
 os.makedirs(OUT, exist_ok=True)
 for name, shape in ICONS.items():
     rows = []
     for py in range(S):
         row = bytearray()
         for px in range(S):
-            n = sum(shape((px + (i + .5) / SS) / S, (py + (j + .5) / SS) / S) for i in range(SS) for j in range(SS))
-            row += bytes((255, 255, 255, round(255 * n / (SS * SS))))
+            row += bytes((255, 255, 255, round(255 * cover(shape, px, py))))
         rows.append(bytes(row))
-    # TGA: bottom-left origin, so write rows bottom-up
-    hdr = struct.pack("<BBBHHBHHHHBB", 0, 0, 2, 0, 0, 0, 0, 0, S, S, 32, 8)
-    with open(f"{OUT}/{name}.tga", "wb") as f:
-        f.write(hdr + b"".join(reversed(rows)))
-print("wrote", len(ICONS), "icons")
+    write_tga(f"{OUT}/{name}.tga", rows)
+
+PIN_OUT = "Meridian/Media/pins"
+os.makedirs(PIN_OUT, exist_ok=True)
+for name, shape in PINS.items():
+    rows = []
+    for py in range(S):
+        row = bytearray()
+        for px in range(S):
+            fill, outer = cover(shape, px, py), cover(shape, px, py, 0.05)
+            v = 255 if fill > 0 else 0
+            row += bytes((v, v, v, round(255 * max(fill, outer))))
+        rows.append(bytes(row))
+    write_tga(f"{PIN_OUT}/{name}.tga", rows)
+print("wrote", len(ICONS), "icons and", len(PINS), "pins")

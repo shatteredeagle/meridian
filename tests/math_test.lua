@@ -74,3 +74,28 @@ assert(not D.eligible(q{ single = { 11, 12 } }, P), "single prereq none met")
 assert(not D.eligible(q{ exclusive = { 10 } }, P), "exclusive done")
 assert(D.anyBit(5, 4) and not D.anyBit(5, 2), "anyBit")
 print("eligibility ok")
+
+-- waypoints: /way parsing, formatting, zone-name matching
+local WM = { Overlay = { RegisterSource = function() end } }
+assert(loadfile("Meridian/Waypoints.lua"))("Meridian", WM)
+local P = WM.Way.parse
+local r = P("52.3 41.2")
+eq(r.x, 0.523, "way x"); eq(r.y, 0.412, "way y"); assert(not r.zone and not r.title, "plain way")
+r = P("Elwynn Forest 52, 41 Goldshire inn")
+assert(r.zone == "Elwynn Forest" and r.title == "Goldshire inn", "zone and title")
+eq(r.x, 0.52, "zone x")
+r = P("#37 10 20")
+assert(r.map == 37 and not r.zone, "map id form"); eq(r.y, 0.2, "map id y")
+assert(P("clear").cmd == "clear" and P("RESET").cmd == "clear" and P("").cmd == "help" and P("list").cmd == "list", "commands")
+assert(not P("52"), "needs two coords")
+assert(not P("150 20"), "out of range")
+r = P("(0.5, 0.25)")
+eq(r.x, 0.5, "fraction x"); eq(r.y, 0.25, "fraction y")
+assert(WM.Way.format("Elwynn Forest", 0.523, 0.412) == "/way Elwynn Forest 52.3 41.2", "format")
+assert(WM.Way.format(nil, 0.5, 0.5) == "/way 50.0 50.0", "format bare")
+local maps = { { name = "Stormwind City", id = 1 }, { name = "Elwynn Forest", id = 2 }, { name = "Northern Elwynn Pass", id = 3 } }
+assert(WM.Way.matchName("elwynn forest", maps) == 2, "exact")
+assert(WM.Way.matchName("storm", maps) == 1, "prefix")
+assert(WM.Way.matchName("pass", maps) == 3, "substring")
+assert(WM.Way.matchName("zzz", maps) == nil, "no match")
+print("waypoints ok")

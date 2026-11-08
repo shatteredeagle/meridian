@@ -1,7 +1,7 @@
 local ADDON, M = ...
 _G.Meridian = M
 
-M.defaults = { zoomMin = 0.5, zoomMax = 4, opacity = 0.75, reveal = "full", overlays = true, tracker = true, mini = false, miniSize = 220, miniZoom = 1.5, miniRound = true, avail = false, greyRange = 7, arrow = false, width = 900, height = 600 }
+M.defaults = { zoomMin = 0.5, zoomMax = 4, opacity = 0.75, reveal = "full", overlays = true, tracker = true, mini = false, miniSize = 220, miniZoom = 1.5, miniRound = true, avail = false, greyRange = 7, arrow = false, blizzWay = true, claimWay = true, wayArrive = 10, iconScale = 1, width = 900, height = 600 }
 
 local function initDB()
     MeridianDB = MeridianDB or {}
@@ -9,6 +9,7 @@ local function initDB()
         if MeridianDB[k] == nil then MeridianDB[k] = v end
     end
     MeridianDB.hidden = MeridianDB.hidden or {}
+    MeridianDB.waypoints = MeridianDB.waypoints or {}
     M.db = MeridianDB
 end
 
@@ -22,14 +23,18 @@ f:SetScript("OnEvent", function(_, event, name)
         initDB()
     elseif event == "PLAYER_LOGIN" then
         M.UI:Create()
+        M.Way:Init()
     end
 end)
 
 SLASH_MERIDIAN1 = "/meridian"
 SLASH_MERIDIAN2 = "/mm"
-SlashCmdList.MERIDIAN = function(msg)
-    msg = (msg or ""):lower()
-    if msg == "reset" then
+SlashCmdList.MERIDIAN = function(raw)
+    local cmd, rest = (raw or ""):match("^(%S*)%s*(.-)%s*$")
+    local msg = cmd:lower()
+    if msg == "way" then
+        M.Way:Slash(rest)
+    elseif msg == "reset" then
         M.UI:ResetView()
     elseif msg == "arrow" then
         M.Arrow:Toggle()
