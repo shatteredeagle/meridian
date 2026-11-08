@@ -1,7 +1,7 @@
 local ADDON, M = ...
 _G.Meridian = M
 
-M.defaults = { zoomMin = 0.5, zoomMax = 4, overlayAlpha = 0.25, width = 900, height = 600 }
+M.defaults = { zoomMin = 0.5, zoomMax = 4, overlayAlpha = 0.25, reveal = "full", width = 900, height = 600 }
 
 local function initDB()
     MeridianDB = MeridianDB or {}
@@ -30,6 +30,8 @@ SlashCmdList.MERIDIAN = function(msg)
     msg = (msg or ""):lower()
     if msg == "reset" then
         M.UI:ResetView()
+    elseif msg == "reveal" then
+        M.UI:ToggleReveal()
     elseif msg == "data" then
         M:Print("QuestieDB:", _G.LibQuestieDB and "found" or "missing",
             "| ZoneDB:", (_G.QuestieLoader and _G.QuestieLoader:ImportModule("ZoneDB")) and "found" or "missing",

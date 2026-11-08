@@ -42,3 +42,6 @@ print("geometry ok")
 local ax, sx, ay, sy = Math.worldAxes({1000, 500}, {1000, 100}, {400, 500})
 assert(ax == 2 and sx == -1 and ay == 1 and sy == -1, "worldAxes")
 print("axes ok")
+
+assert(Math.pow2(1) == 1 and Math.pow2(200) == 256 and Math.pow2(256) == 256 and Math.pow2(257) == 512, "pow2")
+print("pow2 ok")

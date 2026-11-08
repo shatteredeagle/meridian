@@ -46,12 +46,18 @@ function UI:Create()
     btn("-", 36, function() c:SetZoom(c.zoom / 1.4) end)
     btn("F", 64, function() c:Fit() end)
     btn("@", 92, function() self:GoToPlayer() end)
+    btn("R", 148, function() self:ToggleReveal() end)
     btn("Z", 120, function() self:GoToPlayer(true) end)
 
     local ev = CreateFrame("Frame")
     ev:RegisterEvent("QUEST_LOG_UPDATE")
     ev:RegisterEvent("QUEST_POI_UPDATE")
-    ev:SetScript("OnEvent", function() if f:IsShown() then M.Overlay:Refresh() end end)
+    ev:RegisterEvent("MAP_EXPLORATION_UPDATED")
+    ev:SetScript("OnEvent", function(_, event)
+        if not f:IsShown() then return end
+        if event == "MAP_EXPLORATION_UPDATED" then c:Rebuild() end
+        M.Overlay:Refresh()
+    end)
 
     f:SetScript("OnShow", function()
         if not c.mapID then self:GoToPlayer() end
@@ -86,6 +92,13 @@ function UI:GoToPlayer(zoneOnly)
         local px, py = self.canvas:ZoneToCanvas(zone, x, y)
         if px then self.canvas:CenterOnCanvas(px, py) end
     end
+end
+
+function UI:ToggleReveal()
+    M.db.reveal = M.db.reveal == "full" and "explored" or "full"
+    M:Print("Map reveal:", M.db.reveal == "full" and "fully revealed" or "explored areas only")
+    self.canvas:Rebuild()
+    M.Overlay:Refresh()
 end
 
 function UI:ResetView() self.canvas:Fit() end

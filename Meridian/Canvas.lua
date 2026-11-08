@@ -51,10 +51,11 @@ function Canvas:New(parent)
     local canvas = CreateFrame("Frame", nil, view)
     canvas:SetPoint("TOPLEFT")
     self.view, self.canvas = view, canvas
-    self.tiles, self.zoom, self.offX, self.offY = {}, 1, 0, 0
+    self.zoneFrames, self.zoom, self.offX, self.offY = {}, 1, 0, 0
     self.cw, self.ch = 1, 1
     self.pinLayer = CreateFrame("Frame", nil, canvas)
     self.pinLayer:SetAllPoints()
+    self.pinLayer:SetFrameLevel(canvas:GetFrameLevel() + 500)
 
     view:SetScript("OnMouseWheel", function(_, delta) self:OnWheel(delta) end)
     view:SetScript("OnMouseDown", function(_, btn) if btn == "LeftButton" then self:BeginDrag() end end)
@@ -125,30 +126,84 @@ end
 
 local YARDS_TO_PX = 0.35
 
--- Draw one zone's art layer into the canvas rect {x,y,w,h}. `n` is the running tile index (draw order).
-function Canvas:DrawZone(uiMapID, rect, n)
+-- Smallest power of two >= n (explored-overlay texture files are padded to this).
+function Math.pow2(n)
+    local p = 1
+    while p < n do p = p * 2 end
+    return p
+end
+
+local TILE = 256
+
+local function getTex(list, frame, layer, n)
+    local t = list[n]
+    if not t then
+        t = frame:CreateTexture(nil, layer)
+        list[n] = t
+    end
+    return t
+end
+
+-- Draw one zone's art into the canvas rect {x,y,w,h} inside its own frame (frame level = draw order).
+-- In "explored" mode the base art is dimmed and Blizzard's explored overlays are drawn at full brightness.
+function Canvas:DrawZone(uiMapID, rect, zi)
+    local f = self.zoneFrames[zi]
+    if not f then
+        f = CreateFrame("Frame", nil, self.canvas)
+        f.tiles, f.fog = {}, {}
+        self.zoneFrames[zi] = f
+    end
+    f:SetFrameLevel(self.canvas:GetFrameLevel() + zi)
+    f:SetAllPoints()
+    f:Show()
+    for _, t in ipairs(f.tiles) do t:Hide() end
+    for _, t in ipairs(f.fog) do t:Hide() end
+
     local layers = C_Map.GetMapArtLayers(uiMapID)
     local layer = layers and layers[1]
     local files = layer and C_Map.GetMapArtLayerTextures(uiMapID, 1)
-    if not files then return n end
+    if not files then return end
     local k = rect.w / layer.layerWidth
     local tw, th = layer.tileWidth * k, layer.tileHeight * k
     local cols = math.ceil(layer.layerWidth / layer.tileWidth)
+    local explored = M.db.reveal == "explored"
+    local dim = explored and 0.3 or 1
     for i, file in ipairs(files) do
-        n = n + 1
-        local t = self.tiles[n]
-        if not t then
-            t = self.canvas:CreateTexture(nil, "BACKGROUND")
-            self.tiles[n] = t
-        end
+        local t = getTex(f.tiles, f, "BACKGROUND", i)
         local col, row = (i - 1) % cols, math.floor((i - 1) / cols)
         t:SetSize(tw, th)
         t:ClearAllPoints()
         t:SetPoint("TOPLEFT", rect.x + col * tw, -(rect.y + row * th))
         t:SetTexture(file)
+        t:SetVertexColor(dim, dim, dim)
         t:Show()
     end
-    return n
+    if not explored then return end
+
+    local n = 0
+    for _, ov in ipairs(C_MapExplorationInfo.GetExploredMapTextures(uiMapID) or {}) do
+        local wide, tall = math.ceil(ov.textureWidth / TILE), math.ceil(ov.textureHeight / TILE)
+        for j = 1, tall do
+            for c = 1, wide do
+                local idx = (j - 1) * wide + c
+                local fid = ov.fileDataIDs[idx]
+                if fid then
+                    local pw = c < wide and TILE or ((ov.textureWidth % TILE == 0) and TILE or ov.textureWidth % TILE)
+                    local ph = j < tall and TILE or ((ov.textureHeight % TILE == 0) and TILE or ov.textureHeight % TILE)
+                    local fw, fh = Math.pow2(pw), Math.pow2(ph)
+                    n = n + 1
+                    local t = getTex(f.fog, f, "ARTWORK", n)
+                    t:SetTexture(fid, nil, nil, "TRILINEAR")
+                    t:SetTexCoord(0, pw / fw, 0, ph / fh)
+                    t:SetVertexColor(1, 1, 1)
+                    t:SetSize(pw * k, ph * k)
+                    t:ClearAllPoints()
+                    t:SetPoint("TOPLEFT", rect.x + (ov.offsetX + (c - 1) * TILE) * k, -(rect.y + (ov.offsetY + (j - 1) * TILE) * k))
+                    t:Show()
+                end
+            end
+        end
+    end
 end
 
 local function worldPos(uiMapID, nx, ny)
@@ -189,11 +244,11 @@ function Canvas:BuildContinent(contID)
     table.sort(corners, function(a, b) return a.area > b.area end) -- big zones behind small ones
     self.cw, self.ch = (maxx - minx) * YARDS_TO_PX, (maxy - miny) * YARDS_TO_PX
     self.canvas:SetSize(self.cw, self.ch)
-    local n = 0
-    for _, c in ipairs(corners) do
+    for zi, c in ipairs(corners) do
         self.zones[c.id] = c.rect
-        n = self:DrawZone(c.id, c.rect, n)
+        self:DrawZone(c.id, c.rect, zi)
     end
+    self.zoneCount = #corners
     return true
 end
 
@@ -204,12 +259,22 @@ function Canvas:BuildSingle(uiMapID)
     self.canvas:SetSize(self.cw, self.ch)
     local rect = { x = 0, y = 0, w = self.cw, h = self.ch }
     self.zones[uiMapID] = rect
-    self:DrawZone(uiMapID, rect, 0)
+    self:DrawZone(uiMapID, rect, 1)
+    self.zoneCount = 1
+end
+
+-- Redraw art (e.g. after a reveal-mode change) without moving the view.
+function Canvas:Rebuild()
+    if not self.mapID then return end
+    local z, x, y = self.zoom, self.offX, self.offY
+    self:SetMap(self.mapID)
+    self.zoom = z
+    self:SetOffset(x, y)
 end
 
 function Canvas:SetMap(uiMapID)
     self.mapID = uiMapID
-    for _, t in ipairs(self.tiles) do t:Hide() end
+    for _, f in ipairs(self.zoneFrames) do f:Hide() end
     self.zones = {}
     local info = C_Map.GetMapInfo(uiMapID)
     if not (info and info.mapType == Enum.UIMapType.Continent and self:BuildContinent(uiMapID)) then
