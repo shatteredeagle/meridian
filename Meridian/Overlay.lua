@@ -56,15 +56,17 @@ function Overlay:Refresh()
     if not c.mapID then return end
     self:Clear()
     -- Prefer real quest areas (QuestieDB); fall back to Blizzard's single-point markers.
-    local provider = M.Data:Available() and function(id) return M.Data:Provider(id) end or self.providers.blizzard
-    do
-        for _, a in ipairs(provider(c.mapID)) do
+    local useDB = M.Data:Available()
+    for zoneID, rect in pairs(c.zones) do
+        local list = useDB and M.Data:Provider(zoneID) or self.providers.blizzard(zoneID)
+        for _, a in ipairs(list) do
+            local px, py = c:ZoneToCanvas(zoneID, a.x, a.y)
             local p = self:Acquire()
             local r, g, b = color(a.questID)
             p:SetVertexColor(r, g, b, M.db.overlayAlpha)
-            local d = a.radius * 2 * c.cw
+            local d = a.radius * 2 * math.abs(rect.w)
             p:SetSize(d, d)
-            c:PlacePin(p, a.x, a.y)
+            c:PlacePinAt(p, px, py)
             self.active[#self.active + 1] = p
         end
     end

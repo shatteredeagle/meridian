@@ -37,3 +37,8 @@ eq(a[1].x, 0.11, "cluster center x")
 assert(a[2].radius >= 0.015, "min radius")
 assert(#G2.Geometry.areas({}) == 0, "empty")
 print("geometry ok")
+
+-- world axes: map-x -> world y (negated), map-y -> world x (negated), like Azeroth
+local ax, sx, ay, sy = Math.worldAxes({1000, 500}, {1000, 100}, {400, 500})
+assert(ax == 2 and sx == -1 and ay == 1 and sy == -1, "worldAxes")
+print("axes ok")

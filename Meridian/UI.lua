@@ -46,6 +46,7 @@ function UI:Create()
     btn("-", 36, function() c:SetZoom(c.zoom / 1.4) end)
     btn("F", 64, function() c:Fit() end)
     btn("@", 92, function() self:GoToPlayer() end)
+    btn("Z", 120, function() self:GoToPlayer(true) end)
 
     local ev = CreateFrame("Frame")
     ev:RegisterEvent("QUEST_LOG_UPDATE")
@@ -63,14 +64,27 @@ function UI:SetMap(uiMapID)
     M.Overlay:Refresh()
 end
 
-function UI:GoToPlayer()
-    local id = C_Map.GetBestMapForUnit("player")
-    if not id then return M:Print("No map for current location.") end
-    self:SetMap(id)
-    local pos = C_Map.GetPlayerMapPosition(id, "player")
+-- Walk up the map tree to the continent containing uiMapID.
+local function continentOf(uiMapID)
+    local id = uiMapID
+    while id and id > 0 do
+        local info = C_Map.GetMapInfo(id)
+        if not info then return nil end
+        if info.mapType == Enum.UIMapType.Continent then return id end
+        id = info.parentMapID
+    end
+end
+
+-- zoneOnly=true shows just the player's zone instead of the stitched continent.
+function UI:GoToPlayer(zoneOnly)
+    local zone = C_Map.GetBestMapForUnit("player")
+    if not zone then return M:Print("No map for current location.") end
+    self:SetMap((not zoneOnly and continentOf(zone)) or zone)
+    local pos = C_Map.GetPlayerMapPosition(zone, "player")
     if pos then
         local x, y = pos:GetXY()
-        self.canvas:CenterOn(x, y)
+        local px, py = self.canvas:ZoneToCanvas(zone, x, y)
+        if px then self.canvas:CenterOnCanvas(px, py) end
     end
 end
 
