@@ -2,6 +2,7 @@
 ## Title: Meridian
 ## Notes: Pan/zoom world map with overlapping quest areas (Carbonite-style). Built for WoW Forever.
 ## Author: jesse
+## X-License: MIT
 ## Version: 0.1.0
 ## OptionalDeps: QuestieDB, Questie, ZygorGuidesViewerForever
 ## SavedVariables: MeridianDB

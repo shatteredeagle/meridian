@@ -39,3 +39,7 @@ Givers: yellow "!" markers for quests you could accept (level, race, class, prer
 - Localization: strings go through `L["..."]` (English text is the key; `Locales/enUS.lua` lists them, `Locales/deDE.lua` is a small unreviewed starter). Chat messages and some tooltips are not translated yet.
 - Dungeon maps (Dungeons.lua) are written but **untested in-client**: C_Map dungeon scan, `C_EncounterJournal.GetDungeonEntrancesForMap`, map group floor order and custom floor art are unverified; see the Dungeon maps section of `docs/test-checklist.md`. Pure parts (name matching, floor grouping, tile layout, entrance grouping, quest matching) are in the offline tests.
 - Not done: reputation/skill prerequisite checks for givers, per-quest colour picker, NPC search beyond the givers on visible maps, translated chat messages.
+
+## License
+
+MIT, see LICENSE.
