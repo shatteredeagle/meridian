@@ -30,6 +30,10 @@ SlashCmdList.MERIDIAN = function(msg)
     msg = (msg or ""):lower()
     if msg == "reset" then
         M.UI:ResetView()
+    elseif msg == "data" then
+        M:Print("QuestieDB:", _G.LibQuestieDB and "found" or "missing",
+            "| ZoneDB:", (_G.QuestieLoader and _G.QuestieLoader:ImportModule("ZoneDB")) and "found" or "missing",
+            "| source:", M.Data:Available() and "QuestieDB areas" or "Blizzard POIs")
     else
         M.UI:Toggle()
     end

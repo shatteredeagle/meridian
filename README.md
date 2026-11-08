@@ -10,4 +10,5 @@ Test offline: `lua tests/math_test.lua`
 ## Status
 - Done: canvas tiling, pan/zoom, resize, player centering, additive per-quest overlays from Blizzard POIs.
 - Unverified in-client: tile layout, `GetQuestsOnMap` behaviour. No WoW install on Orion.
-- Next: quest database provider (real area radii), then phase 3 (minimap, tracker).
+- Quest areas: read at runtime from the installed QuestieDB addon (nothing bundled, so no licensing issue). `/mm data` shows which source is active.
+- Next: phase 3 (minimap, tracker).

@@ -27,3 +27,13 @@ eq(x, 10, "small canvas free")
 local px, py = Math.toCanvas(0.5, 0.25, 1000, 800)
 eq(px, 500, "toCanvas x"); eq(py, 200, "toCanvas y")
 print("ok")
+
+-- geometry: two far-apart groups -> two areas; a lone point gets the minimum radius
+local G2 = {}
+assert(loadfile("Meridian/Geometry.lua"))("Meridian", G2)
+local a = G2.Geometry.areas({ {0.1, 0.1}, {0.12, 0.1}, {0.9, 0.9} })
+assert(#a == 2, "two clusters, got " .. #a)
+eq(a[1].x, 0.11, "cluster center x")
+assert(a[2].radius >= 0.015, "min radius")
+assert(#G2.Geometry.areas({}) == 0, "empty")
+print("geometry ok")
