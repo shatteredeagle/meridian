@@ -33,6 +33,8 @@ local OPTIONS = {
     { "check", "mini", "Show minimap" },
     { "slider", "miniSize", "Minimap size", 120, 400, 10, "%d" },
     { "slider", "miniZoom", "Minimap zoom", 0.5, 4, 0.1, "%.1f" },
+    { "check", "miniCoords", "Coordinates and N marker on minimap" },
+    { "check", "launcher", "Button on the Blizzard minimap", after = "launcher" },
     { "check", "miniRound", "Round minimap (needs reload)", after = "reload" },
 }
 Options.list = OPTIONS

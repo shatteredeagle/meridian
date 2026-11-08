@@ -19,3 +19,4 @@ Tracker.lua
 Mini.lua
 Arrow.lua
 Options.lua
+Launcher.lua

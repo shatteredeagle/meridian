@@ -44,6 +44,14 @@ function UI:CreateMini()
     re:SetPoint("TOPRIGHT", -2, -2)
     c.view:HookScript("OnMouseDown", function() mini.follow = false end)
 
+    -- north marker (the map never rotates) and player coordinates
+    local north = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    north:SetPoint("TOP", f, "TOP", 0, -12)
+    north:SetText("N")
+    local coords = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    coords:SetPoint("BOTTOM", f, "BOTTOM", 0, 8)
+    mini.north, mini.coords = north, coords
+
     local acc = 0
     f:SetScript("OnUpdate", function(_, dt)
         acc = acc + dt
@@ -56,6 +64,18 @@ function UI:CreateMini()
             c:SetMap(target)
             c:SetZoom(M.db.miniZoom)
             overlay:Refresh()
+        end
+        north:SetShown(M.db.miniCoords)
+        if M.db.miniCoords then
+            local pp = C_Map.GetPlayerMapPosition(zone, "player")
+            if pp then
+                local x, y = pp:GetXY()
+                coords:SetFormattedText("%.1f, %.1f", x * 100, y * 100)
+            else
+                coords:SetText("")
+            end
+        else
+            coords:SetText("")
         end
         if mini.follow then
             local px, py = UI:PlayerCanvasPos(c)

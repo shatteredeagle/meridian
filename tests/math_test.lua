@@ -104,3 +104,11 @@ print("waypoints ok")
 local rx, ry = Math.rescaleCenter(400, 300, 1, 1.25)
 eq(rx * 1.25, 400, "rescale x"); eq(ry * 1.25, 300, "rescale y")
 print("rescale ok")
+
+-- minimap button placement round-trips through angle
+local ex, ey = Math.edgePos(90, 50)
+eq(ex, 0, "edge x"); eq(ey, 50, "edge y")
+eq(Math.angleTo(ex, ey), 90, "angle back")
+ex, ey = Math.edgePos(225, 10)
+eq(Math.angleTo(ex, ey), -135, "angle wraps to -180..180")
+print("edge ok")
