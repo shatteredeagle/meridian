@@ -15,6 +15,7 @@ local OPTIONS = {
     { "choice", "reveal", L["Map art"], { { "full", L["Fully revealed"] }, { "explored", L["Explored only"] } }, after = "rebuild" },
     { "slider", "opacity", L["Quest area opacity"], 0.2, 1, 0.05, "%.2f" },
     { "slider", "iconScale", L["Marker size"], 0.6, 2, 0.1, "%.1fx" },
+    { "check", "blend", L["Blend zone edges on the continent map"], after = "rebuild" },
     { "check", "overlays", L["Show quest areas"], after = "map" },
     { "check", "avail", L["Show quest givers"], after = "map" },
     { "check", "turnin", L["Show turn-in markers"], after = "map" },

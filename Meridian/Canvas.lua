@@ -155,6 +155,7 @@ function Canvas:CenterOn(nx, ny)
 end
 
 local YARDS_TO_PX = 0.35
+local FEATHER = "Interface\\AddOns\\Meridian\\Media\\feather"
 
 -- Smallest power of two >= n (explored-overlay texture files are padded to this).
 function Math.pow2(n)
@@ -168,6 +169,7 @@ local function getTex(list, frame, layer, n, mask)
     if not t then
         t = frame:CreateTexture(nil, layer)
         if mask then t:AddMaskTexture(mask) end
+        if frame.feather then t:AddMaskTexture(frame.feather) end
         list[n] = t
     end
     return t
@@ -228,8 +230,15 @@ function Canvas:DrawZone(uiMapID, rect, zi)
     if not f then
         f = CreateFrame("Frame", nil, self.canvas)
         f.tiles, f.fog = {}, {}
+        f.feather = f:CreateMaskTexture()
         self.zoneFrames[zi] = f
     end
+    -- Stitched continent zones get a feathered edge mask so overlapping maps blend; elsewhere the mask is solid.
+    local blend = self.stitch and M.db.blend ~= false
+    f.feather:SetTexture(blend and FEATHER or "Interface\\Buttons\\WHITE8X8", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+    f.feather:ClearAllPoints()
+    f.feather:SetPoint("TOPLEFT", f, "TOPLEFT", rect.x, -rect.y)
+    f.feather:SetSize(rect.w, rect.h)
     f:SetFrameLevel(self.canvas:GetFrameLevel() + zi)
     f:SetAllPoints()
     f:Show()

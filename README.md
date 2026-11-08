@@ -26,7 +26,7 @@ Search: box at the right of the toolbar (or `/mm find text`) finds zones, quests
 Extra pins (options page, all off): flight paths (remembered when you open a flight master map; continent view), rares/treasures nearby, points of interest.
 Options: gear icon or `/mm config` (Settings panel when the client has one, else Interface Options, else a window of its own).
 
-Slash: `/mm` toggle, `/mm dungeons`, `/mm config`, `/mm way ...`, `/mm turnins`, `/mm mini`, `/mm arrow`, `/mm givers`, `/mm reveal`, `/mm round` (minimap shape, needs /reload), `/mm data`, `/mm reset`.
+Slash: `/mm` toggle, `/mm blend` (feather zone edges on the continent map), `/mm dungeons`, `/mm config`, `/mm way ...`, `/mm turnins`, `/mm mini`, `/mm arrow`, `/mm givers`, `/mm reveal`, `/mm round` (minimap shape, needs /reload), `/mm data`, `/mm reset`.
 Arrow: points to the nearest quest area on your continent; shift-click a quest in the list to target it (again to clear; Blizzard's super-tracked quest follows). Ctrl-click focuses a quest and fades the rest. Drag it to move.
 Turn-ins: green "?" markers at the hand-in for each completed quest (`/mm turnins` toggles); the arrow then points there.
 Givers: yellow "!" markers for quests you could accept (level, race, class, prerequisites checked). First use indexes QuestieDB in the background.
