@@ -67,6 +67,7 @@ def star(cx, cy, ro, ri, n=5):
             cy - (ro if i % 2 == 0 else ri) * math.cos(math.pi * i / n)) for i in range(2 * n)]
     return union(*[tri(cx, cy, *pts[i], *pts[(i + 1) % (2 * n)]) for i in range(2 * n)])
 
+ICONS["pin"] = lambda x, y: (disc(.5, .36, .26)(x, y) or tri(.27, .5, .73, .5, .5, .92)(x, y)) and not disc(.5, .36, .1)(x, y)  # map pin with a hole
 ICONS["dungeons"] = union(ICONS["dungeons"], arc(.5, .46, .3, 180, 360, .09), box(.42, .6, .58, .88))  # arched doorway
 
 # Map pins: a white fill with a black outline (tinted by vertex color in-game; the outline stays dark).

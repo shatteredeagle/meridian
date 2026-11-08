@@ -11,6 +11,9 @@
     <Binding name="MERIDIAN_CENTER">
         Meridian.UI:CenterOnPlayer()
     </Binding>
+    <Binding name="MERIDIAN_PIN">
+        Meridian.UI:TogglePin()
+    </Binding>
     <Binding name="MERIDIAN_LIST">
         Meridian.UI:ToggleTracker()
     </Binding>

@@ -2,7 +2,7 @@ local ADDON, M = ...
 local L = M.L
 _G.Meridian = M
 
-M.defaults = { zoomMin = 0.5, zoomMax = 4, opacity = 0.75, reveal = "full", overlays = true, tracker = true, mini = false, miniSize = 220, miniZoom = 1.5, miniRound = true, avail = false, turnin = true, greyRange = 7, arrow = false, blizzWay = true, claimWay = true, wayArrive = 10, arrowStyle = 1, iconScale = 1, sortMode = "zone", palette = "default", fontScale = 1, controller = false, pinTaxi = false, pinRare = false, pinPoi = false, dungeons = true, blend = true, contrast = false, superTrack = true, launcher = true, launcherAngle = 225, miniCoords = true, scale = 1, alpha = 1, locked = false, width = 900, height = 600 }
+M.defaults = { zoomMin = 0.5, zoomMax = 4, opacity = 0.75, reveal = "full", overlays = true, tracker = true, mini = false, miniSize = 220, miniZoom = 1.5, miniRound = true, avail = false, turnin = true, greyRange = 7, arrow = false, blizzWay = true, claimWay = true, wayArrive = 10, arrowStyle = 1, iconScale = 1, sortMode = "zone", palette = "default", fontScale = 1, controller = false, pinTaxi = false, pinRare = false, pinPoi = false, dungeons = true, blend = true, pin = false, contrast = false, superTrack = true, launcher = true, launcherAngle = 225, miniCoords = true, scale = 1, alpha = 1, locked = false, width = 900, height = 600 }
 
 local function initDB()
     MeridianDB = MeridianDB or {}
@@ -23,6 +23,7 @@ BINDING_NAME_MERIDIAN_MINIMAP = L["Toggle minimap"]
 BINDING_NAME_MERIDIAN_ARROW = L["Toggle direction arrow"]
 BINDING_NAME_MERIDIAN_CENTER = L["Center map on player"]
 BINDING_NAME_MERIDIAN_LIST = L["Toggle quest list"]
+BINDING_NAME_MERIDIAN_PIN = L["Pin map to character"]
 
 function M:Print(...) print("|cff66ccffMeridian|r:", ...) end
 
@@ -70,6 +71,8 @@ SlashCmdList.MERIDIAN = function(raw)
         M.db.controller = not M.db.controller
         M.Pad:Apply()
         M:Print("Controller support:", M.db.controller and "on" or "off")
+    elseif msg == "pin" then
+        M:Print("Map pinned to you:", M.UI:TogglePin() and "on" or "off")
     elseif msg == "blend" then
         M.db.blend = not M.db.blend
         M.UI.canvas:Rebuild()

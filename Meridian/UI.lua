@@ -105,6 +105,26 @@ function UI:CreateReadout(f, c)
             if pp then local x, y = pp:GetXY(); return self:WayText(zone, x, y) end
         end, me)
     end)
+    -- Pinned to the character: re-centre every tick, follow the player across zones, unpin when the user pans.
+    c.OnUserPan = function() if M.db.pin then M.db.pin = false; self:SyncToolbar() end end
+    local pacc, lastZone = 0, nil
+    f:HookScript("OnUpdate", function(_, dt)
+        if not M.db.pin or c.dragging then return end
+        pacc = pacc + dt
+        if pacc < 0.1 then return end
+        pacc = 0
+        local zone = C_Map.GetBestMapForUnit("player")
+        if zone and zone ~= lastZone then
+            lastZone = zone
+            if not c.zones[zone] then
+                local mid = c.mapID
+                local info = mid and mid > 0 and C_Map.GetMapInfo(mid)
+                self:GoToPlayer(not (info and info.mapType == Enum.UIMapType.Continent))
+            end
+        end
+        local px, py = self:PlayerCanvasPos(c)
+        if px then c:CenterOnCanvas(px, py) end
+    end)
     local acc = 0
     f:HookScript("OnUpdate", function(_, dt)
         acc = acc + dt
@@ -223,6 +243,8 @@ function UI:Create()
     add("continent", L["Continent view"], L["All zones stitched together, centered on you."], function() self:GoToPlayer() end)
     add("zone", L["Zone view"], L["Just the zone you are in. Double-click any zone on the continent to open it."], function() self:GoToPlayer(true) end)
     add("locate", L["Find me"], L["Center on your position."], function() self:CenterOnPlayer() end)
+    add("pin", L["Pin to me"], L["Keep the map centered on your character and follow you between zones. Dragging the map unpins it. Also /mm pin."],
+        function() self:TogglePin() end, function() return M.db.pin end)
     gap()
     add("reveal", L["Reveal map"], L["On: whole map revealed. Off: only areas you have explored."],
         function() self:ToggleReveal() end, function() return M.db.reveal == "full" end)
@@ -380,6 +402,17 @@ function UI:GoToPlayer(zoneOnly)
     self:SetMap((not zoneOnly and continentOf(zone)) or zone)
     local px, py = self:PlayerCanvasPos(self.canvas)
     if px then self.canvas:CenterOnCanvas(px, py) end
+end
+
+-- Pin the main map to the character (keeps it centred and follows between zones).
+function UI:TogglePin()
+    M.db.pin = not M.db.pin
+    if M.db.pin then
+        if not self.frame:IsShown() then self.frame:Show() end
+        self:CenterOnPlayer()
+    end
+    self:SyncToolbar()
+    return M.db.pin
 end
 
 -- Center the main map on the player (opens the window if needed).

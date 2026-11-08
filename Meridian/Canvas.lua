@@ -109,6 +109,7 @@ function Canvas:OnDrag()
     local d = self.dragging
     if not d then return end
     local cx, cy = self:CursorInView()
+    if self.OnUserPan and math.abs(cx - d.cx) + math.abs(cy - d.cy) > 4 then self.OnUserPan() end
     self:SetOffset(d.ox + (cx - d.cx), d.oy + (cy - d.cy))
 end
 
