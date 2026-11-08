@@ -2,7 +2,9 @@
 
 Carbonite-style pan/zoom map for WoW Forever: custom map window, overlapping quest areas, waypoints, quest list and minimap. Kept modular so unused features cost nothing (extra pins and controller support are off by default).
 
-Install: copy or symlink `Meridian/` into `World of Warcraft/_retail_/Interface/AddOns/` (Forever's folder; check yours).
+Install (friends): download `Meridian-<version>.zip` from the GitHub Releases page, unzip it into `World of Warcraft/_forever_/Interface/AddOns/` so you end up with `AddOns/Meridian/Meridian.toc`, then `/reload` and type `/mm`. Releases are built by CI when a `v*` tag is pushed (`git tag v0.1.2 && git push github v0.1.2`; a `-alpha`/`-beta` suffix marks a pre-release).
+
+Install (development): copy or symlink `Meridian/` into `World of Warcraft/_retail_/Interface/AddOns/` (Forever's folder; check yours).
 Reveal: `R` button or `/mm reveal` toggles fully revealed vs. your explored areas.
 Use: `/meridian` (or `/mm`) toggles the window; it opens on the continent zoomed to about one zone, centred on you and pinned (drag to unpin; option to turn this off). Wheel zooms at cursor, drag pans, `+ - F @` buttons zoom / fit / go to player.
 

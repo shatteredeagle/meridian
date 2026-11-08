@@ -1,0 +1,36 @@
+name: Release
+
+# Push a tag like v0.1.1 (or v0.1.1-beta, v0.2.0-alpha) to build Meridian-<version>.zip and attach it to a GitHub Release.
+# Tags with a "-" suffix are marked as pre-releases.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check the Lua still parses and the offline tests pass
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq lua5.1 zip
+          for f in Meridian/*.lua Meridian/Locales/*.lua; do luac5.1 -p "$f"; done
+          lua5.1 tests/math_test.lua
+      - name: Stamp the version from the tag and build the zip
+        run: |
+          VER="${GITHUB_REF_NAME#v}"
+          sed -i "s/^## Version: .*/## Version: $VER/" Meridian/Meridian.toc
+          sh tools/build_release.sh
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VER="${GITHUB_REF_NAME#v}"
+          PRE=""
+          case "$VER" in *-*) PRE="--prerelease" ;; esac
+          gh release create "$GITHUB_REF_NAME" "dist/Meridian-$VER.zip" $PRE \
+            --title "Meridian $VER" --generate-notes \
+            --notes "Unzip into World of Warcraft/_forever_/Interface/AddOns/ so you end up with AddOns/Meridian/Meridian.toc. Then /reload and type /mm."
