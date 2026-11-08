@@ -1,0 +1,17 @@
+<Bindings>
+    <Binding name="MERIDIAN_TOGGLE" header="MERIDIAN">
+        Meridian.UI:Toggle()
+    </Binding>
+    <Binding name="MERIDIAN_MINIMAP">
+        Meridian.UI:ToggleMini()
+    </Binding>
+    <Binding name="MERIDIAN_ARROW">
+        Meridian.Arrow:Toggle()
+    </Binding>
+    <Binding name="MERIDIAN_CENTER">
+        Meridian.UI:CenterOnPlayer()
+    </Binding>
+    <Binding name="MERIDIAN_LIST">
+        Meridian.UI:ToggleTracker()
+    </Binding>
+</Bindings>

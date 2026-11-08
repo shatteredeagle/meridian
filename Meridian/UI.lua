@@ -169,10 +169,7 @@ function UI:Create()
     gap()
     add("continent", "Continent view", "All zones stitched together, centered on you.", function() self:GoToPlayer() end)
     add("zone", "Zone view", "Just the zone you are in. Double-click any zone on the continent to open it.", function() self:GoToPlayer(true) end)
-    add("locate", "Find me", "Center on your position.", function()
-        local px, py = self:PlayerCanvasPos(c)
-        if px then c:CenterOnCanvas(px, py) else self:GoToPlayer() end
-    end)
+    add("locate", "Find me", "Center on your position.", function() self:CenterOnPlayer() end)
     gap()
     add("reveal", "Reveal map", "On: whole map revealed. Off: only areas you have explored.",
         function() self:ToggleReveal() end, function() return M.db.reveal == "full" end)
@@ -266,6 +263,13 @@ function UI:GoToPlayer(zoneOnly)
     self:SetMap((not zoneOnly and continentOf(zone)) or zone)
     local px, py = self:PlayerCanvasPos(self.canvas)
     if px then self.canvas:CenterOnCanvas(px, py) end
+end
+
+-- Center the main map on the player (opens the window if needed).
+function UI:CenterOnPlayer()
+    if not self.frame:IsShown() then self.frame:Show() end
+    local px, py = self:PlayerCanvasPos(self.canvas)
+    if px then self.canvas:CenterOnCanvas(px, py) else self:GoToPlayer() end
 end
 
 function UI:ToggleReveal()

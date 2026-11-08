@@ -13,6 +13,14 @@ local function initDB()
     M.db = MeridianDB
 end
 
+-- Key binding labels (Bindings.xml)
+BINDING_HEADER_MERIDIAN = "Meridian"
+BINDING_NAME_MERIDIAN_TOGGLE = "Toggle map"
+BINDING_NAME_MERIDIAN_MINIMAP = "Toggle minimap"
+BINDING_NAME_MERIDIAN_ARROW = "Toggle direction arrow"
+BINDING_NAME_MERIDIAN_CENTER = "Center map on player"
+BINDING_NAME_MERIDIAN_LIST = "Toggle quest list"
+
 function M:Print(...) print("|cff66ccffMeridian|r:", ...) end
 
 local f = CreateFrame("Frame")
