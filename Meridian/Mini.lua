@@ -48,8 +48,18 @@ function UI:CreateMini()
     local north = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     north:SetPoint("TOP", f, "TOP", 0, -12)
     north:SetText("N")
-    local coords = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    coords:SetPoint("BOTTOM", f, "BOTTOM", 0, 8)
+    local cbtn = CreateFrame("Button", nil, f)
+    cbtn:SetSize(70, 14)
+    cbtn:SetPoint("BOTTOM", f, "BOTTOM", 0, 8)
+    local coords = cbtn:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    coords:SetAllPoints()
+    cbtn:SetScript("OnClick", function()
+        UI:ClickCoords(function()
+            local zone = C_Map.GetBestMapForUnit("player")
+            local pp = zone and C_Map.GetPlayerMapPosition(zone, "player")
+            if pp then local x, y = pp:GetXY(); return UI:WayText(zone, x, y) end
+        end, cbtn)
+    end)
     mini.north, mini.coords = north, coords
 
     local acc = 0

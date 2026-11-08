@@ -62,10 +62,48 @@ function UI:UpdateMarker(c)
     m:Show()
 end
 
--- Bottom-left readout: zone name and map coordinates under the cursor.
+-- Text of the "/way" line for a position (zone name resolved from the map).
+function UI:WayText(uiMapID, x, y)
+    local info = uiMapID and C_Map.GetMapInfo(uiMapID)
+    return M.Way.format(info and info.name, x, y)
+end
+
+-- Click handler for a coordinate readout: copy box, or into chat with Shift.
+function UI:ClickCoords(getText, anchor)
+    local text = getText()
+    if not text then return end
+    if IsShiftKeyDown() then M.Widgets.ToChat(text, anchor) else M.Widgets.CopyBox(text, anchor) end
+end
+
+-- Bottom readouts: zone and map coordinates under the cursor (bottom-left), and your own (bottom-centre).
+-- Both are buttons: click copies "/way Zone x y", Shift-click puts it into chat. The cursor readout copies
+-- the last point the cursor was over the map, since the cursor is on the readout when you click it.
 function UI:CreateReadout(f, c)
-    local fs = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    fs:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 10, 6)
+    local function makeReadout(point, x)
+        local b = CreateFrame("Button", nil, f)
+        b:SetHeight(16)
+        b:SetPoint(point, f, point, x, 4)
+        b.fs = b:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+        b.fs:SetPoint("LEFT")
+        b:SetScript("OnEnter", function(s)
+            GameTooltip:SetOwner(s, "ANCHOR_TOP")
+            GameTooltip:SetText("Click: copy as /way", 1, 1, 1)
+            GameTooltip:AddLine("Shift-click: put it in the chat box", 0.75, 0.75, 0.75)
+            GameTooltip:Show()
+        end)
+        b:SetScript("OnLeave", function() GameTooltip:Hide() end)
+        return b
+    end
+    local cur = makeReadout("BOTTOMLEFT", 10)
+    local me = makeReadout("BOTTOM", 60)
+    cur:SetScript("OnClick", function() self:ClickCoords(function() return self.lastCursorWay end, cur) end)
+    me:SetScript("OnClick", function()
+        self:ClickCoords(function()
+            local zone = C_Map.GetBestMapForUnit("player")
+            local pp = zone and C_Map.GetPlayerMapPosition(zone, "player")
+            if pp then local x, y = pp:GetXY(); return self:WayText(zone, x, y) end
+        end, me)
+    end)
     local acc = 0
     f:HookScript("OnUpdate", function(_, dt)
         acc = acc + dt
@@ -76,10 +114,21 @@ function UI:CreateReadout(f, c)
         if px then id, x, y = c:ZoneAt(px, py) end
         if id then
             local info = C_Map.GetMapInfo(id)
-            fs:SetFormattedText("%s  %.1f, %.1f", info and info.name or id, x * 100, y * 100)
-        else
-            fs:SetText("")
+            cur.fs:SetFormattedText("%s  %.1f, %.1f", info and info.name or id, x * 100, y * 100)
+            self.lastCursorWay = self:WayText(id, x, y)
+        elseif not cur:IsMouseOver() then
+            cur.fs:SetText("")
         end
+        cur:SetWidth(math.max(1, cur.fs:GetStringWidth()))
+        local zone = C_Map.GetBestMapForUnit("player")
+        local pp = zone and C_Map.GetPlayerMapPosition(zone, "player")
+        if pp then
+            local mx, my = pp:GetXY()
+            me.fs:SetFormattedText("You: %.1f, %.1f", mx * 100, my * 100)
+        else
+            me.fs:SetText("")
+        end
+        me:SetWidth(math.max(1, me.fs:GetStringWidth()))
     end)
 end
 

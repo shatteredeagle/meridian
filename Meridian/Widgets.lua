@@ -72,3 +72,39 @@ function W.Separator(parent)
     t:SetColorTexture(1, 1, 1, 0.16)
     return t
 end
+
+-- A one-line box with the text pre-selected, so Ctrl-C copies it (WoW has no clipboard API).
+-- Shift-click paths use ChatFrame_OpenChat instead. Closes on Enter, Escape or focus loss.
+function W.CopyBox(text, anchor)
+    local box = W.copyBox
+    if not box then
+        box = CreateFrame("Frame", "MeridianCopyBox", UIParent, "BackdropTemplate")
+        W.Panel(box)
+        box:SetSize(280, 46)
+        box:SetFrameStrata("FULLSCREEN_DIALOG")
+        box.hint = box:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+        box.hint:SetPoint("TOPLEFT", 8, -6)
+        box.hint:SetText("Ctrl-C to copy, then Enter")
+        box.edit = CreateFrame("EditBox", nil, box)
+        box.edit:SetFontObject("ChatFontNormal")
+        box.edit:SetAutoFocus(false)
+        box.edit:SetPoint("TOPLEFT", 8, -20)
+        box.edit:SetPoint("BOTTOMRIGHT", -8, 4)
+        local function close() box:Hide() end
+        box.edit:SetScript("OnEscapePressed", close)
+        box.edit:SetScript("OnEnterPressed", close)
+        box.edit:SetScript("OnEditFocusLost", close)
+        W.copyBox = box
+    end
+    box:ClearAllPoints()
+    box:SetPoint("BOTTOM", anchor or UIParent, "TOP", 0, 4)
+    box:Show()
+    box.edit:SetText(text)
+    box.edit:SetFocus()
+    box.edit:HighlightText()
+end
+
+-- Put text into the chat input (shift-click convention); falls back to the copy box.
+function W.ToChat(text, anchor)
+    if ChatFrame_OpenChat then ChatFrame_OpenChat(text) else W.CopyBox(text, anchor) end
+end

@@ -10,7 +10,7 @@ Sizes: S under half a day, M ~1 day, L multi-day.
 6. [DONE] **Minimap launcher button + minimap tracking**: draggable button on Blizzard minimap (left-click map, right-click config) and a compass/coords text on Meridian's minimap. Size S.
 7. [DONE] **Super-track integration**: shift-click in the quest list also calls `C_SuperTrack.SetSuperTrackedQuestID`, so Blizzard's on-screen arrow agrees; "focus quest" fades other overlays (Questie). Size S.
 8. [DONE] **Quest list upgrades**: sort by zone/level/distance, collapse by zone, show completed state and objective progress inline, party members' progress in tooltips. Size M. API: `C_QuestLog.GetNumQuestLogEntries`, `GetQuestObjectives`; party via `C_QuestLog.IsUnitOnQuest`.
-9. **Cursor/player coordinates readout** on map and minimap (Mapster-style), click to copy as `/way`. Size S. API: `C_Map.GetPlayerMapPosition`.
+9. [DONE] **Cursor/player coordinates readout** on map and minimap (Mapster-style), click to copy as `/way`. Size S. API: `C_Map.GetPlayerMapPosition`.
 10. **Tooltip detail modifiers**: Shift for XP/rewards/prereqs, giver tooltip shows NPC name, level, quest chain. Size S-M.
 11. **Accessibility pass**: distinct shapes per marker type, optional colour-blind palette, font size option, high-contrast outlines, don't rely on colour for toggle state (add check/underline). Size M.
 12. **Controller support**: gamepad stick pan, triggers zoom, face buttons to cycle quests; needs focus handling for toolbar. Size L. API: gamepad query functions not found in MCP search; verify in client with wow-controller-support skill.

@@ -17,3 +17,5 @@ Unreleased (all items untested in-client unless noted; see docs/test-checklist.m
 - Punchlist 7: Super-track integration. Shift-click in the quest list also calls C_SuperTrack.SetSuperTrackedQuestID so Blizzard's arrow matches (option; clears with the arrow target). Ctrl-click focuses a quest: other quest areas and quest markers fade (Questie-style); the focused row is marked with >.
 
 - Punchlist 8: Quest list upgrades. Sort button cycles zone / level / distance (on the current map) / log order; zone mode groups by the log's zone headers with collapsible headers (remembered); rows show level and either done or objective progress as text (not colour alone); mouse-wheel scrolls; tooltips add level, zone and which party members are on the quest (C_QuestLog.IsUnitOnQuest; the API gives membership, not their objective counts).
+
+- Punchlist 9: Coordinate readouts. Main map: cursor coordinates (bottom-left) plus a new "You: x, y" readout (bottom-centre); minimap already shows yours. Click any readout to open a pre-selected box with "/way Zone x y" for Ctrl-C (WoW has no clipboard API); Shift-click puts it in the chat input instead.
