@@ -171,6 +171,22 @@ local function giverSource(self, c)
 end
 Overlay.RegisterSource("givers", giverSource)
 
+-- Turn-in markers: green "?" at the finisher of every completed quest in the log.
+local function turninSource(self, c)
+    if not (M.db.turnin and M.Data:Available()) then return end
+    for _, q in ipairs(M.Data:LogQuests()) do
+        if q.complete then
+            for zoneID in pairs(c.zones) do
+                for _, p in ipairs(M.Data:QuestFinishers(q.questID)[zoneID] or {}) do
+                    self:AddMarker(zoneID, { x = p[1], y = p[2], pin = "turnin", size = 18, r = 0.5, g = 1, b = 0.5,
+                        title = q.title or "Quest", lines = { "Ready to turn in" }, kind = "turnin", questID = q.questID })
+                end
+            end
+        end
+    end
+end
+Overlay.RegisterSource("turnins", turninSource)
+
 
 -- Tint and fade every pin. A highlighted quest (hover) is drawn bright, the rest are pushed back.
 function Overlay:ApplyAlpha()

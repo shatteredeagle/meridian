@@ -91,12 +91,28 @@ function Data:QuestAreasAll(questID)
     return result
 end
 
+local finCache = {} -- questID -> { [uiMapID] = { {x, y}, ... } }
+
+-- Where a quest is handed in, by map (QuestieDB finishedBy; empty when the database lacks it).
+function Data:QuestFinishers(questID)
+    local hit = finCache[questID]
+    if hit then return hit end
+    local db, zones = _G.LibQuestieDB, zoneDB()
+    local result = {}
+    if db and zones and db.Quest.finishedBy then
+        local fb = db.Quest.finishedBy(questID)
+        if fb then result = bucket(db, zones, fb[1] or {}, fb[2] or {}) end
+    end
+    finCache[questID] = result
+    return result
+end
+
 function Data:LogQuests()
     local out = {}
     for i = 1, C_QuestLog.GetNumQuestLogEntries() do
         local info = C_QuestLog.GetInfo(i)
         if info and not info.isHeader and info.questID then
-            out[#out + 1] = { questID = info.questID, title = info.title }
+            out[#out + 1] = { questID = info.questID, title = info.title, complete = C_QuestLog.IsComplete(info.questID) and true or false }
         end
     end
     return out

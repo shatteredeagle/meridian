@@ -1,7 +1,7 @@
 local ADDON, M = ...
 _G.Meridian = M
 
-M.defaults = { zoomMin = 0.5, zoomMax = 4, opacity = 0.75, reveal = "full", overlays = true, tracker = true, mini = false, miniSize = 220, miniZoom = 1.5, miniRound = true, avail = false, greyRange = 7, arrow = false, blizzWay = true, claimWay = true, wayArrive = 10, iconScale = 1, width = 900, height = 600 }
+M.defaults = { zoomMin = 0.5, zoomMax = 4, opacity = 0.75, reveal = "full", overlays = true, tracker = true, mini = false, miniSize = 220, miniZoom = 1.5, miniRound = true, avail = false, turnin = true, greyRange = 7, arrow = false, blizzWay = true, claimWay = true, wayArrive = 10, iconScale = 1, width = 900, height = 600 }
 
 local function initDB()
     MeridianDB = MeridianDB or {}
@@ -40,6 +40,10 @@ SlashCmdList.MERIDIAN = function(raw)
         M.Arrow:Toggle()
     elseif msg == "givers" then
         M.UI:ToggleGivers()
+    elseif msg == "turnins" then
+        M.db.turnin = not M.db.turnin
+        M.UI:RefreshAll()
+        M:Print("Turn-in markers:", M.db.turnin and "on" or "off")
     elseif msg == "round" then
         M.db.miniRound = not M.db.miniRound
         M:Print("Round minimap:", M.db.miniRound and "on" or "off", "- /reload to apply")

@@ -52,10 +52,11 @@ function Arrow:CollectAreas(continent)
     local zones = C_Map.GetMapChildrenInfo(continent, Enum.UIMapType.Zone, true) or {}
     for _, q in ipairs(M.Data:LogQuests()) do
         if not M.db.hidden[q.questID] then
-            local byZone = M.Data:QuestAreasAll(q.questID)
+            -- a finished quest points at its hand-in, an open one at its objectives
+            local byZone = q.complete and next(M.Data:QuestFinishers(q.questID)) and M.Data:QuestFinishers(q.questID) or M.Data:QuestAreasAll(q.questID)
             for _, z in ipairs(zones) do
                 for _, a in ipairs(byZone[z.mapID] or {}) do
-                    out[#out + 1] = { questID = q.questID, title = q.title, zone = z.mapID, x = a.x, y = a.y }
+                    out[#out + 1] = { questID = q.questID, title = q.title, zone = z.mapID, x = a.x or a[1], y = a.y or a[2] }
                 end
             end
         end
