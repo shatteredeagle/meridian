@@ -1,7 +1,7 @@
 local ADDON, M = ...
 _G.Meridian = M
 
-M.defaults = { zoomMin = 0.5, zoomMax = 4, opacity = 0.75, reveal = "full", overlays = true, tracker = true, mini = false, miniSize = 220, miniZoom = 1.5, miniRound = true, avail = false, turnin = true, greyRange = 7, arrow = false, blizzWay = true, claimWay = true, wayArrive = 10, arrowStyle = 1, iconScale = 1, sortMode = "zone", palette = "default", fontScale = 1, controller = false, contrast = false, superTrack = true, launcher = true, launcherAngle = 225, miniCoords = true, scale = 1, alpha = 1, locked = false, width = 900, height = 600 }
+M.defaults = { zoomMin = 0.5, zoomMax = 4, opacity = 0.75, reveal = "full", overlays = true, tracker = true, mini = false, miniSize = 220, miniZoom = 1.5, miniRound = true, avail = false, turnin = true, greyRange = 7, arrow = false, blizzWay = true, claimWay = true, wayArrive = 10, arrowStyle = 1, iconScale = 1, sortMode = "zone", palette = "default", fontScale = 1, controller = false, pinTaxi = false, pinRare = false, pinPoi = false, contrast = false, superTrack = true, launcher = true, launcherAngle = 225, miniCoords = true, scale = 1, alpha = 1, locked = false, width = 900, height = 600 }
 
 local function initDB()
     MeridianDB = MeridianDB or {}
@@ -11,6 +11,7 @@ local function initDB()
     MeridianDB.hidden = MeridianDB.hidden or {}
     MeridianDB.waypoints = MeridianDB.waypoints or {}
     MeridianDB.collapsed = MeridianDB.collapsed or {}
+    MeridianDB.taxi = MeridianDB.taxi or {}
     M.db = MeridianDB
 end
 
@@ -35,6 +36,7 @@ f:SetScript("OnEvent", function(_, event, name)
         M.UI:Create()
         M.Widgets.ApplyContrast()
         M.Pad:Apply()
+        M.Pins:Apply()
         M.Way:Init()
         M.Options:Register()
         M.Launcher:Create()

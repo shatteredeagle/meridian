@@ -292,6 +292,7 @@ function Canvas:BuildContinent(contID)
         minx, maxx = math.min(minx, c.x0, c.x1), math.max(maxx, c.x0, c.x1)
         miny, maxy = math.min(miny, c.y0, c.y1), math.max(maxy, c.y0, c.y1)
     end
+    self.stitch = { minx = minx, miny = miny, ax = ax, sx = sx, ay = ay, sy = sy }
     for _, c in ipairs(corners) do
         c.rect = { x = (c.x0 - minx) * YARDS_TO_PX, y = (c.y0 - miny) * YARDS_TO_PX,
                    w = (c.x1 - c.x0) * YARDS_TO_PX, h = (c.y1 - c.y0) * YARDS_TO_PX }
@@ -309,6 +310,7 @@ function Canvas:BuildContinent(contID)
 end
 
 function Canvas:BuildSingle(uiMapID)
+    self.stitch = nil
     local layers = C_Map.GetMapArtLayers(uiMapID)
     local layer = layers and layers[1]
     self.cw, self.ch = layer and layer.layerWidth or 1002, layer and layer.layerHeight or 668
@@ -365,6 +367,29 @@ function Canvas:ZoneToCanvas(uiMapID, nx, ny)
     local z = self.zones[uiMapID]
     if not z then return nil end
     return z.x + nx * z.w, z.y + ny * z.h
+end
+
+-- Any map's normalized position -> canvas px: a zone on the canvas directly, the stitched continent through
+-- world coordinates, or (zone canvas) a continent point converted into this zone. nil when it isn't on screen.
+function Canvas:PosToCanvas(uiMapID, nx, ny)
+    if self.zones[uiMapID] then return self:ZoneToCanvas(uiMapID, nx, ny) end
+    if uiMapID == self.mapID and self.stitch then
+        local wp = worldPos(uiMapID, nx, ny)
+        if not wp then return nil end
+        local s = self.stitch
+        return (wp[s.ax] * s.sx - s.minx) * YARDS_TO_PX, (wp[s.ay] * s.sy - s.miny) * YARDS_TO_PX
+    end
+    if self.mapID and self.zones[self.mapID] and C_Map.GetWorldPosFromMapPos and C_Map.GetMapPosFromWorldPos then
+        local cont, pos = C_Map.GetWorldPosFromMapPos(uiMapID, CreateVector2D(nx, ny))
+        if cont and pos then
+            local _, v = C_Map.GetMapPosFromWorldPos(cont, pos, self.mapID)
+            if v then
+                local x, y = v:GetXY()
+                if x >= 0 and x <= 1 and y >= 0 and y <= 1 then return self:ZoneToCanvas(self.mapID, x, y) end
+            end
+        end
+    end
+    return nil
 end
 
 function Canvas:PlacePinAt(pin, px, py)

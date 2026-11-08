@@ -325,6 +325,7 @@ function UI:ApplySettings(after)
     if M.Tracker.SyncSlider then M.Tracker:SyncSlider() end
     M.Launcher:Apply()
     M.Pad:Apply()
+    M.Pins:Apply()
     self.overlay:Rescale()
     if self.mini then self.mini.overlay:Rescale(); self:ApplyMini() end
     M.Arrow:ApplyStyle()
@@ -334,7 +335,7 @@ function UI:ApplySettings(after)
         self.canvas:Rebuild()
         if self.mini then self.mini.canvas:Rebuild() end
     end
-    if after == "map" or after == "rebuild" then self:RefreshAll() end
+    if after == "map" or after == "rebuild" or after == "pins" then self:RefreshAll() end
     self:SyncToolbar()
 end
 

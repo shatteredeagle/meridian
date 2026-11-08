@@ -208,3 +208,13 @@ assert(#Se.rank("wolf", items, 2) == 2, "limit")
 assert(Se.rank("  wolf  ", items, 10)[1].name == "Wolf", "trims")
 assert(Se.rowText({ kind = "quest", name = "Wolf", level = 5 }) == "[Quest] Wolf (5)" and Se.rowText({ kind = "zone", name = "X" }) == "[Zone] X", "row text")
 print("search ok")
+
+-- pin helpers
+local PinM = { Overlay = { RegisterSource = function() end } }
+assert(loadfile("Meridian/Pins.lua"))("Meridian", PinM)
+local ax_, ay_ = PinM.Pins.xy({ x = 0.2, y = 0.4 })
+eq(ax_, 0.2, "xy plain x"); eq(ay_, 0.4, "xy plain y")
+ax_, ay_ = PinM.Pins.xy({ GetXY = function() return 0.5, 0.6 end })
+eq(ax_, 0.5, "xy method"); eq(ay_, 0.6, "xy method y")
+assert(PinM.Pins.xy(nil) == nil and PinM.Pins.xy({}) == nil, "xy missing")
+print("pins ok")

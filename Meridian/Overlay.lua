@@ -101,7 +101,7 @@ end
 -- title, lines, hint, onClick(marker, button).
 function Overlay:AddMarker(zoneID, spec)
     if #self.markers >= MAX_MARKERS then return end
-    local px, py = self.canvas:ZoneToCanvas(zoneID, spec.x, spec.y)
+    local px, py = self.canvas:PosToCanvas(zoneID, spec.x, spec.y)
     if not px then return end
     local m = self:AcquireMarker()
     m.spec, m.px, m.py = spec, px, py
