@@ -187,15 +187,14 @@ function Way:Slash(msg)
 end
 
 -- Pins on every Meridian canvas (main map and minimap).
-Way.pinTint = { 0.35, 0.8, 1 }
 M.Overlay.RegisterSource("waypoints", function(self, c)
     local wps = list()
     if not wps or #wps == 0 then return end
     local active = Way:Active()
     for _, w in ipairs(wps) do
         if c.zones[w.map] then
-            local t = Way.pinTint
-            self:AddMarker(w.map, { x = w.x, y = w.y, pin = "way", size = w == active and 22 or 18, r = t[1], g = t[2], b = t[3],
+            local cr, cg, cb = M.Overlay.markerColor("way")
+            self:AddMarker(w.map, { x = w.x, y = w.y, pin = "way", size = w == active and 22 or 18, r = cr, g = cg, b = cb,
                 title = w.title or "Waypoint", lines = { Way.format(mapName(w.map), w.x, w.y) },
                 hint = "Left-click: point the arrow here. Right-click: remove.",
                 onClick = function(_, btn)

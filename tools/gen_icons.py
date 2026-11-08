@@ -50,6 +50,7 @@ ICONS = {
     "minimap": union(ring(.5, .5, .38, .08), disc(.5, .5, .08), line(.5, .12, .5, .22, .07)),
     "gear": union(ring(.5, .5, .27, .14), *[line(.5 + .3 * math.cos(a * math.pi / 4), .5 + .3 * math.sin(a * math.pi / 4),
                                           .5 + .43 * math.cos(a * math.pi / 4), .5 + .43 * math.sin(a * math.pi / 4), .14) for a in range(8)]),
+    "check": union(line(.14, .56, .4, .82, .16), line(.4, .82, .88, .2, .16)),
     "close": union(line(.24, .24, .76, .76, .095), line(.76, .24, .24, .76, .095)),
 }
 

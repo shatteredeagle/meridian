@@ -4,7 +4,7 @@ local ADDON, M = ...
 local Tracker = {}
 M.Tracker = Tracker
 
-local ROW_H = 18
+local function rowH() return math.max(18, math.floor((M.Widgets.fontSize or 11) + 7)) end
 local SORTS = { "zone", "level", "distance", "log" }
 local SORT_NAMES = { zone = "Zone", level = "Level", distance = "Distance", log = "Quest log" }
 
@@ -90,7 +90,7 @@ function Tracker:Create(host, canvas, overlay)
     p:SetWidth(230)
     p:SetPoint("TOPRIGHT", host.content, "TOPRIGHT", 0, 0)
     p:SetPoint("BOTTOMRIGHT", host.content, "BOTTOMRIGHT", 0, 0)
-    p.header = p:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    p.header = p:CreateFontString(nil, "OVERLAY", "MeridianFontGold")
     p.header:SetPoint("TOPLEFT", 8, -7)
     p.bg = p:CreateTexture(nil, "BACKGROUND")
     p.bg:SetAllPoints()
@@ -190,9 +190,6 @@ function Tracker:Row(i)
     local r = self.rows[i]
     if r then return r end
     r = CreateFrame("Button", nil, self.panel)
-    r:SetHeight(ROW_H)
-    r:SetPoint("TOPLEFT", 2, -24 - (i - 1) * ROW_H)
-    r:SetPoint("RIGHT", -2, 0)
     r.check = CreateFrame("CheckButton", nil, r, "UICheckButtonTemplate")
     r.check:SetSize(18, 18)
     r.check:SetPoint("LEFT")
@@ -203,7 +200,7 @@ function Tracker:Row(i)
     r.swatch = r:CreateTexture(nil, "ARTWORK")
     r.swatch:SetSize(8, 12)
     r.swatch:SetPoint("LEFT", r.check, "RIGHT", 0, 0)
-    r.text = r:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    r.text = r:CreateFontString(nil, "OVERLAY", "MeridianFontGold")
     r.text:SetJustifyH("LEFT")
     r.text:SetWordWrap(false)
     r:SetScript("OnEnter", function(s)
@@ -280,7 +277,7 @@ function Tracker:Refresh()
     local rows = Tracker.buildRows(list, mode, M.db.collapsed)
     self.sortButton:SetText("Sort: " .. (SORT_NAMES[mode] or mode))
 
-    local visible = math.max(5, math.floor(((self.panel:GetHeight() or 0) - 24 - 52) / ROW_H))
+    local visible = math.max(5, math.floor(((self.panel:GetHeight() or 0) - 24 - 52) / rowH()))
     self.scroll = math.max(0, math.min(self.scroll or 0, math.max(0, #rows - visible)))
     for slot = 1, visible do
         local item = rows[slot + self.scroll]
@@ -288,6 +285,10 @@ function Tracker:Refresh()
             if self.rows[slot] then self.rows[slot]:Hide() end
         else
             local r = self:Row(slot)
+            r:SetHeight(rowH())
+            r:ClearAllPoints()
+            r:SetPoint("TOPLEFT", 2, -24 - (slot - 1) * rowH())
+            r:SetPoint("RIGHT", -2, 0)
             r:Show()
             r.text:ClearAllPoints()
             if item.header then

@@ -12,7 +12,7 @@ Sizes: S under half a day, M ~1 day, L multi-day.
 8. [DONE] **Quest list upgrades**: sort by zone/level/distance, collapse by zone, show completed state and objective progress inline, party members' progress in tooltips. Size M. API: `C_QuestLog.GetNumQuestLogEntries`, `GetQuestObjectives`; party via `C_QuestLog.IsUnitOnQuest`.
 9. [DONE] **Cursor/player coordinates readout** on map and minimap (Mapster-style), click to copy as `/way`. Size S. API: `C_Map.GetPlayerMapPosition`.
 10. [DONE] **Tooltip detail modifiers**: Shift for XP/rewards/prereqs, giver tooltip shows NPC name, level, quest chain. Size S-M.
-11. **Accessibility pass**: distinct shapes per marker type, optional colour-blind palette, font size option, high-contrast outlines, don't rely on colour for toggle state (add check/underline). Size M.
+11. [DONE] **Accessibility pass**: distinct shapes per marker type, optional colour-blind palette, font size option, high-contrast outlines, don't rely on colour for toggle state (add check/underline). Size M.
 12. **Controller support**: gamepad stick pan, triggers zoom, face buttons to cycle quests; needs focus handling for toolbar. Size L. API: gamepad query functions not found in MCP search; verify in client with wow-controller-support skill.
 13. **Search/journey**: find a zone, NPC or quest by name and jump to it; "available quests in this zone" list. Size M.
 14. **Other pin sources (HandyNotes-style)**: flight paths, rares, vignettes, POIs with per-type toggles. Size L. API: `C_TaxiMap`, `C_Vignette`, `C_AreaPoiInfo`.

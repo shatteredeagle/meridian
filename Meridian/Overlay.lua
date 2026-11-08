@@ -20,14 +20,23 @@ Overlay.providers.blizzard = function(uiMapID)
     return out
 end
 
--- Stable per-quest hue so each quest's area is distinguishable.
-local function color(questID)
+-- Colour-blind-safe palette (Okabe-Ito), cycled by quest id.
+local OKABE = { { 0.9, 0.62, 0 }, { 0.34, 0.71, 0.91 }, { 0, 0.62, 0.45 }, { 0.94, 0.89, 0.26 },
+    { 0, 0.45, 0.7 }, { 0.84, 0.37, 0 }, { 0.8, 0.47, 0.65 }, { 0.75, 0.75, 0.75 } }
+
+-- Stable per-quest colour so each quest's area is distinguishable. palette: "cb" for colour-blind safe.
+function Overlay.paletteColor(palette, questID)
+    if palette == "cb" then
+        local c = OKABE[questID % #OKABE + 1]
+        return c[1], c[2], c[3]
+    end
     local h = (questID * 0.61803398875) % 1
     local i, f = math.floor(h * 6), h * 6 - math.floor(h * 6)
     local q, t = 1 - f, f
     local r, g, b = ({1, q, 0, 0, t, 1})[i % 6 + 1], ({t, 1, 1, q, 0, 0})[i % 6 + 1], ({0, 0, t, 1, 1, q})[i % 6 + 1]
     return r, g, b
 end
+local function color(questID) return Overlay.paletteColor(M.db and M.db.palette, questID) end
 Overlay.color = color
 
 function Overlay:New(canvas)
@@ -40,6 +49,17 @@ end
 
 local MAX_MARKERS = 500
 local PINS = "Interface\\AddOns\\Meridian\\Media\\pins\\"
+-- Marker tints per kind; the pin silhouettes already differ, the colours only help.
+local MARKER_COLORS = {
+    default = { give = { 1, 0.85, 0.1 }, turnin = { 0.5, 1, 0.5 }, way = { 0.35, 0.8, 1 }, taxi = { 0.6, 0.8, 1 }, rare = { 1, 0.5, 0.2 }, poi = { 0.9, 0.9, 0.5 }, party = { 0.5, 0.8, 1 } },
+    cb = { give = { 0.94, 0.89, 0.26 }, turnin = { 0, 0.62, 0.45 }, way = { 0.34, 0.71, 0.91 }, taxi = { 0, 0.45, 0.7 }, rare = { 0.84, 0.37, 0 }, poi = { 0.8, 0.47, 0.65 }, party = { 0.34, 0.71, 0.91 } },
+}
+function Overlay.markerColor(kind, palette)
+    local set = MARKER_COLORS[palette or (M.db and M.db.palette) or "default"] or MARKER_COLORS.default
+    local c = set[kind] or { 1, 1, 1 }
+    return c[1], c[2], c[3]
+end
+
 function Overlay.pin(name) return PINS .. name end
 
 -- Marker sources add pins (givers, turn-ins, waypoints, ...) after the areas are drawn.
@@ -171,7 +191,8 @@ local function giverSource(self, c)
     for zoneID in pairs(c.zones) do
         for _, g in ipairs(M.Data:Available(zoneID, state)) do
             local npc = g.npc
-            self:AddMarker(zoneID, { x = g.x, y = g.y, pin = "give", size = 16, r = 1, g = 0.85, b = 0.1,
+            local cr, cg, cb = Overlay.markerColor("give")
+            self:AddMarker(zoneID, { x = g.x, y = g.y, pin = "give", size = 16, r = cr, g = cg, b = cb,
                 title = g.name or "Quest", kind = "give", questID = g.questID,
                 lines = function()
                     local out = { "Level " .. (g.level or "?") }
@@ -195,7 +216,8 @@ local function turninSource(self, c)
         if q.complete then
             for zoneID in pairs(c.zones) do
                 for _, p in ipairs(M.Data:QuestFinishers(q.questID)[zoneID] or {}) do
-                    self:AddMarker(zoneID, { x = p[1], y = p[2], pin = "turnin", size = 18, r = 0.5, g = 1, b = 0.5,
+                    local cr, cg, cb = Overlay.markerColor("turnin")
+                    self:AddMarker(zoneID, { x = p[1], y = p[2], pin = "turnin", size = 18, r = cr, g = cg, b = cb,
                         title = q.title or "Quest", lines = { "Ready to turn in" }, kind = "turnin", questID = q.questID,
                         detail = function(tt) M.Tip.details(tt, q.questID, true) end })
                 end

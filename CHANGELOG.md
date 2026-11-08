@@ -21,3 +21,5 @@ Unreleased (all items untested in-client unless noted; see docs/test-checklist.m
 - Punchlist 9: Coordinate readouts. Main map: cursor coordinates (bottom-left) plus a new "You: x, y" readout (bottom-centre); minimap already shows yours. Click any readout to open a pre-selected box with "/way Zone x y" for Ctrl-C (WoW has no clipboard API); Shift-click puts it in the chat input instead.
 
 - Punchlist 10: Tooltip detail modifiers (Tooltips.lua). Hover shows a short tooltip; holding Shift (redraws live when pressed) adds XP/money/item rewards for logged quests (GetQuestLogReward*) and prerequisites, mutually exclusive quests and the next quest in the chain (QuestieDB, guarded). Giver tooltips now name the NPC/object and its level range.
+
+- Punchlist 11: Accessibility pass. Every marker type already has its own silhouette (teardrop, !, ?, arrowhead, star, diamond, square) with a black outline; new: colour-blind-safe palette (Okabe-Ito) for quest areas and markers, text size option (own Font objects), high-contrast mode (outlined text, opaque panels, white borders, brighter icons), and toggle buttons now show a check mark and underline as well as colour.

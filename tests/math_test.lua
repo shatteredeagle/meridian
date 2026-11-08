@@ -156,3 +156,22 @@ assert(Tip.chainLines({ single = { 10, 11 } }, nameOf)[1] == "After one of: Wolv
 assert(#Tip.chainLines({}, nameOf) == 0, "no chain")
 assert(Tip.levelRange(12, 14) == "12-14" and Tip.levelRange(12, 12) == "12" and Tip.levelRange(nil) == nil, "level range")
 print("tooltips ok")
+
+-- palettes
+local OM = {}
+assert(loadfile("Meridian/Overlay.lua"))("Meridian", OM)
+local O = OM.Overlay
+local r1, g1, b1 = O.paletteColor("cb", 1)
+local r9, g9, b9 = O.paletteColor("cb", 9)
+assert(r1 == r9 and g1 == g9 and b1 == b9, "cb palette cycles every 8")
+local ra = { O.paletteColor("cb", 0) }
+local rb = { O.paletteColor("cb", 1) }
+assert(ra[1] ~= rb[1] or ra[2] ~= rb[2], "cb neighbours differ")
+for id = 1, 50 do
+    local r, g, b = O.paletteColor("default", id)
+    assert(r >= 0 and r <= 1 and g >= 0 and g <= 1 and b >= 0 and b <= 1, "default palette range")
+end
+local gr = O.markerColor("give", "cb")
+local gd = O.markerColor("give", "default")
+assert(gr ~= gd, "marker palettes differ")
+print("palette ok")

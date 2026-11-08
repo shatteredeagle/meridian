@@ -28,7 +28,7 @@ function Arrow:Create(overlay)
     f.tex:SetTexture("Interface\\Minimap\\MinimapArrow")
     self.frame = f
     self:ApplyStyle()
-    f.text = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    f.text = f:CreateFontString(nil, "OVERLAY", "MeridianFontGold")
     f.text:SetPoint("TOP", f, "BOTTOM", 0, -2)
     f:SetShown(M.db.arrow)
 

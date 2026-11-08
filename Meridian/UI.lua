@@ -83,7 +83,7 @@ function UI:CreateReadout(f, c)
         local b = CreateFrame("Button", nil, f)
         b:SetHeight(16)
         b:SetPoint(point, f, point, x, 4)
-        b.fs = b:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+        b.fs = b:CreateFontString(nil, "OVERLAY", "MeridianFontWhite")
         b.fs:SetPoint("LEFT")
         b:SetScript("OnEnter", function(s)
             GameTooltip:SetOwner(s, "ANCHOR_TOP")
@@ -317,6 +317,7 @@ end
 
 -- Apply saved settings to the live frames. `after`: "map" re-reads pins, "rebuild" redraws map art, "reload" nothing more.
 function UI:ApplySettings(after)
+    M.Widgets.ApplyContrast()
     self:ApplyWindow()
     self.overlay:ApplyAlpha()
     if self.mini then self.mini.overlay:ApplyAlpha() end
