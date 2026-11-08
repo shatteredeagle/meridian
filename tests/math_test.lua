@@ -112,3 +112,30 @@ eq(Math.angleTo(ex, ey), 90, "angle back")
 ex, ey = Math.edgePos(225, 10)
 eq(Math.angleTo(ex, ey), -135, "angle wraps to -180..180")
 print("edge ok")
+
+-- quest list: progress text, labels, sorting, zone grouping
+local TM = {}
+assert(loadfile("Meridian/Tracker.lua"))("Meridian", TM)
+local T = TM.Tracker
+assert(T.progress({ { text = "a", finished = true }, { text = "b" }, { text = "" } }) == "1/2", "progress")
+assert(T.progress({}) == nil and T.progress(nil) == nil, "no objectives")
+assert(T.label({ title = "Wolves", level = 7, progress = "1/3" }) == "[7] Wolves  1/3", "label progress")
+assert(T.label({ title = "Wolves", level = 7, complete = true }) == "[7] Wolves - done", "label done")
+assert(T.label({ title = "Wolves" }) == "Wolves", "label bare")
+local function ents()
+    return { { idx = 1, title = "A", level = 9, zone = "Westfall", questID = 1 },
+             { idx = 2, title = "B", level = 5, zone = "Elwynn", questID = 2 },
+             { idx = 3, title = "C", level = 7, zone = "Westfall", questID = 3 },
+             { idx = 4, title = "D", level = 3, zone = "Elwynn", questID = 4 } }
+end
+local function ids(l) local o = {} for _, e in ipairs(l) do o[#o + 1] = e.title end return table.concat(o) end
+assert(ids(T.sortEntries(ents(), "zone")) == "DBCA", "sort zone then level")
+assert(ids(T.sortEntries(ents(), "level")) == "DBCA", "sort level")
+assert(ids(T.sortEntries(ents(), "log")) == "ABCD", "sort log")
+local dist = { [1] = 50, [3] = 10 } -- 2 and 4 unknown: last, in log order
+assert(ids(T.sortEntries(ents(), "distance", function(id) return dist[id] end)) == "CABD", "sort distance")
+local rows = T.buildRows(T.sortEntries(ents(), "zone"), "zone", { Westfall = true })
+assert(#rows == 4 and rows[1].header == "Elwynn" and rows[1].count == 2 and rows[2].entry.title == "D", "zone rows")
+assert(rows[4].header == "Westfall" and rows[4].collapsed and rows[4].count == 2, "collapsed zone has header only")
+assert(#T.buildRows(ents(), "level") == 4, "flat rows")
+print("quest list ok")
