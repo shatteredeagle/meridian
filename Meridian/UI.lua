@@ -44,10 +44,10 @@ end
 -- Returns the player's canvas position on c, or nil.
 function UI:PlayerCanvasPos(c)
     local zone = C_Map.GetBestMapForUnit("player")
-    local pos = zone and c.zones[zone] and C_Map.GetPlayerMapPosition(zone, "player")
+    local pos = zone and C_Map.GetPlayerMapPosition(zone, "player")
     if not pos then return nil end
     local x, y = pos:GetXY()
-    return c:ZoneToCanvas(zone, x, y)
+    return c:PosToCanvas(zone, x, y) -- also works from a city or sub-zone on a stitched continent
 end
 
 function UI:UpdateMarker(c)
@@ -303,7 +303,7 @@ function UI:Create()
     end)
 
     f:SetScript("OnShow", function()
-        if not c.mapID then self:GoToPlayer() end
+        if M.db.openView ~= false then self:OpenView() elseif not c.mapID then self:GoToPlayer() end
         self:RefreshAll()
     end)
 
@@ -407,6 +407,30 @@ function UI:GoToPlayer(zoneOnly)
     self:SetMap((not zoneOnly and continentOf(zone)) or zone)
     local px, py = self:PlayerCanvasPos(self.canvas)
     if px then self.canvas:CenterOnCanvas(px, py) end
+end
+
+-- Default view on open: the stitched continent, zoomed to about one zone, centred on you and pinned to you.
+function UI:OpenView()
+    local c = self.canvas
+    local zone = C_Map.GetBestMapForUnit("player")
+    if not zone then return not c.mapID and self:GoToPlayer() end
+    if M.Dungeons:OpenForMap(zone) then -- inside an instance: its floor, pinned
+        M.db.pin = true
+        return self:SyncToolbar()
+    end
+    local target = continentOf(zone) or zone
+    if c.mapID ~= target then self:SetMap(target) end
+    local r = c.zones[zone]
+    if not r then -- standing in a city/sub-zone: size to its parent zone
+        local info = C_Map.GetMapInfo(zone)
+        r = info and c.zones[info.parentMapID]
+    end
+    local w, h = c.view:GetWidth(), c.view:GetHeight()
+    if r and r.w > 0 and r.h > 0 and w > 0 and h > 0 then c:SetZoom(math.min(w / r.w, h / r.h)) end
+    local px, py = self:PlayerCanvasPos(c)
+    if px then c:CenterOnCanvas(px, py) end
+    M.db.pin = true
+    self:SyncToolbar()
 end
 
 -- Pin the main map to the character (keeps it centred and follows between zones).

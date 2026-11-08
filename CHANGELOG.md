@@ -2,6 +2,8 @@
 
 Unreleased (all items untested in-client unless noted; see docs/test-checklist.md).
 
+- Default view on open (`/mm`): the stitched continent zoomed to about one zone, centred on you and pinned to you. Option "Open zoomed in on me and pinned" (default on; off keeps the last view). Player position now resolves from cities and sub-zones on the stitched continent too (Stormwind etc.), so Find me, the marker and pinning work there.
+
 - Right-click the map to drop a waypoint pin; the direction arrow is switched on and points to it (Ctrl-click still works). Right-clicking an existing pin removes it.
 
 - Pin the map to your character: toolbar pin toggle, `/mm pin`, options checkbox and a key binding. While on, the main map stays centred on you every 0.1 s and follows you into other zones (continent view stays continent, zone view follows the zone). Dragging the map unpins it. New icon `pin.tga` needs a full client restart.

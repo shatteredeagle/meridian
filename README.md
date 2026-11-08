@@ -4,7 +4,7 @@ Carbonite-style pan/zoom map for WoW Forever: custom map window, overlapping que
 
 Install: copy or symlink `Meridian/` into `World of Warcraft/_retail_/Interface/AddOns/` (Forever's folder; check yours).
 Reveal: `R` button or `/mm reveal` toggles fully revealed vs. your explored areas.
-Use: `/meridian` (or `/mm`) toggles the window. Wheel zooms at cursor, drag pans, `+ - F @` buttons zoom / fit / go to player.
+Use: `/meridian` (or `/mm`) toggles the window; it opens on the continent zoomed to about one zone, centred on you and pinned (drag to unpin; option to turn this off). Wheel zooms at cursor, drag pans, `+ - F @` buttons zoom / fit / go to player.
 
 Test offline: `lua tests/math_test.lua`
 

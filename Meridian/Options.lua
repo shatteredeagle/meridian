@@ -16,6 +16,7 @@ local OPTIONS = {
     { "slider", "opacity", L["Quest area opacity"], 0.2, 1, 0.05, "%.2f" },
     { "slider", "iconScale", L["Marker size"], 0.6, 2, 0.1, "%.1fx" },
     { "check", "blend", L["Blend zone edges on the continent map"], after = "rebuild" },
+    { "check", "openView", L["Open zoomed in on me and pinned (otherwise keep the last view)"], after = "map" },
     { "check", "pin", L["Pin the map to my character (follows you; dragging unpins)"], after = "map" },
     { "check", "overlays", L["Show quest areas"], after = "map" },
     { "check", "avail", L["Show quest givers"], after = "map" },
