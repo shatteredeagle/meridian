@@ -45,6 +45,7 @@ ICONS = {
     "reveal": union(ellipse_ring(.5, .5, .4, .24, .08), disc(.5, .5, .12)),
     "areas": union(ring(.38, .5, .24, .08), ring(.62, .5, .24, .08)),
     "givers": union(line(.5, .14, .5, .6, .16), disc(.5, .82, .09)),
+    "dungeons": union(line(.2, .88, .2, .46, .09), line(.8, .88, .8, .46, .09), line(.1, .88, .9, .88, .09)),  # doorway (arch added below)
     "arrow": union(tri(.5, .1, .82, .52, .18, .52), box(.4, .5, .6, .88)),
     "list": union(*[union(disc(.2, y, .055), line(.34, y, .84, y, .075)) for y in (.25, .5, .75)]),
     "minimap": union(ring(.5, .5, .38, .08), disc(.5, .5, .08), line(.5, .12, .5, .22, .07)),
@@ -66,6 +67,8 @@ def star(cx, cy, ro, ri, n=5):
             cy - (ro if i % 2 == 0 else ri) * math.cos(math.pi * i / n)) for i in range(2 * n)]
     return union(*[tri(cx, cy, *pts[i], *pts[(i + 1) % (2 * n)]) for i in range(2 * n)])
 
+ICONS["dungeons"] = union(ICONS["dungeons"], arc(.5, .46, .3, 180, 360, .09), box(.42, .6, .58, .88))  # arched doorway
+
 # Map pins: a white fill with a black outline (tinted by vertex color in-game; the outline stays dark).
 # Each has a distinct silhouette so type never depends on colour alone.
 PINS = {
@@ -75,7 +78,8 @@ PINS = {
     "taxi": union(tri(.5, .1, .9, .86, .5, .66), tri(.5, .1, .1, .86, .5, .66)),  # arrowhead
     "rare": star(.5, .52, .44, .19),
     "poi": union(tri(.5, .08, .92, .5, .08, .5), tri(.5, .92, .92, .5, .08, .5)),  # diamond
-    "party": union(box(.2, .2, .8, .8)),                                           # square
+    "party": union(box(.2, .2, .8, .8)),
+    "dungeon": union(box(.16, .45, .84, .9), box(.16, .12, .28, .45), box(.44, .12, .56, .45), box(.72, .12, .84, .45)),  # castle gate                                           # square
 }
 
 def write_tga(path, rows):

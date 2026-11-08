@@ -220,6 +220,56 @@ eq(ax_, 0.5, "xy method"); eq(ay_, 0.6, "xy method y")
 assert(PinM.Pins.xy(nil) == nil and PinM.Pins.xy({}) == nil, "xy missing")
 print("pins ok")
 
+-- dungeons: names, floor grouping, tile layout, entrance grouping, quest matching
+local DM = { Overlay = { RegisterSource = function() end } }
+assert(loadfile("Meridian/Locale.lua"))("Meridian", DM)
+assert(loadfile("Meridian/Dungeons.lua"))("Meridian", DM)
+local Dg = DM.Dungeons
+assert(Dg.norm("Razorfen  Kraul!") == "razorfenkraul" and Dg.norm(nil) == "", "norm")
+assert(Dg.baseName("Scarlet Monastery: Library") == "Library" and Dg.baseName("Gnomeregan") == "Gnomeregan", "base name")
+assert(Dg.nameMatches("Gnomeregan", "gnomeregan") and Dg.nameMatches("Dire Maul", "Dire Maul: East"), "name match")
+assert(not Dg.nameMatches("Wolf", "Wolfsbane Keep") and not Dg.nameMatches("", "x") and not Dg.nameMatches("Deadmines", "Stockade"), "name mismatch")
+local groups = Dg.groupFloors({
+    { mapID = 229, name = "Gnomeregan", group = 7, order = 3 }, { mapID = 226, name = "Gnomeregan", group = 7, order = 1 },
+    { mapID = 227, name = "Gnomeregan", group = 7, order = 2 }, { mapID = 300, name = "Razorfen Downs" },
+    { mapID = 301, name = "Razorfen Kraul" }, { mapID = 302, name = "Razorfen Kraul" }, { mapID = 226, name = "dupe", group = 7 } })
+assert(#groups == 3 and groups[1].name == "Gnomeregan" and #groups[1].floors == 3, "group by id")
+assert(groups[1].floors[1].mapID == 226 and groups[1].floors[3].mapID == 229, "floors sorted by order")
+assert(groups[3].name == "Razorfen Kraul" and #groups[3].floors == 2 and groups[2].floors[1].mapID == 300, "group by name")
+local specs = Dg.tileSpecs(1002, 668, 256, 4, 3)
+assert(#specs == 12 and specs[1].index == 1 and specs[12].index == 12, "tile count")
+eq(specs[4].w, 234, "clipped width"); eq(specs[4].u, 234 / 256, "clipped u"); eq(specs[12].h, 156, "clipped height")
+eq(specs[5].x, 0, "row 2 starts at 0"); eq(specs[5].y, 256, "row 2 y")
+assert(#Dg.tileSpecs(256, 256, 256, 4, 3) == 1, "small art skips empty tiles")
+local sw, sh = Dg.customSize({ tiles = "x" })
+assert(sw == 1002 and sh == 668, "tile size")
+sw, sh = Dg.customSize({ texture = "x", texBottom = 683 / 1024 })
+assert(sw == 1002 and sh == 668, "texture 3:2 size")
+sw, sh = Dg.customSize({ texture = "x", texBottom = 1365 / 2048 })
+assert(sw == 1002 and sh == 668, "2048 texture size")
+local eg = Dg.groupEntrances({ { map = 5, x = 0.826, y = 0.338, id = 1 }, { map = 5, x = 0.8263, y = 0.3379, id = 2 }, { map = 5, x = 0.2, y = 0.2, id = 3 }, { map = 6, x = 0.826, y = 0.338, id = 4 } })
+assert(#eg == 3 and #eg[1].items == 2 and eg[1].items[2].id == 2, "entrances at one spot share a marker")
+local quests = { { id = 1, name = "A", turnin = "Captain Truman, near the entrance", pickup = "Captain Truman", level = 20, requires = 15, faction = "Both" },
+    { id = 2, name = "B", turnin = "Someone else", pickup = "Someone else" }, { id = 3, name = "C", turnin = "captain truman", pickup = "x", level = 30, faction = "Horde" } }
+local ready = function(id) return id == 1 or id == 3 end
+local tq = Dg.turninQuests("Captain Truman", quests, ready)
+assert(#tq == 2 and tq[1].id == 1 and tq[2].id == 3, "turn-ins match case-insensitively and need ready")
+assert(#Dg.turninQuests("Captain Truman", quests, function() return false end) == 0, "none ready")
+local pl = { level = 20, faction = "Alliance", greyRange = 7, done = function(id) return id == 9 end, logged = function(id) return id == 8 end }
+assert(Dg.canOffer(quests[1], pl), "offer ok")
+assert(not Dg.canOffer(quests[1], { level = 10, faction = "Alliance", done = pl.done, logged = pl.logged }), "level too low")
+assert(not Dg.canOffer(quests[3], pl), "wrong faction")
+assert(not Dg.canOffer({ id = 9 }, pl) and not Dg.canOffer({ id = 8 }, pl), "done or logged")
+assert(not Dg.canOffer({ id = 5, level = 5 }, pl), "grey quest")
+assert(#Dg.offerQuests("Captain Truman", quests, function(q) return Dg.canOffer(q, pl) end) == 1, "offer quests")
+local cx, cy = Dg.rectCenter(0.2, 0.4, 0.5, 0.7)
+eq(cx, 0.3, "rect centre x"); eq(cy, 0.6, "rect centre y")
+assert(Dg.rectCenter(0, 0, 0, 0) == nil and Dg.rectCenter(nil, 1, 0, 1) == nil, "empty rect")
+local sitems = Dg.searchItems({ { name = "Gnomeregan" }, { name = "Deadmines" } })
+assert(#sitems == 2 and sitems[1].kind == "dungeon" and sitems[2].name == "Deadmines", "search items")
+assert(Se.rank("gnom", sitems, 5)[1].name == "Gnomeregan" and Se.rowText(sitems[1]) == "[Dungeon] Gnomeregan", "dungeons are searchable")
+print("dungeons ok")
+
 -- localization: missing keys fall back to the English text; every L["..."] in the code is listed in enUS.lua
 local LM = {}
 assert(loadfile("Meridian/Locale.lua"))("Meridian", LM)

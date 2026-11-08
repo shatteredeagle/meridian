@@ -20,6 +20,7 @@ Overlay.lua
 Waypoints.lua
 Search.lua
 Pins.lua
+Dungeons.lua
 UI.lua
 Tracker.lua
 Mini.lua
