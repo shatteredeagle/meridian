@@ -10,11 +10,13 @@ function Tracker:Create(host, canvas, overlay)
     self.canvas, self.overlay = canvas, overlay
     local p = CreateFrame("Frame", nil, host)
     p:SetWidth(200)
-    p:SetPoint("TOPRIGHT", host.InsetBg, "TOPRIGHT", -2, -2)
-    p:SetPoint("BOTTOMRIGHT", host.InsetBg, "BOTTOMRIGHT", -2, 2)
+    p:SetPoint("TOPRIGHT", host.content, "TOPRIGHT", 0, 0)
+    p:SetPoint("BOTTOMRIGHT", host.content, "BOTTOMRIGHT", 0, 0)
+    p.header = p:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    p.header:SetPoint("TOPLEFT", 8, -7)
     p.bg = p:CreateTexture(nil, "BACKGROUND")
     p.bg:SetAllPoints()
-    p.bg:SetColorTexture(0, 0, 0, 0.35)
+    p.bg:SetColorTexture(0.03, 0.03, 0.04, 0.9)
     p:SetShown(M.db.tracker)
     self.panel, self.rows = p, {}
 
@@ -53,7 +55,7 @@ function Tracker:Row(i)
     if r then return r end
     r = CreateFrame("Button", nil, self.panel)
     r:SetHeight(ROW_H)
-    r:SetPoint("TOPLEFT", 2, -2 - (i - 1) * ROW_H)
+    r:SetPoint("TOPLEFT", 2, -24 - (i - 1) * ROW_H)
     r:SetPoint("RIGHT", -2, 0)
     r.check = CreateFrame("CheckButton", nil, r, "UICheckButtonTemplate")
     r.check:SetSize(18, 18)
@@ -114,4 +116,5 @@ function Tracker:Refresh()
         end
     end
     for i = n + 1, #self.rows do self.rows[i]:Hide() end
+    self.panel.header:SetText("Quests  |cff888888" .. n .. "|r")
 end

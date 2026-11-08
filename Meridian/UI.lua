@@ -84,7 +84,9 @@ function UI:CreateReadout(f, c)
 end
 
 function UI:Create()
-    local f = CreateFrame("Frame", "MeridianFrame", UIParent, "BasicFrameTemplateWithInset")
+    local W = M.Widgets
+    local f = CreateFrame("Frame", "MeridianFrame", UIParent, "BackdropTemplate")
+    W.Panel(f)
     f:SetSize(M.db.width, M.db.height)
     if M.db.pos then
         f:SetPoint(M.db.pos[1], UIParent, M.db.pos[2], M.db.pos[3], M.db.pos[4])
@@ -93,20 +95,47 @@ function UI:Create()
     end
     f:SetMovable(true)
     f:SetResizable(true)
+    if f.SetResizeBounds then f:SetResizeBounds(680, 420) end
     f:SetClampedToScreen(true)
     f:EnableMouse(true)
     f:RegisterForDrag("LeftButton")
     f:SetScript("OnDragStart", f.StartMoving)
     f:SetScript("OnDragStop", function() f:StopMovingOrSizing(); savePosition(f) end)
-    f.TitleText:SetText("Meridian")
     tinsert(UISpecialFrames, "MeridianFrame")
     f:Hide()
 
+    -- title bar
+    f.title = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    f.title:SetPoint("TOPLEFT", 12, -9)
+    f.title:SetText("Meridian")
+    W.IconButton(f, "close", "Close", nil, function() f:Hide() end, { size = 22, iconSize = 12 }):SetPoint("TOPRIGHT", -4, -4)
+
+    -- toolbar strip
+    local tb = CreateFrame("Frame", nil, f)
+    tb:SetPoint("TOPLEFT", 1, -28)
+    tb:SetPoint("TOPRIGHT", -1, -28)
+    tb:SetHeight(34)
+    tb.bg = tb:CreateTexture(nil, "BACKGROUND")
+    tb.bg:SetAllPoints()
+    tb.bg:SetColorTexture(1, 1, 1, 0.04)
+    tb.line = tb:CreateTexture(nil, "ARTWORK")
+    tb.line:SetPoint("BOTTOMLEFT")
+    tb.line:SetPoint("BOTTOMRIGHT")
+    tb.line:SetHeight(1)
+    tb.line:SetColorTexture(1, 1, 1, 0.1)
+    self.toolbar = tb
+
+    -- map area and footer
+    f.content = CreateFrame("Frame", nil, f)
+    f.content:SetPoint("TOPLEFT", tb, "BOTTOMLEFT", 5, -5)
+    f.content:SetPoint("BOTTOMRIGHT", -6, 24)
+
     local c = M.Canvas:New(f)
     self.frame, self.canvas = f, c
-    c.view:SetPoint("TOPLEFT", f.InsetBg, "TOPLEFT", 2, -2)
-    c.view:SetPoint("BOTTOMRIGHT", f.InsetBg, "BOTTOMRIGHT", -2, 2)
     self.overlay = M.Overlay:New(c)
+    c.view.bg = c.view:CreateTexture(nil, "BACKGROUND")
+    c.view.bg:SetAllPoints()
+    c.view.bg:SetColorTexture(0, 0, 0, 0.6)
 
     -- resize grip
     local grip = CreateFrame("Button", nil, f)
@@ -119,31 +148,45 @@ function UI:Create()
         M.db.width, M.db.height = f:GetWidth(), f:GetHeight()
     end)
 
-    -- toolbar
-    local function btn(label, x, tip, fn)
-        local b = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
-        b:SetSize(24, 20)
-        b:SetPoint("TOPLEFT", x, -4)
-        b:SetText(label)
-        b:SetScript("OnClick", fn)
-        b:SetScript("OnEnter", function(s)
-            GameTooltip:SetOwner(s, "ANCHOR_BOTTOM")
-            GameTooltip:SetText(tip)
-            GameTooltip:Show()
-        end)
-        b:SetScript("OnLeave", GameTooltip_Hide)
+    -- toolbar: icon buttons in groups; toggles show their state
+    self.toggles = {}
+    local x = 8
+    local function add(icon, title, desc, fn, state)
+        local b = W.IconButton(tb, icon, title, desc, fn, { toggle = state ~= nil, state = state })
+        b:SetPoint("LEFT", tb, "LEFT", x, 0)
+        x = x + 28
+        if state then self.toggles[#self.toggles + 1] = { b, state } end
+        return b
     end
-    btn("+", 8, "Zoom in", function() c:SetZoom(c.zoom * 1.4) end)
-    btn("-", 36, "Zoom out", function() c:SetZoom(c.zoom / 1.4) end)
-    btn("F", 64, "Fit whole map", function() c:Fit() end)
-    btn("@", 92, "Continent, centered on you", function() self:GoToPlayer() end)
-    btn("Z", 120, "Your zone only", function() self:GoToPlayer(true) end)
-    btn("R", 148, "Toggle fully revealed / explored only", function() self:ToggleReveal() end)
-    btn("Q", 176, "Toggle quest overlays", function() self:ToggleOverlays() end)
-    btn("T", 204, "Toggle quest list", function() self:ToggleTracker() end)
-    btn("M", 232, "Toggle minimap", function() self:ToggleMini() end)
-    btn("!", 260, "Toggle available-quest givers", function() self:ToggleGivers() end)
-    btn(">", 288, "Toggle direction arrow to nearest quest area", function() M.Arrow:Toggle() end)
+    local function gap()
+        local sep = W.Separator(tb)
+        sep:SetPoint("LEFT", tb, "LEFT", x + 3, 0)
+        x = x + 12
+    end
+    add("plus", "Zoom in", "Mouse wheel also zooms at the cursor.", function() c:SetZoom(c.zoom * 1.4) end)
+    add("minus", "Zoom out", nil, function() c:SetZoom(c.zoom / 1.4) end)
+    add("fit", "Fit to window", "Show the whole map.", function() c:Fit() end)
+    gap()
+    add("continent", "Continent view", "All zones stitched together, centered on you.", function() self:GoToPlayer() end)
+    add("zone", "Zone view", "Just the zone you are in. Double-click any zone on the continent to open it.", function() self:GoToPlayer(true) end)
+    add("locate", "Find me", "Center on your position.", function()
+        local px, py = self:PlayerCanvasPos(c)
+        if px then c:CenterOnCanvas(px, py) else self:GoToPlayer() end
+    end)
+    gap()
+    add("reveal", "Reveal map", "On: whole map revealed. Off: only areas you have explored.",
+        function() self:ToggleReveal() end, function() return M.db.reveal == "full" end)
+    add("areas", "Quest areas", "Colored areas where your quest objectives are. Overlaps add up; hover for names.",
+        function() self:ToggleOverlays() end, function() return M.db.overlays end)
+    add("givers", "Quest givers", "Markers for quests you can pick up now.",
+        function() self:ToggleGivers() end, function() return M.db.avail end)
+    add("arrow", "Direction arrow", "Points to the nearest quest area. Shift-click a quest in the list to pick one.",
+        function() M.Arrow:Toggle() end, function() return M.db.arrow end)
+    gap()
+    add("list", "Quest list", "Show or hide the quest panel.",
+        function() self:ToggleTracker() end, function() return M.db.tracker end)
+    add("minimap", "Minimap", "A small map that follows you.",
+        function() self:ToggleMini() end, function() return M.db.mini end)
 
     self:AttachMarker(f, c)
     self:CreateReadout(f, c)
@@ -181,6 +224,12 @@ function UI:Create()
 
     self:CreateMini()
     M.Arrow:Create(self.overlay)
+    self:SyncToolbar()
+end
+
+-- Re-read every toggle's state into its button.
+function UI:SyncToolbar()
+    for _, t in ipairs(self.toggles or {}) do t[1]:SetActive(t[2]()) end
 end
 
 function UI:RefreshAll()
@@ -194,11 +243,11 @@ end
 function UI:LayoutView()
     local c, f = self.canvas, self.frame
     c.view:ClearAllPoints()
-    c.view:SetPoint("TOPLEFT", f.InsetBg, "TOPLEFT", 2, -2)
+    c.view:SetPoint("TOPLEFT", f.content, "TOPLEFT", 0, 0)
     if M.db.tracker then
-        c.view:SetPoint("BOTTOMRIGHT", M.Tracker.panel, "BOTTOMLEFT", -2, 0)
+        c.view:SetPoint("BOTTOMRIGHT", M.Tracker.panel, "BOTTOMLEFT", -4, 0)
     else
-        c.view:SetPoint("BOTTOMRIGHT", f.InsetBg, "BOTTOMRIGHT", -2, 2)
+        c.view:SetPoint("BOTTOMRIGHT", f.content, "BOTTOMRIGHT", 0, 0)
     end
 end
 
@@ -218,27 +267,29 @@ end
 
 function UI:ToggleReveal()
     M.db.reveal = M.db.reveal == "full" and "explored" or "full"
-    M:Print("Map reveal:", M.db.reveal == "full" and "fully revealed" or "explored areas only")
     self.canvas:Rebuild()
     if self.mini then self.mini.canvas:Rebuild() end
     self:RefreshAll()
+    self:SyncToolbar()
 end
 
 function UI:ToggleOverlays()
     M.db.overlays = not M.db.overlays
     self:RefreshAll()
+    self:SyncToolbar()
 end
 
 function UI:ToggleGivers()
     M.db.avail = not M.db.avail
-    M:Print("Quest givers:", M.db.avail and "on" or "off")
     self:RefreshAll()
+    self:SyncToolbar()
 end
 
 function UI:ToggleTracker()
     M.db.tracker = not M.db.tracker
     M.Tracker.panel:SetShown(M.db.tracker)
     self:LayoutView()
+    self:SyncToolbar()
 end
 
 function UI:ResetView() self.canvas:Fit() end

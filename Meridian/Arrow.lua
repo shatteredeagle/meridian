@@ -103,5 +103,5 @@ function Arrow:Toggle()
     M.db.arrow = not M.db.arrow
     self.frame:SetShown(M.db.arrow)
     self.areas = nil
-    M:Print("Arrow:", M.db.arrow and "on (drag to move, shift-click a quest in the list to target it)" or "off")
+    if M.UI.SyncToolbar then M.UI:SyncToolbar() end
 end

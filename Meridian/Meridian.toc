@@ -8,6 +8,7 @@
 ## IconTexture: Interface\Icons\INV_Misc_Map_01
 
 Core.lua
+Widgets.lua
 Canvas.lua
 Geometry.lua
 Data.lua

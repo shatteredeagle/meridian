@@ -38,11 +38,9 @@ function UI:CreateMini()
     grab.tex = grab:CreateTexture(nil, "OVERLAY")
     grab.tex:SetAllPoints()
     grab.tex:SetColorTexture(1, 1, 1, 0.12)
-    local re = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
-    re:SetSize(22, 14)
+    local re = M.Widgets.IconButton(f, "locate", "Follow me", "Re-center and keep following.", function() mini.follow = true end,
+        { size = 18, iconSize = 12 })
     re:SetPoint("TOPRIGHT", -2, -2)
-    re:SetText("@")
-    re:SetScript("OnClick", function() mini.follow = true end)
     c.view:HookScript("OnMouseDown", function() mini.follow = false end)
 
     local acc = 0
@@ -70,4 +68,5 @@ function UI:ToggleMini()
     M.db.mini = not M.db.mini
     self.mini.frame:SetShown(M.db.mini)
     if M.db.mini then self.mini.follow = true; self:RefreshAll() end
+    self:SyncToolbar()
 end
