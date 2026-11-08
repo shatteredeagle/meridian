@@ -21,6 +21,19 @@ function Math.clampOffset(offX, offY, zoom, cw, ch, vw, vh)
     return Math.clamp(offX, minX, maxX), Math.clamp(offY, minY, maxY)
 end
 
+local atan2 = math.atan2 or function(y, x) return math.atan(y, x) end
+
+-- Counter-clockwise angle from north (matches GetPlayerFacing) of an offset given in map axes:
+-- east = +dx, south = +dy.
+function Math.bearing(dx, dy) return atan2(-dx, -dy) end
+
+-- Wrap an angle into (-pi, pi].
+function Math.wrap(a)
+    while a > math.pi do a = a - 2 * math.pi end
+    while a <= -math.pi do a = a + 2 * math.pi end
+    return a
+end
+
 -- Orientation of a map's axes in world space, from samples at (0,0), (1,0), (0,1).
 -- Returns ax, sx, ay, sy: map-x follows world axis ax (1|2) with sign sx; map-y follows ay with sy.
 function Math.worldAxes(p00, p10, p01)
@@ -42,7 +55,7 @@ local Canvas = {}
 Canvas.__index = Canvas
 M.Canvas = Canvas
 
-function Canvas:New(parent)
+function Canvas:New(parent, opts)
     local self = setmetatable({}, Canvas)
     local view = CreateFrame("Frame", nil, parent)
     view:SetClipsChildren(true)
@@ -52,6 +65,12 @@ function Canvas:New(parent)
     canvas:SetPoint("TOPLEFT")
     self.view, self.canvas = view, canvas
     self.zoneFrames, self.zoom, self.offX, self.offY = {}, 1, 0, 0
+    if opts and opts.round then
+        local mask = view:CreateMaskTexture()
+        mask:SetAllPoints(view)
+        mask:SetTexture("Interface\\CharacterFrame\\TempPortraitAlphaMask", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+        self.mask = mask
+    end
     self.cw, self.ch = 1, 1
     self.pinLayer = CreateFrame("Frame", nil, canvas)
     self.pinLayer:SetAllPoints()
@@ -135,10 +154,11 @@ end
 
 local TILE = 256
 
-local function getTex(list, frame, layer, n)
+local function getTex(list, frame, layer, n, mask)
     local t = list[n]
     if not t then
         t = frame:CreateTexture(nil, layer)
+        if mask then t:AddMaskTexture(mask) end
         list[n] = t
     end
     return t
@@ -169,7 +189,7 @@ function Canvas:DrawZone(uiMapID, rect, zi)
     local explored = M.db.reveal == "explored"
     local dim = explored and 0.3 or 1
     for i, file in ipairs(files) do
-        local t = getTex(f.tiles, f, "BACKGROUND", i)
+        local t = getTex(f.tiles, f, "BACKGROUND", i, self.mask)
         local col, row = (i - 1) % cols, math.floor((i - 1) / cols)
         t:SetSize(tw, th)
         t:ClearAllPoints()
@@ -192,7 +212,7 @@ function Canvas:DrawZone(uiMapID, rect, zi)
                     local ph = j < tall and TILE or ((ov.textureHeight % TILE == 0) and TILE or ov.textureHeight % TILE)
                     local fw, fh = Math.pow2(pw), Math.pow2(ph)
                     n = n + 1
-                    local t = getTex(f.fog, f, "ARTWORK", n)
+                    local t = getTex(f.fog, f, "ARTWORK", n, self.mask)
                     t:SetTexture(fid, nil, nil, "TRILINEAR")
                     t:SetTexCoord(0, pw / fw, 0, ph / fh)
                     t:SetVertexColor(1, 1, 1)
@@ -206,12 +226,14 @@ function Canvas:DrawZone(uiMapID, rect, zi)
     end
 end
 
+-- World position {x, y} of a zone-normalized point, plus the world map it belongs to.
 local function worldPos(uiMapID, nx, ny)
-    local _, pos = C_Map.GetWorldPosFromMapPos(uiMapID, CreateVector2D(nx, ny))
+    local world, pos = C_Map.GetWorldPosFromMapPos(uiMapID, CreateVector2D(nx, ny))
     if not pos then return nil end
     local x, y = pos:GetXY()
-    return { x, y }
+    return { x, y }, world
 end
+M.WorldPos = worldPos
 
 -- Stitch every zone of a continent into one contiguous map using world coordinates.
 function Canvas:BuildContinent(contID)

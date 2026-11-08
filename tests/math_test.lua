@@ -45,3 +45,32 @@ print("axes ok")
 
 assert(Math.pow2(1) == 1 and Math.pow2(200) == 256 and Math.pow2(256) == 256 and Math.pow2(257) == 512, "pow2")
 print("pow2 ok")
+
+-- bearing: target due north (dy<0) -> 0; due west (dx<0) -> +pi/2 (CCW); due east -> -pi/2
+local bearing = Math.bearing
+eq(Math.wrap(3 * math.pi / 2), -math.pi / 2, "wrap")
+eq(bearing(0, -10), 0, "north"); eq(bearing(-10, 0), math.pi / 2, "west"); eq(bearing(10, 0), -math.pi / 2, "east")
+
+-- eligibility (Data.lua is loadable offline: it only touches WoW globals inside functions)
+local DM = {}
+assert(loadfile("Meridian/Data.lua"))("Meridian", DM)
+local D = DM.Data
+local done = { [10] = true }
+local P = { level = 20, greyRange = 7, raceMask = 1, classMask = 4,
+    done = function(id) return done[id] end, inLog = function(id) return id == 99 end }
+local function q(t) t.id = t.id or 1; return t end
+assert(D.eligible(q{ level = 20, reqLevel = 18 }, P), "basic")
+assert(not D.eligible(q{ reqLevel = 25 }, P), "too low level")
+assert(not D.eligible(q{ level = 5 }, P), "grey quest")
+assert(not D.eligible(q{ id = 10 }, P), "already done")
+assert(not D.eligible(q{ id = 99 }, P), "in log")
+assert(not D.eligible(q{ races = 2 }, P), "wrong race")
+assert(D.eligible(q{ races = 3 }, P), "race mask hit")
+assert(not D.eligible(q{ classes = 1 }, P), "wrong class")
+assert(D.eligible(q{ group = { 10 } }, P), "prereq group met")
+assert(not D.eligible(q{ group = { 10, 11 } }, P), "prereq group unmet")
+assert(D.eligible(q{ single = { 11, 10 } }, P), "single prereq one met")
+assert(not D.eligible(q{ single = { 11, 12 } }, P), "single prereq none met")
+assert(not D.eligible(q{ exclusive = { 10 } }, P), "exclusive done")
+assert(D.anyBit(5, 4) and not D.anyBit(5, 2), "anyBit")
+print("eligibility ok")

@@ -31,8 +31,44 @@ end
 Overlay.color = color
 
 function Overlay:New(canvas)
-    local o = setmetatable({ canvas = canvas, pool = {}, active = {}, questPos = {} }, Overlay)
+    local o = setmetatable({ canvas = canvas, pool = {}, active = {}, questPos = {}, areas = {}, markerPool = {}, markers = {} }, Overlay)
+    local prev = canvas.OnChanged
+    canvas.OnChanged = function(...) if prev then prev(...) end; o:Rescale() end
     return o
+end
+
+local MAX_MARKERS = 500
+
+-- Giver marker: a frame so it can counter-scale and take a tooltip.
+function Overlay:AcquireMarker()
+    local m = table.remove(self.markerPool)
+    if not m then
+        m = CreateFrame("Frame", nil, self.canvas.pinLayer)
+        m:SetSize(14, 14)
+        m:EnableMouse(true)
+        m.tex = m:CreateTexture(nil, "OVERLAY")
+        m.tex:SetAllPoints()
+        m.tex:SetTexture("Interface\\GossipFrame\\AvailableQuestIcon")
+        m:SetScript("OnEnter", function(s)
+            GameTooltip:SetOwner(s, "ANCHOR_RIGHT")
+            GameTooltip:SetText(s.name or "Quest", 1, 0.82, 0)
+            if s.level then GameTooltip:AddLine("Level " .. s.level, 1, 1, 1) end
+            GameTooltip:Show()
+        end)
+        m:SetScript("OnLeave", GameTooltip_Hide)
+    end
+    m:SetFrameLevel(self.canvas.pinLayer:GetFrameLevel() + 10)
+    m:Show()
+    return m
+end
+
+function Overlay:Rescale()
+    local s = 1 / self.canvas.zoom
+    for _, m in ipairs(self.markers) do
+        m:SetScale(s)
+        m:ClearAllPoints()
+        m:SetPoint("CENTER", self.canvas.pinLayer, "TOPLEFT", m.px / s, -m.py / s)
+    end
 end
 
 function Overlay:Acquire()
@@ -41,6 +77,7 @@ function Overlay:Acquire()
         p = self.canvas.pinLayer:CreateTexture(nil, "ARTWORK")
         p:SetTexture(CIRCLE)
         p:SetBlendMode("ADD")
+        if self.canvas.mask then p:AddMaskTexture(self.canvas.mask) end
     end
     p:Show()
     return p
@@ -50,13 +87,16 @@ function Overlay:Clear()
     for _, p in ipairs(self.active) do p:Hide(); self.pool[#self.pool + 1] = p end
     wipe(self.active)
     wipe(self.questPos)
+    for _, m in ipairs(self.markers) do m:Hide(); self.markerPool[#self.markerPool + 1] = m end
+    wipe(self.markers)
+    wipe(self.areas)
 end
 
 function Overlay:Refresh()
     local c = self.canvas
     if not c.mapID then return end
     self:Clear()
-    if not M.db.overlays then return end
+    if not M.db.overlays then return self:RefreshGivers() end
     -- Prefer real quest areas (QuestieDB); fall back to Blizzard's single-point markers.
     local useDB = M.Data:Available()
     for zoneID, rect in pairs(c.zones) do
@@ -64,6 +104,7 @@ function Overlay:Refresh()
         for _, a in ipairs(list) do
             local px, py = c:ZoneToCanvas(zoneID, a.x, a.y)
             if not self.questPos[a.questID] then self.questPos[a.questID] = { px, py } end
+            self.areas[#self.areas + 1] = { questID = a.questID, zone = zoneID, x = a.x, y = a.y }
             if not M.db.hidden[a.questID] then
                 local p = self:Acquire()
                 local r, g, b = color(a.questID)
@@ -75,4 +116,28 @@ function Overlay:Refresh()
             end
         end
     end
+    self:RefreshGivers()
+end
+
+-- Quest-giver markers for quests the player could accept now (needs the QuestieDB starter index).
+function Overlay:RefreshGivers()
+    if not (M.db.avail and M.Data:Available()) then return end
+    if not M.Data.starters then
+        if not M.Data.building then
+            M:Print("Indexing quest givers...")
+            M.Data:BuildStarters(function() M.UI:RefreshAll() end)
+        end
+        return
+    end
+    local c, state = self.canvas, M.Data:PlayerState()
+    for zoneID in pairs(c.zones) do
+        for _, g in ipairs(M.Data:Available(zoneID, state)) do
+            if #self.markers >= MAX_MARKERS then return self:Rescale() end
+            local m = self:AcquireMarker()
+            m.px, m.py = c:ZoneToCanvas(zoneID, g.x, g.y)
+            m.name, m.level = g.name, g.level
+            self.markers[#self.markers + 1] = m
+        end
+    end
+    self:Rescale()
 end

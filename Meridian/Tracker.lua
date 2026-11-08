@@ -1,4 +1,4 @@
--- Quest list panel: toggle each quest's overlay, click to center on it, hover for objectives.
+-- Quest list panel: toggle each quest's overlay, click to center on it (shift-click: set arrow target), hover for objectives.
 local ADDON, M = ...
 
 local Tracker = {}
@@ -57,7 +57,14 @@ function Tracker:Row(i)
     r.text:SetWordWrap(false)
     r:SetScript("OnEnter", showTip)
     r:SetScript("OnLeave", GameTooltip_Hide)
-    r:SetScript("OnClick", function() Tracker:Focus(r.questID) end)
+    r:SetScript("OnClick", function()
+        if IsShiftKeyDown() then
+            M.db.target = (M.db.target ~= r.questID) and r.questID or nil
+            M:Print(M.db.target and ("Arrow target: " .. r.title) or "Arrow target: nearest quest")
+        else
+            Tracker:Focus(r.questID)
+        end
+    end)
     self.rows[i] = r
     return r
 end

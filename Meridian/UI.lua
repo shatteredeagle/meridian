@@ -142,6 +142,8 @@ function UI:Create()
     btn("Q", 176, "Toggle quest overlays", function() self:ToggleOverlays() end)
     btn("T", 204, "Toggle quest list", function() self:ToggleTracker() end)
     btn("M", 232, "Toggle minimap", function() self:ToggleMini() end)
+    btn("!", 260, "Toggle available-quest givers", function() self:ToggleGivers() end)
+    btn(">", 288, "Toggle direction arrow to nearest quest area", function() M.Arrow:Toggle() end)
 
     self:AttachMarker(f, c)
     self:CreateReadout(f, c)
@@ -178,6 +180,7 @@ function UI:Create()
     end)
 
     self:CreateMini()
+    M.Arrow:Create(self.overlay)
 end
 
 function UI:RefreshAll()
@@ -223,6 +226,12 @@ end
 
 function UI:ToggleOverlays()
     M.db.overlays = not M.db.overlays
+    self:RefreshAll()
+end
+
+function UI:ToggleGivers()
+    M.db.avail = not M.db.avail
+    M:Print("Quest givers:", M.db.avail and "on" or "off")
     self:RefreshAll()
 end
 

@@ -13,10 +13,10 @@ function UI:CreateMini()
     end
     f:SetMovable(true)
     f:SetClampedToScreen(true)
-    f:SetBackdrop({ edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", edgeSize = 12 })
+    if not M.db.miniRound then f:SetBackdrop({ edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", edgeSize = 12 }) end
     f:SetFrameStrata("MEDIUM")
 
-    local c = M.Canvas:New(f)
+    local c = M.Canvas:New(f, { round = M.db.miniRound })
     c.view:SetPoint("TOPLEFT", 3, -3)
     c.view:SetPoint("BOTTOMRIGHT", -3, 3)
     local overlay = M.Overlay:New(c)
