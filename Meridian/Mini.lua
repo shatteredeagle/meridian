@@ -85,7 +85,36 @@ function UI:CreateMini()
         { size = 18, iconSize = 12 })
     re:SetPoint("TOPRIGHT", -2, -2)
     re:SetFrameLevel(f:GetFrameLevel() + 60)
-    c.view:HookScript("OnMouseDown", function() mini.follow = false end)
+    c.view:HookScript("OnMouseDown", function(_, btn) if btn == "LeftButton" then mini.follow = false end end)
+
+    -- right-click: a menu with the same toggles as the main window's top row
+    c.view:HookScript("OnMouseUp", function(_, btn)
+        if btn ~= "RightButton" then return end
+        if not (MenuUtil and MenuUtil.CreateContextMenu) then return M.Options:Open() end
+        MenuUtil.CreateContextMenu(f, function(_, root)
+            root:CreateTitle("Meridian")
+            local function zoom(factor)
+                M.db.miniZoom = math.max(0.5, math.min(4, M.db.miniZoom * factor))
+                c:SetZoom(M.db.miniZoom)
+                mini.zoomApplied = M.db.miniZoom
+            end
+            root:CreateButton("Zoom in", function() zoom(1.4) end)
+            root:CreateButton("Zoom out", function() zoom(1 / 1.4) end)
+            root:CreateButton("Find me (follow)", function() mini.follow = true end)
+            root:CreateDivider()
+            root:CreateCheckbox("Quest areas", function() return M.db.overlays end, function() UI:ToggleOverlays() end)
+            root:CreateCheckbox("Quest givers", function() return M.db.avail end, function() UI:ToggleGivers() end)
+            root:CreateCheckbox("Direction arrow", function() return M.db.arrow end, function() M.Arrow:Toggle() end)
+            root:CreateCheckbox("Coordinates and N marker", function() return M.db.miniCoords end,
+                function() M.db.miniCoords = not M.db.miniCoords end)
+            root:CreateCheckbox("Lock window, minimap and arrow", function() return M.db.locked end,
+                function() M.db.locked = not M.db.locked end)
+            root:CreateDivider()
+            root:CreateButton("Open the map", function() if not UI.frame:IsShown() then UI:Toggle() end end)
+            root:CreateButton("Options", function() M.Options:Open() end)
+            root:CreateButton("Hide minimap", function() UI:ToggleMini() end)
+        end)
+    end)
 
     -- north marker (the map never rotates) and player coordinates
     local north = f:CreateFontString(nil, "OVERLAY", "MeridianFontGold")

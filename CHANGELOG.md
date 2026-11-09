@@ -2,6 +2,8 @@
 
 Unreleased (after 0.1.2-alpha):
 
+- Minimap: right-click opens a menu (zoom, follow me, quest areas / givers / arrow / coordinates / lock toggles, open map, options, hide).
+
 - Minimap is always fully revealed (no dimmed "unexplored" patches, whatever the main map's art setting), and its move strip is only drawn while the mouse is over it.
 
 - Minimap: move strip, resize grip and follow button now sit above the canvas (they were covered and never got the mouse); new installs default to the square minimap (existing saves keep their setting: uncheck "Round minimap" and /reload).
