@@ -107,3 +107,4 @@ L["Flight points (every flight master, for your faction)"] = "Punti di volo (tut
 L["Show my corpse on the map and minimap"] = "Mostra il mio cadavere sulla mappa e sulla minimappa"
 L["Point the arrow at my corpse when I die (cleared when I am alive)"] = "Punta la freccia al mio cadavere quando muoio (rimossa quando sono vivo)"
 L["Boats and zeppelins (docks, for your faction)"] = "Navi e dirigibili (moli della tua fazione)"
+L["Minimap opacity"] = "Opacità della minimappa"

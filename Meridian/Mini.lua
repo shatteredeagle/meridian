@@ -18,6 +18,7 @@ function UI:CreateMini()
     else
         f:SetPoint("TOPRIGHT", -30, -200)
     end
+    f:SetAlpha(M.db.miniAlpha or 1)
     f:SetMovable(true)
     f:SetClampedToScreen(true)
     if not M.db.miniRound then f:SetBackdrop({ edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", edgeSize = 12 }) end
@@ -118,6 +119,17 @@ function UI:CreateMini()
             root:CreateButton("Zoom in", function() zoom(1.4) end)
             root:CreateButton("Zoom out", function() zoom(1 / 1.4) end)
             root:CreateButton("Find me (follow)", function() mini.follow = true end)
+            -- opacity: a slider where the menu system has one, else a short list of steps
+            local function setAlpha(v) M.db.miniAlpha = math.max(0.1, math.min(1, v)); f:SetAlpha(M.db.miniAlpha) end
+            local ok = M.db.miniAlpha ~= nil and pcall(function()
+                root:CreateSlider("Opacity", function() return M.db.miniAlpha or 1 end, setAlpha, 0.1, 1, 0.05)
+            end)
+            if not ok then
+                local sub = root:CreateButton("Opacity")
+                for _, pct in ipairs({ 100, 85, 70, 55, 40, 25, 10 }) do
+                    sub:CreateRadio(pct .. "%", function() return math.abs((M.db.miniAlpha or 1) * 100 - pct) < 3 end, function() setAlpha(pct / 100) end)
+                end
+            end
             root:CreateDivider()
             root:CreateCheckbox("Quest areas", function() return M.db.overlays end, function() UI:ToggleOverlays() end)
             root:CreateCheckbox("Quest givers", function() return M.db.avail end, function() UI:ToggleGivers() end)
@@ -211,6 +223,7 @@ function UI:ApplyMini(sizeOnly)
     local mini = self.mini
     local w, h = miniSize()
     mini.frame:SetSize(w, h)
+    mini.frame:SetAlpha(M.db.miniAlpha or 1)
     mini.grab:SetWidth(w - 30)
     if sizeOnly then return end
     if mini.canvas.mapID and mini.canvas.zoom ~= M.db.miniZoom and mini.zoomApplied ~= M.db.miniZoom then

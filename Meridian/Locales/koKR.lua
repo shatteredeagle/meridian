@@ -107,3 +107,4 @@ L["Flight points (every flight master, for your faction)"] = "비행 지점 (내
 L["Show my corpse on the map and minimap"] = "지도와 미니맵에 내 시체 표시"
 L["Point the arrow at my corpse when I die (cleared when I am alive)"] = "사망 시 화살표로 내 시체 안내 (부활하면 해제)"
 L["Boats and zeppelins (docks, for your faction)"] = "배와 비행선 (내 진영의 선착장)"
+L["Minimap opacity"] = "미니맵 불투명도"

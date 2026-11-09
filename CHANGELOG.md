@@ -2,6 +2,8 @@
 
 Unreleased (after 0.1.3-alpha):
 
+- Minimap opacity: an "Opacity" slider in the minimap's right-click menu (a list of steps if the client's menu has no slider) and a "Minimap opacity" slider in options fade the whole minimap (10% to 100%, saved).
+
 - Fixed being unable to zoom back in from the world map: the continent under the cursor was needed, so zooming with the cursor over open ocean (or on a large window where the switch point was above the zoom limit) went nowhere. It now opens the nearest continent, and the switch point is capped just under the zoom limit.
 
 - Seam patches (local-only): `tools/seam_patch.py` builds small pictures that cover bare parchment strips where two zone maps meet (first one: Hillsbrad/Arathi) and installs them as the addon MeridianSeamPatches. They contain Blizzard's art, so they are never committed or released; Meridian/SeamPatches.lua holds only their positions (in yards) and Meridian draws a patch only when the addon is installed.

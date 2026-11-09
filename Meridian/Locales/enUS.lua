@@ -68,6 +68,7 @@ L["Handle /way (needs reload; TomTom keeps it)"] = "Handle /way (needs reload; T
 L["Minimap"] = "Minimap"
 L["Show minimap"] = "Show minimap"
 L["Minimap size"] = "Minimap size"
+L["Minimap opacity"] = "Minimap opacity"
 L["Minimap zoom"] = "Minimap zoom"
 L["Coordinates and N marker on minimap"] = "Coordinates and N marker on minimap"
 L["Button on the Blizzard minimap"] = "Button on the Blizzard minimap"

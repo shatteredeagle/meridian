@@ -107,3 +107,4 @@ L["Flight points (every flight master, for your faction)"] = "Места пол�
 L["Show my corpse on the map and minimap"] = "Показывать мой труп на карте и миникарте"
 L["Point the arrow at my corpse when I die (cleared when I am alive)"] = "Указывать стрелкой на мой труп после смерти (убирается при воскрешении)"
 L["Boats and zeppelins (docks, for your faction)"] = "Корабли и дирижабли (причалы вашей фракции)"
+L["Minimap opacity"] = "Прозрачность миникарты"
