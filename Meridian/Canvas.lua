@@ -261,6 +261,7 @@ function Canvas:DrawZone(uiMapID, rect, zi)
     f.ovl.feather:ClearAllPoints()
     f.ovl.feather:SetPoint("TOPLEFT", f.ovl, "TOPLEFT", rect.x, -rect.y)
     f.ovl.feather:SetSize(rect.w, rect.h)
+    f.zoneID = uiMapID
     f:SetFrameLevel(self.canvas:GetFrameLevel() + zi)
     f:SetAllPoints()
     f:Show()
