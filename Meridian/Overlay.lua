@@ -47,6 +47,7 @@ function Overlay:New(canvas)
     return o
 end
 
+local RIM_PX = 2 -- width of a quest-area polygon's rim on screen (px); declared before Rescale, which uses it
 local MAX_MARKERS = 500
 local PINS = "Interface\\AddOns\\Meridian\\Media\\pins\\"
 -- Marker tints per kind; the pin silhouettes already differ, the colours only help.
@@ -139,7 +140,6 @@ end
 -- one quad per edge makes the rim). Pieces that share an edge rasterise without a seam or an overlap, so the fill is even at
 -- any alpha. The rim keeps its width on screen as the canvas zooms. (The technique follows Polestar's hull drawing.)
 local WHITE = "Interface\\Buttons\\WHITE8X8"
-local RIM_PX = 2
 local Poly = {}
 Poly.__index = Poly
 

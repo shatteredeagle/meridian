@@ -4,6 +4,10 @@ local L = M.L
 local UI = {}
 M.UI = UI
 
+-- The world map (Azeroth) as the outermost zoom level; declared up here because the window's wheel hooks use them.
+local WORLD, DIVE = 947, 2.2
+local CONTINENTS = { 1414, 1415 }
+
 -- Walk up the map tree to the continent containing uiMapID.
 local function continentOf(uiMapID)
     local id = uiMapID
@@ -421,8 +425,6 @@ end
 
 -- The world map (Azeroth) as the outermost zoom level: zooming out past a continent's fit shows both continents, and
 -- zooming into one of them there opens that continent, with the view carried over so it feels like one zoom.
-local WORLD, DIVE = 947, 2.2
-local CONTINENTS = { 1414, 1415 }
 
 function UI:ToWorld(cx, cy)
     local c = self.canvas

@@ -2,6 +2,7 @@
 
 Unreleased (after 0.1.4-alpha):
 
+- Fixed two nil-global bugs: `RIM_PX` (used by the quest-area polygons' zoom relayout before it was declared: an error on every zoom) and `WORLD`/`DIVE` (the world-map zoom hooks read them before they were declared, so the world map never switched back into a continent). Found by scanning the compiled files for global accesses.\n
 - A completed quest's areas (circles, polygons and objective icons) leave the map as soon as the quest is ready to turn in; its green turn-in marker stays.
 
 - Quest areas are now polygons with a rim instead of big circles: a quest's mob spawns are grouped by how close they are (nearest first, never wider than about a fifth of the zone map), and each group becomes the outline that wraps its spawns' coverage, drawn as an even fill with a rim that keeps its screen width as you zoom. A long coast of spawns becomes a chain of regions, not one blob over the sea. Single spawns of objects and short mob lists stay small dots. Hovering works on the polygon's real shape. The idea follows Polestar's quest-area regions (independent implementation, offline-tested geometry).
