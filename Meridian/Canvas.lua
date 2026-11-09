@@ -126,7 +126,10 @@ end
 
 function Canvas:OnWheel(delta)
     local cx, cy = self:CursorInView()
+    -- the window can take over at the ends of the zoom (continent <-> world map)
+    if self.OnWheelEdge and self.OnWheelEdge(delta, cx, cy) then return end
     self:SetZoom(self.zoom * (delta > 0 and 1.2 or 1 / 1.2), cx, cy)
+    if self.AfterWheel then self.AfterWheel(delta, cx, cy) end
 end
 
 function Canvas:Apply()
@@ -343,6 +346,47 @@ local function worldPos(uiMapID, nx, ny)
 end
 M.WorldPos = worldPos
 
+-- The continent map's art as the bottom layer (below every zone frame): the ocean and the ground between zones.
+function Canvas:HideBackdrop()
+    if self.backdrop then self.backdrop:Hide() end
+end
+
+function Canvas:DrawBackdrop(contID, rect)
+    local layers = C_Map.GetMapArtLayers(contID)
+    local layer = layers and layers[1]
+    local files = layer and C_Map.GetMapArtLayerTextures(contID, 1)
+    if not (files and rect.w > 0 and rect.h > 0) then return self:HideBackdrop() end
+    local f = self.backdrop
+    if not f then
+        f = CreateFrame("Frame", nil, self.canvas)
+        f.tiles = {}
+        self.backdrop = f
+    end
+    f:SetFrameLevel(self.canvas:GetFrameLevel())
+    f:SetAllPoints()
+    f:Show()
+    local k = rect.w / layer.layerWidth
+    local tw, th = layer.tileWidth * k, layer.tileHeight * k
+    local cols = math.ceil(layer.layerWidth / layer.tileWidth)
+    for i, file in ipairs(files) do
+        local t = f.tiles[i]
+        if not t then
+            t = f:CreateTexture(nil, "BACKGROUND")
+            if self.mask then t:AddMaskTexture(self.mask) end
+            f.tiles[i] = t
+        end
+        local col, row = (i - 1) % cols, math.floor((i - 1) / cols)
+        t:SetTexture(file)
+        t:SetTexCoord(0, 1, 0, 1)
+        t:SetVertexColor(1, 1, 1)
+        t:SetSize(tw, th)
+        t:ClearAllPoints()
+        t:SetPoint("TOPLEFT", f, "TOPLEFT", rect.x + col * tw, -(rect.y + row * th))
+        t:Show()
+    end
+    for i = #files + 1, #f.tiles do f.tiles[i]:Hide() end
+end
+
 -- Stitch every zone of a continent into one contiguous map using world coordinates.
 function Canvas:BuildContinent(contID)
     local kids = C_Map.GetMapChildrenInfo(contID, Enum.UIMapType.Zone, true)
@@ -366,6 +410,17 @@ function Canvas:BuildContinent(contID)
         minx, maxx = math.min(minx, c.x0, c.x1), math.max(maxx, c.x0, c.x1)
         miny, maxy = math.min(miny, c.y0, c.y1), math.max(maxy, c.y0, c.y1)
     end
+    -- Blizzard's own continent map goes under the zone maps: its ocean, coast hatching and sea art surround the land, and it
+    -- fills the ground between zone maps. It lies where its corners fall in world coordinates; the canvas grows to hold it.
+    local back
+    if M.db.oceanArt ~= false then
+        local c00, c11 = worldPos(contID, 0, 0), worldPos(contID, 1, 1)
+        if c00 and c11 then
+            back = { x0 = c00[ax] * sx, y0 = c00[ay] * sy, x1 = c11[ax] * sx, y1 = c11[ay] * sy }
+            minx, maxx = math.min(minx, back.x0, back.x1), math.max(maxx, back.x0, back.x1)
+            miny, maxy = math.min(miny, back.y0, back.y1), math.max(maxy, back.y0, back.y1)
+        end
+    end
     local _, world = worldPos(corners[1].id, 0, 0)
     self.stitch = { minx = minx, miny = miny, ax = ax, sx = sx, ay = ay, sy = sy, world = world }
     for _, c in ipairs(corners) do
@@ -377,6 +432,16 @@ function Canvas:BuildContinent(contID)
     self.cw, self.ch = (maxx - minx) * YARDS_TO_PX, (maxy - miny) * YARDS_TO_PX
     self.canvas:SetSize(self.cw, self.ch)
     self.pixelOn = M.Art and M.Art:Wants(contID) -- pixel-art tiles replace the zone art (zones still define hit areas)
+    if back and not self.pixelOn then
+        local rect = { x = (math.min(back.x0, back.x1) - minx) * YARDS_TO_PX, y = (math.min(back.y0, back.y1) - miny) * YARDS_TO_PX,
+                       w = math.abs(back.x1 - back.x0) * YARDS_TO_PX, h = math.abs(back.y1 - back.y0) * YARDS_TO_PX }
+        self.backRect = rect
+        local ok = pcall(self.DrawBackdrop, self, contID, rect)
+        if not ok then self:HideBackdrop() end
+    else
+        self.backRect = nil
+        self:HideBackdrop()
+    end
     for zi, c in ipairs(corners) do
         self.zones[c.id] = c.rect
         self:DrawZone(c.id, c.rect, zi)
@@ -520,7 +585,7 @@ function Canvas:UpdateCityFade()
 end
 
 function Canvas:BuildSingle(uiMapID)
-    self.stitch, self.cities = nil, nil
+    self.stitch, self.cities, self.backRect = nil, nil, nil
     local custom = M.Dungeons and M.Dungeons:CustomFloor(uiMapID)
     local layers = not custom and uiMapID > 0 and C_Map.GetMapArtLayers(uiMapID) or nil
     local layer = layers and layers[1]
@@ -549,6 +614,7 @@ function Canvas:SetMap(uiMapID)
     self.mapID = uiMapID
     for _, f in ipairs(self.zoneFrames) do f:Hide(); f.ovl:Hide() end
     for _, f in ipairs(self.caveFrames or {}) do f:Hide() end
+    self:HideBackdrop()
     self.pixelOn = nil
     if M.Art then M.Art:Hide(self) end
     self.zones = {}
@@ -601,6 +667,13 @@ function Canvas:PosToCanvas(uiMapID, nx, ny)
         if not wp or (uiMapID ~= self.mapID and world ~= self.stitch.world) then return nil end
         local s = self.stitch
         return (wp[s.ax] * s.sx - s.minx) * YARDS_TO_PX, (wp[s.ay] * s.sy - s.miny) * YARDS_TO_PX
+    end
+    if self.mapID and self.zones[self.mapID] and C_Map.GetMapRectOnMap then -- a map inside this canvas's map (the world map shows everything)
+        local l, r, t, b = C_Map.GetMapRectOnMap(uiMapID, self.mapID)
+        if l and r and r > l and b > t then
+            local z = self.zones[self.mapID]
+            return z.x + (l + (r - l) * nx) * z.w, z.y + (t + (b - t) * ny) * z.h
+        end
     end
     if self.mapID and self.zones[self.mapID] and C_Map.GetWorldPosFromMapPos and C_Map.GetMapPosFromWorldPos then
         local cont, pos = C_Map.GetWorldPosFromMapPos(uiMapID, CreateVector2D(nx, ny))

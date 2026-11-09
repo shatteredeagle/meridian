@@ -106,6 +106,15 @@ function UI:CreateReadout(f, c)
         end, me)
     end)
     -- Pinned to the character: re-centre every tick, follow the player across zones, unpin when the user pans.
+    c.OnWheelEdge = function(delta, cx, cy)
+        if M.db.worldView == false or delta > 0 then return false end
+        return c.stitch and c.backRect and c.zoom <= (c.fitZoom or 0) * 1.03 and self:ToWorld(cx, cy) or false
+    end
+    c.AfterWheel = function(delta, cx, cy)
+        if M.db.worldView == false or c.mapID ~= WORLD then return end
+        if delta < 0 and c.zoom < (c.fitZoom or 0) then c:Fit() end
+        if delta > 0 and c.zoom >= (c.fitZoom or 0) * DIVE then self:IntoContinent(cx, cy) end
+    end
     c.OnUserPan = function() if M.db.pin then M.db.pin = false; self:SyncToolbar() end end
     local pacc, lastZone, inCity = 0, nil, false
     local function mapIsCity(id) return id and self.isCity(id) end
@@ -145,6 +154,7 @@ function UI:CreateReadout(f, c)
         acc = acc + dt
         if acc < 0.05 then return end
         acc = 0
+        self:UpdateMarker(c) -- the player arrow keeps moving while the map is not following you
         local px, py = c:CursorOnCanvas()
         local id, x, y = nil
         if px then id, x, y = c:ZoneAt(px, py) end
@@ -406,6 +416,46 @@ function UI:LayoutView()
     else
         c.view:SetPoint("BOTTOMRIGHT", f.content, "BOTTOMRIGHT", 0, 0)
     end
+end
+
+-- The world map (Azeroth) as the outermost zoom level: zooming out past a continent's fit shows both continents, and
+-- zooming into one of them there opens that continent, with the view carried over so it feels like one zoom.
+local WORLD, DIVE = 947, 2.2
+local CONTINENTS = { 1414, 1415 }
+
+function UI:ToWorld(cx, cy)
+    local c = self.canvas
+    local l, r, t, b = C_Map.GetMapRectOnMap(c.mapID, WORLD)
+    local br = c.backRect
+    if not (l and r and r > l and br) then return false end
+    local u, v = ((cx - c.offX) / c.zoom - br.x) / br.w, ((cy - c.offY) / c.zoom - br.y) / br.h
+    local zoomC, backW = c.zoom, br.w
+    self:SetMap(WORLD)
+    local W, H = c.cw, c.ch
+    local wx, wy = (l + u * (r - l)) * W, (t + v * (b - t)) * H
+    c:SetZoom(math.max(c.fitZoom or 0, zoomC * backW / ((r - l) * W)), cx, cy)
+    c:SetOffset(cx - wx * c.zoom, cy - wy * c.zoom)
+    return true
+end
+
+function UI:IntoContinent(cx, cy)
+    local c = self.canvas
+    local W, H = c.cw, c.ch
+    local uw, vw = ((cx - c.offX) / c.zoom) / W, ((cy - c.offY) / c.zoom) / H
+    for _, cont in ipairs(CONTINENTS) do
+        local l, r, t, b = C_Map.GetMapRectOnMap(cont, WORLD)
+        if l and uw >= l and uw <= r and vw >= t and vw <= b then
+            local u, v = (uw - l) / (r - l), (vw - t) / (b - t)
+            local zoomW = c.zoom
+            self:SetMap(cont)
+            local br = c.backRect
+            if not br then return false end
+            c:SetZoom(math.max(c.fitZoom or 0, zoomW * (r - l) * W / br.w), cx, cy)
+            c:SetOffset(cx - (br.x + u * br.w) * c.zoom, cy - (br.y + v * br.h) * c.zoom)
+            return true
+        end
+    end
+    return false
 end
 
 function UI:SetMap(uiMapID)

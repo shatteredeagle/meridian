@@ -199,6 +199,7 @@ function UI:CreateMini()
             local px, py = UI:PlayerCanvasPos(c)
             if px then c:CenterOnCanvas(px, py) end
         end
+        UI:UpdateMarker(c) -- the player arrow also moves when the map is panned away (follow off), not only when it recentres
     end)
     f:SetShown(M.db.mini)
 end
