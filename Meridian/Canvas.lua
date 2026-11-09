@@ -205,7 +205,9 @@ local function drawOverlay(self, f, rect, k, layer, ov, n)
                 local fw, fh = Math.pow2(pw), Math.pow2(ph)
                 n = n + 1
                 local t = getTex(f.fog, f.ovl, "ARTWORK", n, self.mask)
-                t:SetTexture(fid, nil, nil, "TRILINEAR")
+                -- a piece the local pack holds is drawn by path: the client may never have downloaded it (zones not yet visited)
+                local src = M.Art and M.Art:PackInstalled() and M.OverlayPackIDs[fid] and ("Interface\\AddOns\\MeridianOverlayFiles\\" .. fid) or fid
+                t:SetTexture(src, nil, nil, "TRILINEAR")
                 t:SetTexCoord(0, pw / fw, 0, ph / fh)
                 t:SetVertexColor(1, 1, 1)
                 t:SetSize(pw * k, ph * k)

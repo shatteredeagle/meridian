@@ -33,6 +33,7 @@ Route.lua
 FlightData.lua
 Caves.lua
 TerritoryData.lua
+OverlayPackIDs.lua
 Waypoints.lua
 Search.lua
 Pins.lua

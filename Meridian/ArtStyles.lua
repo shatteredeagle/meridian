@@ -41,6 +41,12 @@ function Art:Installed()
     return self.installed
 end
 
+-- Is the local overlay-texture pack present? (tools/install_overlay_pack.py: pieces the client may not have downloaded)
+function Art:PackInstalled()
+    if self.pack == nil then self.pack = M.OverlayPackIDs ~= nil and addonExists("MeridianOverlayFiles") end
+    return self.pack
+end
+
 -- Should this continent be drawn with the chosen art style instead of Blizzard's zone maps?
 function Art:Wants(contID)
     local key = self:Current()
