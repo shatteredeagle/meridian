@@ -106,16 +106,83 @@ local function taxiSource(self, c)
     end
 end
 
+-- Your corpse (while you are dead or a ghost): a skull on the map that holds it; click to point the arrow at it.
+local function corpseSource(self, c)
+    if not M.db.pinCorpse then return end
+    local api = C_DeathInfo
+    if not (api and api.GetCorpseMapPosition and UnitIsDeadOrGhost and UnitIsDeadOrGhost("player")) then return end
+    for zoneID in pairs(c.zones) do
+        local x, y = zoneID > 0 and Pins.xy(api.GetCorpseMapPosition(zoneID))
+        if x then
+            local cr, cg, cb = M.Overlay.markerColor("corpse")
+            self:AddMarker(zoneID, { x = x, y = y, pin = "corpse", size = 22, r = cr, g = cg, b = cb, title = "Your corpse", kind = "corpse",
+                hint = "Click: point the arrow at your corpse.",
+                onClick = function(_, btn) if btn == "LeftButton" then M.Way:Add(zoneID, x, y, "Corpse") end end })
+            return
+        end
+    end
+end
+
 M.Overlay.RegisterSource("poi", poiSource)
 M.Overlay.RegisterSource("rare", rareSource)
 M.Overlay.RegisterSource("taxi", taxiSource)
+M.Overlay.RegisterSource("corpse", corpseSource)
 
 ---------------------------------------------------------------------------------
 -- Events (registered only while a type is on)
 ---------------------------------------------------------------------------------
 
+-- Auto-track the corpse: when you die (or are a ghost) a "Corpse" waypoint points the arrow at it; it goes when you are
+-- alive again. Only a waypoint this function made is ever removed.
+local function findCorpse()
+    local api = C_DeathInfo
+    if not (api and api.GetCorpseMapPosition) then return nil end
+    local zone = C_Map.GetBestMapForUnit("player")
+    local tried = {}
+    local function try(id)
+        if not id or id <= 0 or tried[id] then return nil end
+        tried[id] = true
+        local x, y = Pins.xy(api.GetCorpseMapPosition(id))
+        if x then return id, x, y end
+    end
+    local id, x, y = try(zone)
+    if id then return id, x, y end
+    local info = zone and C_Map.GetMapInfo(zone)
+    id, x, y = try(info and info.parentMapID)
+    if id then return id, x, y end
+    local cont = zone and M.UI and M.UI.continentOf(zone)
+    for _, k in ipairs(cont and C_Map.GetMapChildrenInfo(cont, Enum.UIMapType.Zone, true) or {}) do
+        id, x, y = try(k.mapID)
+        if id then return id, x, y end
+    end
+end
+
+function Pins.syncCorpse()
+    if not M.db.autoCorpse then return end
+    local dead = UnitIsDeadOrGhost and UnitIsDeadOrGhost("player")
+    local mine = M.db.corpseWay
+    if dead then
+        local have
+        for _, w in ipairs(M.db.waypoints) do if w.id == mine then have = w end end
+        if have then return end
+        local map, x, y = findCorpse()
+        if map then
+            local wp = M.Way:Add(map, x, y, "Corpse")
+            M.db.corpseWay = wp.id
+        end
+    elseif mine then
+        for _, w in ipairs(M.db.waypoints) do
+            if w.id == mine then M.Way:Remove(w) break end
+        end
+        M.db.corpseWay = nil
+    end
+end
+
+local CORPSE_EVENTS = { PLAYER_DEAD = true, PLAYER_ALIVE = true, PLAYER_UNGHOST = true, CORPSE_POSITION_UPDATE = true }
+
 local lastRefresh = 0
 local function onEvent(_, event)
+    if CORPSE_EVENTS[event] then Pins.syncCorpse() end
     if event == "AREA_POIS_UPDATED" then wipe(poiCache) end
     local now = GetTime()
     if now - lastRefresh < 1 then return end -- vignette events are chatty
@@ -126,7 +193,7 @@ end
 -- Register or drop listeners to match the toggles.
 function Pins:Apply()
     if not self.frame then
-        if not (M.db.pinPoi or M.db.pinRare or M.db.pinTaxi) then return end
+        if not (M.db.pinPoi or M.db.pinRare or M.db.pinTaxi or M.db.pinCorpse or M.db.autoCorpse) then return end
         self.frame = CreateFrame("Frame")
         self.frame:SetScript("OnEvent", onEvent)
     end
@@ -137,4 +204,9 @@ function Pins:Apply()
         f:RegisterEvent("VIGNETTE_MINIMAP_UPDATED")
     end
     if M.db.pinPoi then f:RegisterEvent("AREA_POIS_UPDATED") end
+    if M.db.pinCorpse or M.db.autoCorpse then
+        for _, e in ipairs({ "PLAYER_DEAD", "PLAYER_ALIVE", "PLAYER_UNGHOST", "CORPSE_POSITION_UPDATE" }) do
+            pcall(f.RegisterEvent, f, e)
+        end
+    end
 end

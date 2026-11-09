@@ -2,6 +2,8 @@
 
 Unreleased (after 0.1.3-alpha):
 
+- Corpse: a skull marks your corpse on the map and minimap while you are dead or a ghost (click to point the arrow; new pin Media/pins/corpse.tga, needs a full restart). When you die the arrow is pointed at it automatically with a "Corpse" waypoint, and that waypoint is removed when you are alive again. Options: "Show my corpse on the map and minimap" and "Point the arrow at my corpse when I die" (both on by default).
+
 - Minimap right-click menu: "Clear waypoints and arrow target" removes every waypoint and any quest picked for the arrow.
 
 - Continent blending: zone base art now fades over a wide band (22%) so differently-toned zone parchment (Kalimdor's flat patches and rectangles) blends smoothly, while revealed overlay detail keeps the narrow 8% edge. New Media/feather_wide.tga: needs a full client restart. Added `/mm zones` diagnostic.

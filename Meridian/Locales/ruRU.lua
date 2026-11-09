@@ -104,3 +104,5 @@ L["Ctrl-C to copy, then Enter"] = "Ctrl+C, чтобы скопировать, з
 L["Open Meridian with the world map key (M) instead of Blizzard's map"] = "Открывать Meridian по клавише карты мира (M) вместо карты Blizzard"
 L["Show the Polestar guide route as dots (needs Polestar)"] = "Показывать маршрут гида Polestar точками (нужен Polestar)"
 L["Flight points (every flight master, for your faction)"] = "Места полётов (все распорядители полётов вашей фракции)"
+L["Show my corpse on the map and minimap"] = "Показывать мой труп на карте и миникарте"
+L["Point the arrow at my corpse when I die (cleared when I am alive)"] = "Указывать стрелкой на мой труп после смерти (убирается при воскрешении)"
