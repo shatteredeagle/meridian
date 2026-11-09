@@ -56,17 +56,24 @@ function UI:CreateMini()
         local cx, cy = GetCursorPosition()
         local sc = f:GetEffectiveScale()
         grip.sx, grip.sy, grip.size, grip.scale = cx / sc, cy / sc, f:GetWidth(), sc
+        grip.wasFollow = mini.follow
         grip:SetScript("OnUpdate", function()
             local x, y = GetCursorPosition()
             local dx, dy = x / grip.scale - grip.sx, grip.sy - y / grip.scale
             local size = math.max(MIN_SIZE, math.min(MAX_SIZE, math.floor(grip.size + math.max(dx, dy) + 0.5)))
             if size ~= M.db.miniSize then
+                local delta = size - M.db.miniSize
                 M.db.miniSize = size
-                UI:ApplyMini()
+                UI:ApplyMini(true)
+                -- the view grows from its top-left corner; shift the map by half so the same spot stays in the middle
+                if not mini.follow then c:SetOffset(c.offX + delta / 2, c.offY + delta / 2) end
             end
         end)
     end)
-    grip:SetScript("OnMouseUp", function() grip:SetScript("OnUpdate", nil) end)
+    grip:SetScript("OnMouseUp", function()
+        grip:SetScript("OnUpdate", nil)
+        if grip.wasFollow ~= nil then mini.follow = grip.wasFollow end -- resizing never unpins
+    end)
     grip:SetScript("OnEnter", function(self)
         GameTooltip:SetOwner(self, "ANCHOR_LEFT")
         GameTooltip:SetText("Drag to resize")
@@ -134,6 +141,16 @@ function UI:CreateMini()
     end)
     mini.north, mini.coords = north, coords
 
+    -- mouse-wheel zoom becomes the minimap's zoom, so later settings changes and resizes don't undo it
+    local prev = c.OnChanged
+    c.OnChanged = function(...)
+        if prev then prev(...) end
+        if c.mapID and not mini.busy and c.zoom ~= M.db.miniZoom then
+            M.db.miniZoom = math.max(0.5, math.min(4, c.zoom))
+            mini.zoomApplied = M.db.miniZoom
+        end
+    end
+
     local acc = 0
     f:SetScript("OnUpdate", function(_, dt)
         acc = acc + dt
@@ -143,8 +160,10 @@ function UI:CreateMini()
         if not zone then return end
         local target = UI.continentOf(zone) or zone
         if c.mapID ~= target then
+            mini.busy = true -- Fit() inside SetMap must not overwrite the saved zoom
             c:SetMap(target)
             c:SetZoom(M.db.miniZoom)
+            mini.busy = nil
             overlay:Refresh()
         end
         north:SetShown(M.db.miniCoords)
@@ -168,11 +187,12 @@ function UI:CreateMini()
 end
 
 -- Size and zoom from settings (live).
-function UI:ApplyMini()
+function UI:ApplyMini(sizeOnly)
     local mini = self.mini
     local s = M.db.miniSize
     mini.frame:SetSize(s, s)
     mini.grab:SetWidth(s - 30)
+    if sizeOnly then return end
     if mini.canvas.mapID and mini.canvas.zoom ~= M.db.miniZoom and mini.zoomApplied ~= M.db.miniZoom then
         mini.zoomApplied = M.db.miniZoom
         mini.canvas:SetZoom(M.db.miniZoom)

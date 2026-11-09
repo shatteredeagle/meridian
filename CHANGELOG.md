@@ -2,6 +2,8 @@
 
 Unreleased (after 0.1.2-alpha):
 
+- Minimap: resizing keeps your zoom (mouse-wheel zoom is now saved as the minimap zoom) and never drops follow-me; if you had panned away, the same spot stays centred.
+
 - Minimap: right-click opens a menu (zoom, follow me, quest areas / givers / arrow / coordinates / lock toggles, open map, options, hide).
 
 - Minimap is always fully revealed (no dimmed "unexplored" patches, whatever the main map's art setting), and its move strip is only drawn while the mouse is over it.
