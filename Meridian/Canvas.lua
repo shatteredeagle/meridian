@@ -13,6 +13,10 @@ function Math.zoomAround(offX, offY, zoom, newZoom, cx, cy)
     return cx - (cx - offX) * ratio, cy - (cy - offY) * ratio
 end
 
+-- On-screen width (px) over which a city layer fades in; dungeon insets are small canvas rects that fade in later.
+local CITY_FADE_FROM, CITY_FADE_TO = 140, 320
+local INSET_W, INSET_FADE_FROM, INSET_FADE_TO = 160, 260, 520
+
 -- uiMapIDs of the capital cities drawn on the continent view (those the client doesn't type as a city too).
 M.CityMaps = { 1453, 1454, 1455, 1456, 1457, 1458 }
 
@@ -390,6 +394,34 @@ function Canvas:BuildContinent(contID)
             end
         end
     end
+    -- Dungeons: the first floor's map as a small inset at the entrance, faded in only when zoomed right in.
+    if M.db.dungeons and M.Dungeons then
+        local okList = pcall(M.Dungeons.List, M.Dungeons)
+        local done = {}
+        for _, zc in ipairs(corners) do
+            for _, e in ipairs(okList and M.Dungeons:EntrancesOn(zc.id) or {}) do
+                local d = e.d
+                local f = d.floors[(d.portal and d.portal.floor) or 1] or d.floors[1]
+                local wp = worldPos(zc.id, e.x, e.y)
+                if f and wp and not done[d] then
+                    done[d] = true
+                    local cw, ch
+                    if f.custom then cw, ch = M.Dungeons.customSize(f) else
+                        local layers = C_Map.GetMapArtLayers(f.key)
+                        cw, ch = layers and layers[1] and layers[1].layerWidth, layers and layers[1] and layers[1].layerHeight
+                    end
+                    if cw and ch and cw > 0 and ch > 0 then
+                        local w = INSET_W
+                        local h = w * ch / cw
+                        local rect = { x = (wp[ax] * sx - minx) * YARDS_TO_PX - w / 2, y = (wp[ay] * sy - miny) * YARDS_TO_PX - h / 2, w = w, h = h }
+                        local zi = #corners + #self.cities + 1
+                        self:DrawZone(f.key, rect, zi)
+                        self.cities[#self.cities + 1] = { frame = self.zoneFrames[zi], rect = rect, from = INSET_FADE_FROM, to = INSET_FADE_TO }
+                    end
+                end
+            end
+        end
+    end
     if self.pixelOn then M.Art:Draw(self) end
     self.zoneCount = #corners
     self:UpdateCityFade()
@@ -397,10 +429,10 @@ function Canvas:BuildContinent(contID)
 end
 
 -- City layers fade in as their on-screen size grows from CITY_FADE_FROM to CITY_FADE_TO px wide.
-local CITY_FADE_FROM, CITY_FADE_TO = 140, 320
 function Canvas:UpdateCityFade()
     for _, c in ipairs(self.cities or {}) do
-        local a = math.max(0, math.min(1, (c.rect.w * self.zoom - CITY_FADE_FROM) / (CITY_FADE_TO - CITY_FADE_FROM)))
+        local from, to = c.from or CITY_FADE_FROM, c.to or CITY_FADE_TO
+        local a = math.max(0, math.min(1, (c.rect.w * self.zoom - from) / (to - from)))
         if c.alpha ~= a then
             c.alpha = a
             c.frame:SetAlpha(a)

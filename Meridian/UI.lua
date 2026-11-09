@@ -129,8 +129,8 @@ function UI:CreateReadout(f, c)
                 end
                 local cx, cy = self:PlayerCanvasPos(c)
                 if cx then c:CenterOnCanvas(cx, cy) end
-            elseif wasCity or mapIsCity(c.mapID) then
-                self:OpenView() -- walked back out: zone-level zoom on the continent again
+            elseif wasCity or mapIsCity(c.mapID) or (M.Dungeons and M.Dungeons:ForMap(c.mapID)) then
+                self:OpenView() -- walked back out of a city or dungeon: zone-level zoom on the continent again
             elseif not c.zones[zone] then
                 local mid = c.mapID
                 local info = mid and mid > 0 and C_Map.GetMapInfo(mid)
