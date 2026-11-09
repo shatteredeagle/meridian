@@ -403,6 +403,11 @@ function Canvas:CursorOnCanvas()
     return (cx - self.offX) / self.zoom, (cy - self.offY) / self.zoom
 end
 
+-- The canvas point under the middle of the view (the controller crosshair).
+function Canvas:ViewCenterOnCanvas()
+    return (self.view:GetWidth() / 2 - self.offX) / self.zoom, (self.view:GetHeight() / 2 - self.offY) / self.zoom
+end
+
 -- Smallest zone rect containing a canvas point -> uiMapID, zone-normalized x, y.
 function Canvas:ZoneAt(px, py)
     local best, bestArea

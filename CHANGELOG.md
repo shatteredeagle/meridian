@@ -2,6 +2,10 @@
 
 Unreleased (all items untested in-client unless noted; see docs/test-checklist.md).
 
+- Quest-giver "!" markers now check profession skill and reputation requirements (QuestieDB requiredSkill / requiredMinRep / requiredMaxRep). If the client can't report skill ids or a faction, the quest stays listed.
+
+- Controller mode: a crosshair marks the map centre; A drops a waypoint there and turns the arrow on, X centres on you, B closes, Y toggles the list, Back toggles pin, D-pad up/down and shoulders cycle quests. Still untested with a real pad.
+
 - Quest objectives that are lootable/interactable objects, or NPCs with 3 or fewer spawns, now draw one small circle per spawn (min 9 px on screen) instead of one big area. Mob camps (4+ spawns close together) and lists over 40 objects still collapse into areas.
 
 - Approved on CurseForge: https://www.curseforge.com/wow/addons/meridian (README links it).

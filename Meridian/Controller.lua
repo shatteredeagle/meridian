@@ -1,5 +1,5 @@
 -- Optional, off by default: gamepad control of the main map. Left stick pans, triggers zoom, shoulders cycle quests,
--- face buttons: 1 centre on you, 2 close, 4 quest list. Nothing is registered until it is switched on, so it costs
+-- face buttons: 1 (A) waypoint at the crosshair, 3 (X) centre on you, 2 (B) close, 4 (Y) quest list, Back pins. Nothing is registered until it is switched on, so it costs
 -- nothing when unused. Stick and button identifiers are unverified guesses (see docs/test-checklist.md).
 local ADDON, M = ...
 
@@ -45,7 +45,16 @@ function Pad:OnButton(button)
     if ZOOM_KEYS[button] then
         c:SetZoom(c.zoom * ZOOM_KEYS[button])
     elseif button == "PAD1" then
+        -- drop a waypoint under the crosshair
+        if M.Way:AddAtCanvas(c, c:ViewCenterOnCanvas()) and not M.db.arrow then M.Arrow:Toggle() end
+    elseif button == "PAD3" then
         ui:CenterOnPlayer()
+    elseif button == "PADBACK" then
+        ui:TogglePin()
+    elseif button == "PADDUP" then
+        self:Cycle(-1)
+    elseif button == "PADDDOWN" then
+        self:Cycle(1)
     elseif button == "PAD2" then
         ui.frame:Hide()
     elseif button == "PAD4" then
@@ -84,13 +93,24 @@ function Pad:Apply()
         end)
         f.padHint = f:CreateFontString(nil, "OVERLAY", "MeridianFontWhite")
         f.padHint:SetPoint("BOTTOMRIGHT", -26, 6)
-        f.padHint:SetText("Stick pan | Triggers zoom | Shoulders quests | 1 me | 2 close | 4 list")
+        f.padHint:SetText("Stick pan | Triggers zoom | Shoulders/D-pad quests | A waypoint at + | X me | B close | Y list | Back pin")
+        -- crosshair marking where A drops a waypoint
+        local holder = CreateFrame("Frame", nil, M.UI.canvas.view)
+        holder:SetAllPoints()
+        holder:SetFrameLevel(M.UI.canvas.view:GetFrameLevel() + 50)
+        f.padCross = holder:CreateTexture(nil, "OVERLAY")
+        f.padCross:SetTexture("Interface\\AddOns\\Meridian\\Media\\icons\\pin")
+        f.padCross:SetSize(18, 18)
+        f.padCross:SetAlpha(0.8)
+        f.padCross:SetPoint("CENTER", holder, "CENTER")
+        f.padHolder = holder
     end
     self.enabled = on
     if self.hooked then
         f:EnableGamePadButton(on)
         f:EnableGamePadStick(on)
         f.padHint:SetShown(on)
+        f.padHolder:SetShown(on)
         if not on then self.px, self.py, self.zoomPush = nil end
     end
 end

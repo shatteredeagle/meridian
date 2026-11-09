@@ -222,9 +222,8 @@ function Way:Init()
     SlashCmdList.MERIDIANWAY = function(msg) Way:Slash(msg) end
 end
 
--- Shown on the toolbar tooltip / README: mouse entry point.
-function Way:AddFromCursor(canvas)
-    local px, py = canvas:CursorOnCanvas()
+-- Drop a waypoint at a canvas point. Returns true when one was placed.
+function Way:AddAtCanvas(canvas, px, py)
     if not px then return end
     local id, x, y = canvas:ZoneAt(px, py)
     if not id then return end
@@ -233,4 +232,9 @@ function Way:AddFromCursor(canvas)
     if info and info.mapType == Enum.UIMapType.Continent then return M:Print("Zoom into a zone (double-click it) to place a waypoint.") end
     self:Add(id, x, y)
     return true
+end
+
+-- Mouse entry point: the point under the cursor.
+function Way:AddFromCursor(canvas)
+    return self:AddAtCanvas(canvas, canvas:CursorOnCanvas())
 end
