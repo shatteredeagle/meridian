@@ -113,7 +113,8 @@ function UI:CreateReadout(f, c)
     c.AfterWheel = function(delta, cx, cy)
         if M.db.worldView == false or c.mapID ~= WORLD then return end
         if delta < 0 and c.zoom < (c.fitZoom or 0) then c:Fit() end
-        if delta > 0 and c.zoom >= (c.fitZoom or 0) * DIVE then self:IntoContinent(cx, cy) end
+        -- (capped just under the zoom limit, or a large window would never reach DIVE x its fit)
+        if delta > 0 and c.zoom >= math.min((c.fitZoom or 0) * DIVE, M.db.zoomMax * 0.97) then self:IntoContinent(cx, cy) end
     end
     c.OnUserPan = function() if M.db.pin then M.db.pin = false; self:SyncToolbar() end end
     local pacc, lastZone, inCity = 0, nil, false
@@ -442,20 +443,27 @@ function UI:IntoContinent(cx, cy)
     local c = self.canvas
     local W, H = c.cw, c.ch
     local uw, vw = ((cx - c.offX) / c.zoom) / W, ((cy - c.offY) / c.zoom) / H
+    -- the continent under the cursor; over open ocean, the nearest one (so zooming in always gets somewhere)
+    local best, bestD
     for _, cont in ipairs(CONTINENTS) do
         local l, r, t, b = C_Map.GetMapRectOnMap(cont, WORLD)
-        if l and uw >= l and uw <= r and vw >= t and vw <= b then
-            local u, v = (uw - l) / (r - l), (vw - t) / (b - t)
-            local zoomW = c.zoom
-            self:SetMap(cont)
-            local br = c.backRect
-            if not br then return false end
-            c:SetZoom(math.max(c.fitZoom or 0, zoomW * (r - l) * W / br.w), cx, cy)
-            c:SetOffset(cx - (br.x + u * br.w) * c.zoom, cy - (br.y + v * br.h) * c.zoom)
-            return true
+        if l and r and r > l then
+            local dx = uw < l and l - uw or (uw > r and uw - r or 0)
+            local dy = vw < t and t - vw or (vw > b and vw - b or 0)
+            local d = dx * dx + dy * dy
+            if not bestD or d < bestD then best, bestD = { cont = cont, l = l, r = r, t = t, b = b }, d end
         end
     end
-    return false
+    if not best then return false end
+    local u = math.max(0, math.min(1, (uw - best.l) / (best.r - best.l)))
+    local v = math.max(0, math.min(1, (vw - best.t) / (best.b - best.t)))
+    local zoomW = c.zoom
+    self:SetMap(best.cont)
+    local br = c.backRect
+    if not br then return false end
+    c:SetZoom(math.max(c.fitZoom or 0, zoomW * (best.r - best.l) * W / br.w), cx, cy)
+    c:SetOffset(cx - (br.x + u * br.w) * c.zoom, cy - (br.y + v * br.h) * c.zoom)
+    return true
 end
 
 function UI:SetMap(uiMapID)

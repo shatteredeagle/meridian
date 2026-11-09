@@ -2,6 +2,8 @@
 
 Unreleased (after 0.1.3-alpha):
 
+- Fixed being unable to zoom back in from the world map: the continent under the cursor was needed, so zooming with the cursor over open ocean (or on a large window where the switch point was above the zoom limit) went nowhere. It now opens the nearest continent, and the switch point is capped just under the zoom limit.
+
 - Seam patches (local-only): `tools/seam_patch.py` builds small pictures that cover bare parchment strips where two zone maps meet (first one: Hillsbrad/Arathi) and installs them as the addon MeridianSeamPatches. They contain Blizzard's art, so they are never committed or released; Meridian/SeamPatches.lua holds only their positions (in yards) and Meridian draws a patch only when the addon is installed.
 
 - Zone borders: territory masks hug each zone's own land more tightly (grown 10 px instead of 24), so the blank parchment strips (and stray painted place names) that showed along the seam between two zones, e.g. Hillsbrad and Arathi, give way to the continent map underneath. Regenerated Media/territory (needs a full client restart).
