@@ -4,7 +4,7 @@ Run from the repo root: python3 tools/gen_feather.py"""
 import struct
 
 S = 128
-FADE = 0.14  # fraction of the width/height over which the edge fades out
+FADE = 0.08  # fraction of the width/height over which the edge fades out
 
 def smooth(t):
     t = max(0.0, min(1.0, t))

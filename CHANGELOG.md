@@ -2,6 +2,10 @@
 
 Unreleased (after 0.1.2-alpha):
 
+- Pinned map switches to a capital city's own map (Stormwind, Orgrimmar, Ironforge, Thunder Bluff, Darnassus, Undercity, or any map the client types as a city) when you walk in, and back to the continent when you leave. Opening the map inside a capital does the same.
+
+- Narrower zone blend: the feathered edge on stitched zones is 8% wide instead of 14% (tools/gen_feather.py). Media/feather.tga changed: needs a full client restart.
+
 - Polestar integration (optional): the walking route Polestar's guide arrow is following is drawn as breadcrumb dots on the main map and minimap (continent and zone views; later legs dimmer, flights green, boats blue). Reads Polestar's published route (`Polestar.Nav.GetRouteGeometry`, `NAV_ROUTE_GEOMETRY`) only; none of its code is used. Option "Show the Polestar guide route as dots" (on by default; does nothing without Polestar).
 
 - Continent view: each zone's explored/revealed overlay detail is drawn in a layer above every zone's base art. A neighbouring zone's base (which paints other zones as blank parchment) used to cover it at the seams, which looked like hidden terrain with Reveal map on (Westfall/Elwynn, Darkshore, Ashenvale edges). Added `/mm overlays` coverage diagnostic.
