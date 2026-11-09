@@ -41,6 +41,19 @@ function Data.eligible(q, p)
     for _, id in ipairs(q.exclusive or {}) do
         if p.done(id) then return false end
     end
+    -- profession skill and reputation: a nil answer means the client could not tell, so the quest stays listed
+    if q.skill and p.skill then
+        local have = p.skill(q.skill[1])
+        if have and have < (q.skill[2] or 0) then return false end
+    end
+    if q.minRep and p.rep then
+        local have = p.rep(q.minRep[1])
+        if have and have < q.minRep[2] then return false end
+    end
+    if q.maxRep and p.rep then
+        local have = p.rep(q.maxRep[1])
+        if have and have >= q.maxRep[2] then return false end
+    end
     return true
 end
 
@@ -136,6 +149,35 @@ end
 
 local infoCache = {}
 
+-- Fields older QuestieDB builds may lack: nil instead of an error.
+local function optional(fn, id)
+    if not fn then return nil end
+    local ok, v = pcall(fn, id)
+    if ok then return v end
+end
+
+-- Profession skill ranks by skill line id, or nil when the client does not report ids.
+local function skillRanks()
+    local info = _G.C_SkillInfo
+    if not (info and info.GetNumSkillLines and info.GetSkillLineInfo) then return nil end
+    local ranks = {}
+    for i = 1, info.GetNumSkillLines() do
+        local l = info.GetSkillLineInfo(i)
+        if l and not l.isHeader and l.skillID then ranks[l.skillID] = l.rank or 0 end
+    end
+    return ranks
+end
+
+-- Absolute standing with a faction (-42000..42000), nil when the faction is unknown to the player.
+local function factionStanding(id)
+    local rep = _G.C_Reputation
+    if rep and rep.GetFactionDataByID then
+        local d = rep.GetFactionDataByID(id)
+        return d and d.currentStanding
+    end
+    if _G.GetFactionInfoByID then return select(6, _G.GetFactionInfoByID(id)) end
+end
+
 local function questInfo(db, id)
     local q = infoCache[id]
     if not q then
@@ -143,6 +185,8 @@ local function questInfo(db, id)
             id = id, name = db.Quest.name(id), level = db.Quest.questLevel(id), reqLevel = db.Quest.requiredLevel(id),
             races = db.Quest.requiredRaces(id), classes = db.Quest.requiredClasses(id),
             group = db.Quest.preQuestGroup(id), single = db.Quest.preQuestSingle(id), exclusive = db.Quest.exclusiveTo(id),
+            skill = optional(db.Quest.requiredSkill, id), minRep = optional(db.Quest.requiredMinRep, id),
+            maxRep = optional(db.Quest.requiredMaxRep, id),
         }
         infoCache[id] = q
     end
@@ -188,6 +232,12 @@ local function playerState(db)
         raceMask = db.Enum.raceMaskById[raceID], classMask = db.Enum.classKeys[classFile],
         done = function(id) return C_QuestLog.IsQuestFlaggedCompleted(id) end,
         inLog = function(id) return C_QuestLog.GetLogIndexForQuestID(id) ~= nil end,
+        -- 0 for a profession the player lacks; nil when ids are unavailable
+        skill = (function()
+            local ranks = skillRanks()
+            return ranks and function(id) return ranks[id] or 0 end
+        end)(),
+        rep = function(id) local ok, v = pcall(factionStanding, id); if ok then return v end end,
     }
 end
 

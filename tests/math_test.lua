@@ -301,3 +301,20 @@ for i = 1, 8 do many[i] = { 0.2 + i * 0.005, 0.2, 9 } end
 local m1 = G2.Geometry.areas(many)
 assert(#m1 == 1 and not m1[1].dot, "a mob camp stays one area")
 print("dots ok")
+
+-- eligibility: reputation and profession skill
+local D = {}
+assert(loadfile("Meridian/Data.lua"))("Meridian", D)
+local base = { inLog = function() return false end, done = function() return false end, level = 60, greyRange = 99 }
+local function st(o) for k, v in pairs(base) do o[k] = o[k] or v end return o end
+local rq = { id = 1, minRep = { 72, 3000 } }
+assert(D.Data.eligible(rq, st({ rep = function() return 3000 end })), "rep met")
+assert(not D.Data.eligible(rq, st({ rep = function() return 2999 end })), "rep short")
+assert(D.Data.eligible(rq, st({ rep = function() return nil end })), "unknown rep stays listed")
+assert(not D.Data.eligible({ id = 2, maxRep = { 72, 0 } }, st({ rep = function() return 10 end })), "rep too high")
+local sq = { id = 3, skill = { 171, 150 } }
+assert(not D.Data.eligible(sq, st({ skill = function() return 0 end })), "no profession")
+assert(not D.Data.eligible(sq, st({ skill = function() return 149 end })), "skill short")
+assert(D.Data.eligible(sq, st({ skill = function() return 150 end })), "skill met")
+assert(D.Data.eligible(sq, st({})), "no skill info -> listed")
+print("rep/skill ok")
