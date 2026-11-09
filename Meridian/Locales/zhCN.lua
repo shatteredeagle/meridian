@@ -106,3 +106,4 @@ L["Show the Polestar guide route as dots (needs Polestar)"] = "以圆点显示 P
 L["Flight points (every flight master, for your faction)"] = "飞行点（你阵营的所有飞行管理员）"
 L["Show my corpse on the map and minimap"] = "在地图和小地图上显示我的尸体"
 L["Point the arrow at my corpse when I die (cleared when I am alive)"] = "死亡时用箭头指向我的尸体（复活后清除）"
+L["Boats and zeppelins (docks, for your faction)"] = "船只和飞艇（你阵营的码头）"

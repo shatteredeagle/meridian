@@ -81,6 +81,8 @@ PINS = {
     "rare": star(.5, .52, .44, .19),
     "poi": union(tri(.5, .08, .92, .5, .08, .5), tri(.5, .92, .92, .5, .08, .5)),  # diamond
     "corpse": lambda x, y: (disc(.5, .4, .34)(x, y) or box(.32, .55, .68, .9)(x, y)) and not (disc(.38, .42, .09)(x, y) or disc(.62, .42, .09)(x, y) or box(.46, .6, .54, .7)(x, y)),  # skull
+    "boat": union(tri(.1, .6, .9, .6, .78, .88), tri(.1, .6, .78, .88, .22, .88), box(.47, .12, .53, .6), tri(.55, .16, .55, .56, .88, .56)),  # sailing ship
+    "zeppelin": union(lambda x, y: ((x - .5) / .44) ** 2 + ((y - .38) / .22) ** 2 <= 1, box(.36, .64, .64, .8), tri(.1, .38, .22, .2, .22, .5)),  # airship
     "party": union(box(.2, .2, .8, .8)),
     "dungeon": union(box(.16, .45, .84, .9), box(.16, .12, .28, .45), box(.44, .12, .56, .45), box(.72, .12, .84, .45)),  # castle gate                                           # square
 }

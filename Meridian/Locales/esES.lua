@@ -106,3 +106,4 @@ L["Show the Polestar guide route as dots (needs Polestar)"] = "Mostrar la ruta d
 L["Flight points (every flight master, for your faction)"] = "Puntos de vuelo (todos los maestros de vuelo de tu facción)"
 L["Show my corpse on the map and minimap"] = "Mostrar mi cadáver en el mapa y el minimapa"
 L["Point the arrow at my corpse when I die (cleared when I am alive)"] = "Apuntar la flecha a mi cadáver al morir (se borra al revivir)"
+L["Boats and zeppelins (docks, for your faction)"] = "Barcos y zepelines (muelles de tu facción)"

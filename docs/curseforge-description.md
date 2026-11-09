@@ -37,7 +37,7 @@ Blizzard's map shows one quest at a time. Meridian shows all of them, overlappin
 **Comfort and accessibility**
 - A colour-blind palette, a text size option, a high-contrast mode, and a distinct shape for every marker type (not colour alone).
 - An options page, key bindings for everything, and an experimental controller mode (off by default).
-- Flight points for every flight master (your faction), plus optional extra pins for rares and points of interest (off by default).
+- Flight points for every flight master, plus boat and zeppelin docks, each with its own icon (your faction), plus optional extra pins for rares and points of interest (off by default).
 
 ## Quick start
 

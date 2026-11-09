@@ -25,6 +25,7 @@ local OPTIONS = {
     { "check", "dungeons", L["Dungeon maps (entrances on zone maps, multi-floor dungeon views)"], after = "map" },
     { "check", "pinCorpse", L["Show my corpse on the map and minimap"], after = "pins" },
     { "check", "autoCorpse", L["Point the arrow at my corpse when I die (cleared when I am alive)"], after = "pins" },
+    { "check", "pinTransport", L["Boats and zeppelins (docks, for your faction)"], after = "pins" },
     { "check", "pinTaxi", L["Flight points (every flight master, for your faction)"], after = "pins" },
     { "slider", "greyRange", L["Hide grey quests below (levels)"], 0, 30, 1, "%d", after = "map" },
     { "check", "polestarRoute", L["Show the Polestar guide route as dots (needs Polestar)"], after = "route" },

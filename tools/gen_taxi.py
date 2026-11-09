@@ -5,7 +5,7 @@ import csv, sys
 rows = []
 for r in csv.DictReader(open(sys.argv[1], encoding="utf-8")):
     name = r["Name_lang"]
-    if r["ContinentID"] not in ("0", "1") or name.startswith("Quest Path") or name.startswith("Programmer"):
+    if r["ContinentID"] not in ("0", "1") or name.startswith("Quest Path") or name.startswith("Programmer") or name.startswith("Transport"):
         continue
     faction = {"1025": "A", "1026": "H"}.get(r["Flags"], "")
     rows.append((name, int(r["ContinentID"]), float(r["Pos_0"]), float(r["Pos_1"]), faction))

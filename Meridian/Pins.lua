@@ -123,9 +123,39 @@ local function corpseSource(self, c)
     end
 end
 
+-- Boat and zeppelin docks (TransportData.lua), for the player's faction, each with its own pin.
+local transportCache
+local function transportDocks()
+    if transportCache then return transportCache end
+    transportCache = {}
+    local faction = UnitFactionGroup and UnitFactionGroup("player")
+    local mine = faction == "Horde" and "H" or faction == "Alliance" and "A" or nil
+    for _, d in ipairs(M.TransportData or {}) do
+        if not d[6] or d[6] == mine then
+            local map, v = C_Map.GetMapPosFromWorldPos(d[3], CreateVector2D(d[4], d[5]))
+            local x, y = Pins.xy(v)
+            if map and x then transportCache[#transportCache + 1] = { kind = d[1], name = d[2], map = map, x = x, y = y, c = d[3] } end
+        end
+    end
+    return transportCache
+end
+
+local function transportSource(self, c)
+    if not M.db.pinTransport then return end
+    for _, d in ipairs(transportDocks()) do
+        if c.mapID == d.map or c.zones[d.map] or (c.stitch and c.stitch.world == d.c) then
+            local cr, cg, cb = M.Overlay.markerColor(d.kind)
+            self:AddMarker(d.map, { x = d.x, y = d.y, pin = d.kind, size = 18, r = cr, g = cg, b = cb, title = d.name, kind = d.kind,
+                lines = { d.kind == "zeppelin" and "Zeppelin" or "Boat" }, hint = "Click: drop a waypoint here.",
+                onClick = function(_, btn) if btn == "LeftButton" then M.Way:Add(d.map, d.x, d.y, d.name) end end })
+        end
+    end
+end
+
 M.Overlay.RegisterSource("poi", poiSource)
 M.Overlay.RegisterSource("rare", rareSource)
 M.Overlay.RegisterSource("taxi", taxiSource)
+M.Overlay.RegisterSource("transport", transportSource)
 M.Overlay.RegisterSource("corpse", corpseSource)
 
 ---------------------------------------------------------------------------------

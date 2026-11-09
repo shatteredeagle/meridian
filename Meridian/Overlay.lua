@@ -51,8 +51,8 @@ local MAX_MARKERS = 500
 local PINS = "Interface\\AddOns\\Meridian\\Media\\pins\\"
 -- Marker tints per kind; the pin silhouettes already differ, the colours only help.
 local MARKER_COLORS = {
-    default = { give = { 1, 0.85, 0.1 }, turnin = { 0.5, 1, 0.5 }, way = { 0.35, 0.8, 1 }, taxi = { 0.6, 0.8, 1 }, rare = { 1, 0.5, 0.2 }, poi = { 0.9, 0.9, 0.5 }, party = { 0.5, 0.8, 1 }, dungeon = { 0.75, 0.55, 1 }, corpse = { 1, 0.35, 0.35 } },
-    cb = { give = { 0.94, 0.89, 0.26 }, turnin = { 0, 0.62, 0.45 }, way = { 0.34, 0.71, 0.91 }, taxi = { 0, 0.45, 0.7 }, rare = { 0.84, 0.37, 0 }, poi = { 0.8, 0.47, 0.65 }, party = { 0.34, 0.71, 0.91 }, dungeon = { 0.9, 0.62, 0 }, corpse = { 0.84, 0.37, 0 } },
+    default = { give = { 1, 0.85, 0.1 }, turnin = { 0.5, 1, 0.5 }, way = { 0.35, 0.8, 1 }, taxi = { 0.6, 0.8, 1 }, rare = { 1, 0.5, 0.2 }, poi = { 0.9, 0.9, 0.5 }, party = { 0.5, 0.8, 1 }, dungeon = { 0.75, 0.55, 1 }, corpse = { 1, 0.35, 0.35 }, boat = { 0.4, 0.8, 1 }, zeppelin = { 1, 0.65, 0.3 } },
+    cb = { give = { 0.94, 0.89, 0.26 }, turnin = { 0, 0.62, 0.45 }, way = { 0.34, 0.71, 0.91 }, taxi = { 0, 0.45, 0.7 }, rare = { 0.84, 0.37, 0 }, poi = { 0.8, 0.47, 0.65 }, party = { 0.34, 0.71, 0.91 }, dungeon = { 0.9, 0.62, 0 }, corpse = { 0.84, 0.37, 0 }, boat = { 0.34, 0.71, 0.91 }, zeppelin = { 0.9, 0.62, 0 } },
 }
 function Overlay.markerColor(kind, palette)
     local set = MARKER_COLORS[palette or (M.db and M.db.palette) or "default"] or MARKER_COLORS.default
