@@ -189,7 +189,7 @@ local function drawOverlay(self, f, rect, k, layer, ov, n)
                 local ph = j < tall and th or ((ov.h % th == 0) and th or ov.h % th)
                 local fw, fh = Math.pow2(pw), Math.pow2(ph)
                 n = n + 1
-                local t = getTex(f.fog, f, "ARTWORK", n, self.mask)
+                local t = getTex(f.fog, f.ovl, "ARTWORK", n, self.mask)
                 t:SetTexture(fid, nil, nil, "TRILINEAR")
                 t:SetTexCoord(0, pw / fw, 0, ph / fh)
                 t:SetVertexColor(1, 1, 1)
@@ -233,6 +233,10 @@ function Canvas:DrawZone(uiMapID, rect, zi)
         f = CreateFrame("Frame", nil, self.canvas)
         f.tiles, f.fog = {}, {}
         f.feather = f:CreateMaskTexture()
+        -- Explored/revealed overlays live in a second frame above EVERY zone's base art: each zone map paints its
+        -- neighbours' ground as blank parchment, and a later zone's base would otherwise cover this zone's detail.
+        f.ovl = CreateFrame("Frame", nil, self.canvas)
+        f.ovl.feather = f.ovl:CreateMaskTexture()
         self.zoneFrames[zi] = f
     end
     -- Stitched continent zones get a feathered edge mask so overlapping maps blend; elsewhere the mask is solid.
@@ -241,9 +245,16 @@ function Canvas:DrawZone(uiMapID, rect, zi)
     f.feather:ClearAllPoints()
     f.feather:SetPoint("TOPLEFT", f, "TOPLEFT", rect.x, -rect.y)
     f.feather:SetSize(rect.w, rect.h)
+    f.ovl.feather:SetTexture(blend and FEATHER or "Interface\\Buttons\\WHITE8X8", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+    f.ovl.feather:ClearAllPoints()
+    f.ovl.feather:SetPoint("TOPLEFT", f.ovl, "TOPLEFT", rect.x, -rect.y)
+    f.ovl.feather:SetSize(rect.w, rect.h)
     f:SetFrameLevel(self.canvas:GetFrameLevel() + zi)
     f:SetAllPoints()
     f:Show()
+    f.ovl:SetFrameLevel(self.canvas:GetFrameLevel() + 200 + zi)
+    f.ovl:SetAllPoints()
+    f.ovl:Show()
     for _, t in ipairs(f.tiles) do t:Hide() end
     for _, t in ipairs(f.fog) do t:Hide() end
     if self.pixelOn then return end
@@ -386,7 +397,7 @@ end
 
 function Canvas:SetMap(uiMapID)
     self.mapID = uiMapID
-    for _, f in ipairs(self.zoneFrames) do f:Hide() end
+    for _, f in ipairs(self.zoneFrames) do f:Hide(); f.ovl:Hide() end
     self.pixelOn = nil
     if M.Art then M.Art:Hide(self) end
     self.zones = {}

@@ -2,6 +2,8 @@
 
 Unreleased (after 0.1.2-alpha):
 
+- Continent view: each zone's explored/revealed overlay detail is drawn in a layer above every zone's base art. A neighbouring zone's base (which paints other zones as blank parchment) used to cover it at the seams, which looked like hidden terrain with Reveal map on (Westfall/Elwynn, Darkshore, Ashenvale edges). Added `/mm overlays` coverage diagnostic.
+
 - Ground that no zone map covers (open sea off the coast, gaps between zones on the continent view) is drawn in a sea colour instead of black, on the main map and the minimap.
 
 - Minimap resizes to any shape: the bottom-right grip sets width and height independently (100 to 800 px each, saved). The options "Minimap size" slider resets it to a square. A round minimap becomes an ellipse.
