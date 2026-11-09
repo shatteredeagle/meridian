@@ -168,7 +168,8 @@ function Canvas:CenterOn(nx, ny)
 end
 
 local YARDS_TO_PX = 0.35
-local FEATHER = "Interface\\AddOns\\Meridian\\Media\\feather"
+local FEATHER = "Interface\\AddOns\\Meridian\\Media\\feather"            -- narrow: overlay detail
+local FEATHER_WIDE = "Interface\\AddOns\\Meridian\\Media\\feather_wide" -- wide: base art, so zone parchment tones blend
 
 -- Smallest power of two >= n (explored-overlay texture files are padded to this).
 function Math.pow2(n)
@@ -252,7 +253,7 @@ function Canvas:DrawZone(uiMapID, rect, zi)
     end
     -- Stitched continent zones get a feathered edge mask so overlapping maps blend; elsewhere the mask is solid.
     local blend = self.stitch and M.db.blend ~= false
-    f.feather:SetTexture(blend and FEATHER or "Interface\\Buttons\\WHITE8X8", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+    f.feather:SetTexture(blend and FEATHER_WIDE or "Interface\\Buttons\\WHITE8X8", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
     f.feather:ClearAllPoints()
     f.feather:SetPoint("TOPLEFT", f, "TOPLEFT", rect.x, -rect.y)
     f.feather:SetSize(rect.w, rect.h)
