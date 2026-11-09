@@ -2,6 +2,8 @@
 
 Unreleased (after 0.1.3-alpha):
 
+- Zone borders: territory masks hug each zone's own land more tightly (grown 10 px instead of 24), so the blank parchment strips (and stray painted place names) that showed along the seam between two zones, e.g. Hillsbrad and Arathi, give way to the continent map underneath. Regenerated Media/territory (needs a full client restart).
+
 - Boat and zeppelin docks get their own pins (a sailing ship and an airship, next to the flight points' arrowhead, dungeons' gate, waypoints' teardrop and the corpse skull), for your faction: Menethil, Auberdine, Rut'theran, Feathermoon, Feralas, Booty Bay, Ratchet, Orgrimmar, Undercity and Grom'gol. Click one to drop a waypoint. Option and minimap-menu toggle; dock data derived from OpenMap's tables (THIRD_PARTY.md). New pin textures: needs a full client restart. Also removed the "Transport, ..." placeholder entries from the flight points.
 
 - **Reveal map no longer needs Zygor.** The fully revealed map used Zygor Guides Viewer's data and silently drew only explored areas when Zygor was not loaded (the cause of unrevealed parchment in unexplored zones). The pieces now come from a built-in table generated from the game's own WorldMapOverlay data (Meridian/RevealData.lua, tools/gen_reveal.py); Zygor's data is only a fallback.
