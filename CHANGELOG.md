@@ -2,6 +2,8 @@
 
 Unreleased (after 0.1.3-alpha):
 
+- Minimap right-click menu: "Clear waypoints and arrow target" removes every waypoint and any quest picked for the arrow.
+
 - Continent blending: zone base art now fades over a wide band (22%) so differently-toned zone parchment (Kalimdor's flat patches and rectangles) blends smoothly, while revealed overlay detail keeps the narrow 8% edge. New Media/feather_wide.tga: needs a full client restart. Added `/mm zones` diagnostic.
 
 - Flight points: every flight master of the build (91 nodes, bundled in FlightData.lua from the game's TaxiNodes table by tools/gen_taxi.py) is shown on the zone and continent maps and the minimap, for your faction (a neutral and a faction version of the same town show once). Left-click one to drop a waypoint. On by default for new installs (existing saves: tick "Flight points" in options or the minimap menu); no longer needs visiting flight masters first.

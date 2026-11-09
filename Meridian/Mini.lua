@@ -129,6 +129,11 @@ function UI:CreateMini()
             root:CreateCheckbox("Lock window, minimap and arrow", function() return M.db.locked end,
                 function() M.db.locked = not M.db.locked end)
             root:CreateDivider()
+            root:CreateButton("Clear waypoints and arrow target", function()
+                M.db.target = nil -- a quest picked for the arrow
+                if M.Arrow.areas then M.Arrow.areas = nil end
+                M.Way:Clear()
+            end)
             root:CreateButton("Open the map", function() if not UI.frame:IsShown() then UI:Toggle() end end)
             root:CreateButton("Options", function() M.Options:Open() end)
             root:CreateButton("Hide minimap", function() UI:ToggleMini() end)
