@@ -1,6 +1,6 @@
 # Changelog
 
-Unreleased (after 0.1.2-alpha):
+0.1.3-alpha:
 
 - Polestar route dots use a solid disc (Media/dot.tga, tools/gen_dot.py) instead of the soft quest-area texture, so they are no longer faint. New texture: needs a full client restart.
 
