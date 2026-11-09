@@ -130,14 +130,22 @@ SlashCmdList.MERIDIAN = function(raw)
                 tostring(info and info.mapType), tostring(info and info.parentMapID), r.x, r.y, r.w, r.h)
         end
         for _, f in ipairs(c.zoneFrames) do
-            local shown, first = 0, nil
-            for _, t in ipairs(f.fog) do if t:IsShown() then shown = shown + 1; first = first or t end end
+            local shown, first, notLoaded, missing = 0, nil, 0, {}
+            for _, t in ipairs(f.fog) do
+                if t:IsShown() then
+                    shown = shown + 1; first = first or t
+                    if t.IsObjectLoaded and not t:IsObjectLoaded() then
+                        notLoaded = notLoaded + 1
+                        if #missing < 4 then missing[#missing + 1] = tostring(t:GetTexture()) end
+                    end
+                end
+            end
             local ft = first and string.format(" firstTex=%s tw=%.0f th=%.0f a=%.2f", tostring(first:GetTexture()), first:GetWidth(), first:GetHeight(), first:GetAlpha()) or ""
             local tiles = 0
             for _, t in ipairs(f.tiles) do if t:IsShown() then tiles = tiles + 1 end end
-            out[#out + 1] = string.format("frame zone=%s shown=%s lvl=%d a=%.2f | ovl shown=%s lvl=%d a=%.2f eff=%.2f fog=%d/%d tiles=%d%s",
+            out[#out + 1] = string.format("frame zone=%s shown=%s lvl=%d a=%.2f | ovl shown=%s lvl=%d a=%.2f eff=%.2f fog=%d/%d notLoaded=%d [%s] tiles=%d%s",
                 tostring(f.zoneID), tostring(f:IsShown()), f:GetFrameLevel(), f:GetAlpha(), tostring(f.ovl:IsShown()), f.ovl:GetFrameLevel(),
-                f.ovl:GetAlpha(), f.ovl:GetEffectiveAlpha(), shown, #f.fog, tiles, ft)
+                f.ovl:GetAlpha(), f.ovl:GetEffectiveAlpha(), shown, #f.fog, notLoaded, table.concat(missing, ","), tiles, ft)
         end
         for i, ct in ipairs(c.cities or {}) do
             out[#out + 1] = string.format("inset/city #%d rect=%d,%d %dx%d alpha=%s", i, ct.rect.x, ct.rect.y, ct.rect.w, ct.rect.h, tostring(ct.alpha))
