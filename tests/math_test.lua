@@ -334,3 +334,14 @@ assert(not D.Data.eligible(sq, st({ skill = function() return 149 end })), "skil
 assert(D.Data.eligible(sq, st({ skill = function() return 150 end })), "skill met")
 assert(D.Data.eligible(sq, st({})), "no skill info -> listed")
 print("rep/skill ok")
+
+-- polestar route dots: spaced along a polyline, carrying the remainder across corners
+local RM = {}
+assert(loadfile("Meridian/Route.lua"))("Meridian", RM)
+local pts = RM.Route.spaced({ {0, 0}, {10, 0}, {10, 10} }, 4)
+assert(#pts == 5, "5 dots on a 20-long line at gap 4, got " .. #pts)
+eq(pts[1][1], 2, "first dot half a gap in")
+eq(pts[3][1], 10, "dot on the corner"); eq(pts[3][2], 0, "corner y")
+assert(pts[4][1] == 10 and pts[4][2] == 4, "carry past the corner")
+assert(#RM.Route.spaced({ {0, 0} }, 4) == 0, "single point has no dots")
+print("route ok")

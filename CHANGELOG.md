@@ -2,6 +2,8 @@
 
 Unreleased (after 0.1.2-alpha):
 
+- Polestar integration (optional): the walking route Polestar's guide arrow is following is drawn as breadcrumb dots on the main map and minimap (continent and zone views; later legs dimmer, flights green, boats blue). Reads Polestar's published route (`Polestar.Nav.GetRouteGeometry`, `NAV_ROUTE_GEOMETRY`) only; none of its code is used. Option "Show the Polestar guide route as dots" (on by default; does nothing without Polestar).
+
 - Continent view: each zone's explored/revealed overlay detail is drawn in a layer above every zone's base art. A neighbouring zone's base (which paints other zones as blank parchment) used to cover it at the seams, which looked like hidden terrain with Reveal map on (Westfall/Elwynn, Darkshore, Ashenvale edges). Added `/mm overlays` coverage diagnostic.
 
 - Ground that no zone map covers (open sea off the coast, gaps between zones on the continent view) is drawn in a sea colour instead of black, on the main map and the minimap.

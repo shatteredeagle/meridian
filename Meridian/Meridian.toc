@@ -29,6 +29,7 @@ Geometry.lua
 Data.lua
 Tooltips.lua
 Overlay.lua
+Route.lua
 Waypoints.lua
 Search.lua
 Pins.lua

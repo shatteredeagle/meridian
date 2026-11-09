@@ -116,6 +116,7 @@ local DOT_MIN_PX = 9 -- a single-spawn circle never draws smaller than this on s
 
 function Overlay:Rescale()
     local s = 1 / self.canvas.zoom
+    if M.Route then M.Route:Draw(self.canvas) end
     for _, p in ipairs(self.active) do
         if p.dot then
             local d = math.max(p.d, DOT_MIN_PX * s)

@@ -359,6 +359,7 @@ function UI:ApplySettings(after)
     M:ApplyMapKey()
     M.Pad:Apply()
     M.Pins:Apply()
+    if after == "route" then M.Route:Refresh(true) end
     self.overlay:Rescale()
     if after == "mini" then M.db.miniW, M.db.miniH = nil, nil end -- the size slider means a square again
     if self.mini then self.mini.overlay:Rescale(); self:ApplyMini() end

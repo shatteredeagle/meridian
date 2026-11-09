@@ -57,7 +57,7 @@ Type `/mm` (or `/meridian`) to open the map. Hover any toolbar icon to see what 
 
 ## Optional add-ons
 
-Meridian runs on its own. Quest areas, givers and turn-ins use QuestieDB data when it is installed (Questie, or the standalone QuestieDB). Zygor Guides Viewer enables the fully revealed map, and ForeverDungeonJournal adds dungeon art and quest data. TomTom keeps `/way` if you use it.
+Meridian runs on its own. Quest areas, givers and turn-ins use QuestieDB data when it is installed (Questie, or the standalone QuestieDB). Zygor Guides Viewer enables the fully revealed map, and ForeverDungeonJournal adds dungeon art and quest data. TomTom keeps `/way` if you use it. Polestar's guide route is drawn on Meridian's maps as breadcrumb dots.
 
 ## Known limits
 
