@@ -1,0 +1,49 @@
+GIMP Palette
+Name: Meridian A stylize (44)
+Columns: 4
+# Seeded by k-means over the stitched Blizzard zone art, then hand-tuned: near-duplicate ochres merged, ramps
+# evened out, contrast pushed, and the sea ramp / outline shared with the B palette. Names are used by a_stylize.py.
+ 18  30  58	abyss
+ 27  47  90	deep
+ 36  70 122	ocean
+ 50  98 152	mid
+ 78 136 182	shallow
+150 200 220	foam
+ 20  26  40	outline
+ 38  24  12	ink
+ 72  44  18	umber0
+ 98  64  24	umber1
+124  86  30	ochre0
+152 110  38	ochre1
+182 138  56	ochre2
+208 170  86	ochre3
+228 204 146	parch
+ 52  60  44	olive0
+ 84  96  40	olive1
+112 132  36	green0
+146 166  48	green1
+184 196  86	green2
+212 220 128	green3
+104 124  92	sage0
+146 160 124	sage1
+186 202 154	sage2
+142  56  18	rust0
+188 100  30	rust1
+212 136  70	rust2
+170  60  40	red
+204 148  30	gold0
+226 196  48	gold1
+222 204 110	gold2
+ 70  60  56	ash0
+104  92  80	ash1
+138 126 104	stone0
+164 160 140	stone1
+204 200 182	stone2
+240 236 222	snow
+ 96  70  70	plague0
+128  96  96	plague1
+164 128 120	plague2
+ 96 114 118	water0
+128 148 146	water1
+232  92  30	lava
+255 190  60	glow
