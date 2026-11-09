@@ -34,10 +34,6 @@ for y = 1, H - 2 do
     end
   end
 end
-local abyss = 0
-for i = 0, #pal - 1 do
-  local c = pal:getColor(i)
-  if c.red == 18 and c.green == 30 and c.blue == 58 then abyss = i end
-end
+local abyss = 0 -- first palette entry is the deep-sea fill for tile padding
 local tw, th = dofile(here .. "export.lua")(img, pal, P.out, P.name, abyss)
 print(string.format("despeckled %d px; %dx%d, %dx%d tiles", fixed, W, H, tw, th))
