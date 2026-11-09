@@ -47,3 +47,7 @@ Givers: yellow "!" markers for quests you could accept (level, race, class, prer
 ## License
 
 MIT, see LICENSE.
+
+## Credits
+
+See [THIRD_PARTY.md](THIRD_PARTY.md): the seamless continent blending was inspired by OpenMap, and the cave map list is derived from its data (MIT).

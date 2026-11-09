@@ -27,19 +27,21 @@ function Art:Current() return M.db.artStyle or "blizzard" end
 
 function Art:Name(key) return Art.styles[styleIndex(key or self:Current())].name end
 
+local function addonExists(name)
+    local ok, found = pcall(function()
+        if C_AddOns and C_AddOns.DoesAddOnExist then return C_AddOns.DoesAddOnExist(name) end
+        if GetAddOnInfo then return GetAddOnInfo(name) ~= nil end
+    end)
+    return ok and found and true or false
+end
+
 -- Is the local tile addon present? (Without it the pixel styles are unavailable.)
 function Art:Installed()
-    if self.installed == nil then
-        local ok, found = pcall(function()
-            if C_AddOns and C_AddOns.DoesAddOnExist then return C_AddOns.DoesAddOnExist("MeridianPixelMaps") end
-            if GetAddOnInfo then return GetAddOnInfo("MeridianPixelMaps") ~= nil end
-        end)
-        self.installed = ok and found and true or false
-    end
+    if self.installed == nil then self.installed = addonExists("MeridianPixelMaps") end
     return self.installed
 end
 
--- Should this continent be drawn with pixel tiles?
+-- Should this continent be drawn with the chosen art style instead of Blizzard's zone maps?
 function Art:Wants(contID)
     local key = self:Current()
     return key ~= "blizzard" and contID == MAP_ID and self:Installed()

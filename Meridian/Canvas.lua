@@ -253,7 +253,10 @@ function Canvas:DrawZone(uiMapID, rect, zi)
     end
     -- Stitched continent zones get a feathered edge mask so overlapping maps blend; elsewhere the mask is solid.
     local blend = self.stitch and M.db.blend ~= false
-    f.feather:SetTexture(blend and FEATHER_WIDE or "Interface\\Buttons\\WHITE8X8", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+    -- Base art goes through the zone's territory mask where it has one (the shape of the land it owns, so neighbours'
+    -- parchment never covers real terrain); else a wide feather.
+    local territory = blend and M.Territory and M.Territory[uiMapID] and ("Interface\\AddOns\\Meridian\\Media\\territory\\" .. uiMapID)
+    f.feather:SetTexture(territory or (blend and FEATHER_WIDE) or "Interface\\Buttons\\WHITE8X8", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
     f.feather:ClearAllPoints()
     f.feather:SetPoint("TOPLEFT", f, "TOPLEFT", rect.x, -rect.y)
     f.feather:SetSize(rect.w, rect.h)
@@ -427,10 +430,80 @@ function Canvas:BuildContinent(contID)
             end
         end
     end
+    -- Caves and mines (Blizzard's micro maps): drawn at their real world position, fading in when zoomed right onto them.
+    if M.db.caves ~= false and M.CaveData then self:DrawCaves(world, ax, sx, ay, sy, minx, miny) end
     if self.pixelOn then M.Art:Draw(self) end
     self.zoneCount = #corners
     self:UpdateCityFade()
     return true
+end
+
+-- One cave per place: the lowest map id of each name, minus the deeper Blackrock Mountain floors that lie under the first.
+local caveList
+local function caves()
+    if caveList then return caveList end
+    local byName = {}
+    caveList = {}
+    local skip = { [34] = true, [35] = true }
+    for id, c in pairs(M.CaveData or {}) do
+        if not skip[id] and (not byName[c[1]] or id < byName[c[1]].id) then byName[c[1]] = { id = id, c = c } end
+    end
+    for _, e in pairs(byName) do caveList[#caveList + 1] = e end
+    table.sort(caveList, function(a, b) return a.id < b.id end)
+    return caveList
+end
+
+local CAVE_FADE_FROM, CAVE_FADE_TO = 80, 170 -- on-screen width (px) over which a cave surfaces
+
+function Canvas:DrawCaves(world, ax, sx, ay, sy, minx, miny)
+    self.caveFrames = self.caveFrames or {}
+    local n = 0
+    for _, e in ipairs(caves()) do
+        local id, c = e.id, e.c
+        if c[2] == world then
+            local a, b = { c[5], c[6] }, { c[3], c[4] } -- north-west (max x, max y) and south-east corners, in yards
+            local x0, y0 = (a[ax] * sx - minx) * YARDS_TO_PX, (a[ay] * sy - miny) * YARDS_TO_PX
+            local x1, y1 = (b[ax] * sx - minx) * YARDS_TO_PX, (b[ay] * sy - miny) * YARDS_TO_PX
+            local rect = { x = math.min(x0, x1), y = math.min(y0, y1), w = math.abs(x1 - x0), h = math.abs(y1 - y0) }
+            if rect.w > 0 and rect.h > 0 then
+                n = n + 1
+                local f = self.caveFrames[n]
+                if not f then
+                    f = CreateFrame("Frame", nil, self.canvas)
+                    f.tex, f.mask = {}, f:CreateMaskTexture()
+                    self.caveFrames[n] = f
+                end
+                f:SetFrameLevel(self.canvas:GetFrameLevel() + 300 + n)
+                f:SetAllPoints()
+                f.mask:SetTexture(FEATHER, "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+                f.mask:ClearAllPoints()
+                f.mask:SetPoint("TOPLEFT", f, "TOPLEFT", rect.x, -rect.y)
+                f.mask:SetSize(rect.w, rect.h)
+                local tw, th = rect.w / (1002 / 256), rect.h / (668 / 256) -- one 256 px tile in canvas units
+                for k, fid in ipairs(c[11]) do
+                    local col, row = (k - 1) % 4, math.floor((k - 1) / 4)
+                    local pw, ph = math.min(256, 1002 - col * 256), math.min(256, 668 - row * 256)
+                    local t = f.tex[k]
+                    if not t then
+                        t = f:CreateTexture(nil, "ARTWORK")
+                        t:AddMaskTexture(f.mask)
+                        if self.mask then t:AddMaskTexture(self.mask) end
+                        f.tex[k] = t
+                    end
+                    t:SetTexture(fid, nil, nil, "TRILINEAR")
+                    t:SetTexCoord(0, pw / 256, 0, ph / 256)
+                    t:SetSize(tw * pw / 256, th * ph / 256)
+                    t:ClearAllPoints()
+                    t:SetPoint("TOPLEFT", f, "TOPLEFT", rect.x + col * tw, -(rect.y + row * th))
+                    t:Show()
+                end
+                f:SetAlpha(1)
+                f:Show()
+                self.cities[#self.cities + 1] = { frame = f, rect = rect, from = CAVE_FADE_FROM, to = CAVE_FADE_TO, name = c[1] }
+            end
+        end
+    end
+    for i = n + 1, #self.caveFrames do self.caveFrames[i]:Hide() end
 end
 
 -- City layers fade in as their on-screen size grows from CITY_FADE_FROM to CITY_FADE_TO px wide.
@@ -441,7 +514,7 @@ function Canvas:UpdateCityFade()
         if c.alpha ~= a then
             c.alpha = a
             c.frame:SetAlpha(a)
-            c.frame.ovl:SetAlpha(a)
+            if c.frame.ovl then c.frame.ovl:SetAlpha(a) end
         end
     end
 end
@@ -475,6 +548,7 @@ end
 function Canvas:SetMap(uiMapID)
     self.mapID = uiMapID
     for _, f in ipairs(self.zoneFrames) do f:Hide(); f.ovl:Hide() end
+    for _, f in ipairs(self.caveFrames or {}) do f:Hide() end
     self.pixelOn = nil
     if M.Art then M.Art:Hide(self) end
     self.zones = {}

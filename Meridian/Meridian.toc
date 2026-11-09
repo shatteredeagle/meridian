@@ -31,6 +31,8 @@ Tooltips.lua
 Overlay.lua
 Route.lua
 FlightData.lua
+Caves.lua
+TerritoryData.lua
 Waypoints.lua
 Search.lua
 Pins.lua
