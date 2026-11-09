@@ -107,7 +107,7 @@ function UI:CreateReadout(f, c)
     end)
     -- Pinned to the character: re-centre every tick, follow the player across zones, unpin when the user pans.
     c.OnUserPan = function() if M.db.pin then M.db.pin = false; self:SyncToolbar() end end
-    local pacc, lastZone = 0, nil
+    local pacc, lastZone, inCity = 0, nil, false
     local function mapIsCity(id) return id and self.isCity(id) end
     f:HookScript("OnUpdate", function(_, dt)
         if not M.db.pin or c.dragging then return end
@@ -117,15 +117,20 @@ function UI:CreateReadout(f, c)
         local zone = C_Map.GetBestMapForUnit("player")
         if zone and zone ~= lastZone then
             lastZone = zone
-            if mapIsCity(zone) then
-                -- walked into a city: show its own map instead of the player walking across the continent drawing
-                if c.mapID ~= zone then
-                    self:SetMap(zone)
-                    local cx, cy = self:PlayerCanvasPos(c)
-                    if cx then c:CenterOnCanvas(cx, cy) end
+            local wasCity = inCity
+            inCity = mapIsCity(zone)
+            if inCity then
+                local r = c.stitch and c.zones[zone]
+                if r then -- the city is drawn on the continent: just zoom in until its own map has faded in
+                    local w, h = c.view:GetWidth(), c.view:GetHeight()
+                    if r.w > 0 and r.h > 0 and w > 0 and h > 0 then c:SetZoom(math.min(w / r.w, h / r.h)) end
+                elseif c.mapID ~= zone then
+                    self:SetMap(zone) -- no continent to draw it on: its own map
                 end
-            elseif mapIsCity(c.mapID) then
-                self:OpenView() -- walked back out: the continent again, zoomed to the zone and pinned
+                local cx, cy = self:PlayerCanvasPos(c)
+                if cx then c:CenterOnCanvas(cx, cy) end
+            elseif wasCity or mapIsCity(c.mapID) then
+                self:OpenView() -- walked back out: zone-level zoom on the continent again
             elseif not c.zones[zone] then
                 local mid = c.mapID
                 local info = mid and mid > 0 and C_Map.GetMapInfo(mid)
@@ -438,13 +443,6 @@ function UI:OpenView()
     local zone = C_Map.GetBestMapForUnit("player")
     if not zone then return not c.mapID and self:GoToPlayer() end
     if M.Dungeons:OpenForMap(zone) then -- inside an instance: its floor, pinned
-        M.db.pin = true
-        return self:SyncToolbar()
-    end
-    if UI.isCity(zone) then -- standing in a capital: its own map, pinned
-        if c.mapID ~= zone then self:SetMap(zone) end
-        local cx, cy = self:PlayerCanvasPos(c)
-        if cx then c:CenterOnCanvas(cx, cy) end
         M.db.pin = true
         return self:SyncToolbar()
     end

@@ -13,6 +13,9 @@ function Math.zoomAround(offX, offY, zoom, newZoom, cx, cy)
     return cx - (cx - offX) * ratio, cy - (cy - offY) * ratio
 end
 
+-- uiMapIDs of the capital cities drawn on the continent view (those the client doesn't type as a city too).
+M.CityMaps = { 1453, 1454, 1455, 1456, 1457, 1458 }
+
 -- Keep the canvas from drifting fully off the viewport.
 function Math.clampOffset(offX, offY, zoom, cw, ch, vw, vh)
     local w, h = cw * zoom, ch * zoom
@@ -124,6 +127,7 @@ function Canvas:Apply()
     self.canvas:ClearAllPoints()
     -- canvas is scaled, so its anchor offset is in scaled units
     self.canvas:SetPoint("TOPLEFT", self.view, "TOPLEFT", self.offX / self.zoom, -self.offY / self.zoom)
+    self:UpdateCityFade()
     if self.OnChanged then self:OnChanged() end
 end
 
@@ -252,6 +256,7 @@ function Canvas:DrawZone(uiMapID, rect, zi)
     f:SetFrameLevel(self.canvas:GetFrameLevel() + zi)
     f:SetAllPoints()
     f:Show()
+    f:SetAlpha(1); f.ovl:SetAlpha(1) -- a frame reused from a faded city layer must not stay invisible
     f.ovl:SetFrameLevel(self.canvas:GetFrameLevel() + 200 + zi)
     f.ovl:SetAllPoints()
     f.ovl:Show()
@@ -364,13 +369,48 @@ function Canvas:BuildContinent(contID)
         self.zones[c.id] = c.rect
         self:DrawZone(c.id, c.rect, zi)
     end
+    -- Capital cities are drawn on the continent too, at their world position, fading in as you zoom toward them
+    -- (their own detailed map over the painted stand-in in the zone art). Walking in or zooming in is one continuous view.
+    self.cities = {}
+    local ids, seen = {}, {}
+    local function addCity(id) if id and not seen[id] and not self.zones[id] then seen[id] = true; ids[#ids + 1] = id end end
+    for _, id in ipairs(M.CityMaps) do addCity(id) end
+    for _, k in ipairs(C_Map.GetMapChildrenInfo(contID, Enum.UIMapType.City, true) or {}) do addCity(k.mapID) end
+    for _, id in ipairs(ids) do
+        local p00, p11 = worldPos(id, 0, 0), worldPos(id, 1, 1)
+        local _, w = worldPos(id, 0, 0)
+        if p00 and p11 and w == world and C_Map.GetMapArtLayers(id) then
+            local rect = { x = (p00[ax] * sx - minx) * YARDS_TO_PX, y = (p00[ay] * sy - miny) * YARDS_TO_PX,
+                           w = (p11[ax] - p00[ax]) * sx * YARDS_TO_PX, h = (p11[ay] - p00[ay]) * sy * YARDS_TO_PX }
+            if rect.w > 0 and rect.h > 0 then
+                local zi = #corners + #self.cities + 1
+                self.zones[id] = rect
+                self:DrawZone(id, rect, zi)
+                self.cities[#self.cities + 1] = { frame = self.zoneFrames[zi], rect = rect }
+            end
+        end
+    end
     if self.pixelOn then M.Art:Draw(self) end
     self.zoneCount = #corners
+    self:UpdateCityFade()
     return true
 end
 
+-- City layers fade in as their on-screen size grows from CITY_FADE_FROM to CITY_FADE_TO px wide.
+local CITY_FADE_FROM, CITY_FADE_TO = 140, 320
+function Canvas:UpdateCityFade()
+    for _, c in ipairs(self.cities or {}) do
+        local a = math.max(0, math.min(1, (c.rect.w * self.zoom - CITY_FADE_FROM) / (CITY_FADE_TO - CITY_FADE_FROM)))
+        if c.alpha ~= a then
+            c.alpha = a
+            c.frame:SetAlpha(a)
+            c.frame.ovl:SetAlpha(a)
+        end
+    end
+end
+
 function Canvas:BuildSingle(uiMapID)
-    self.stitch = nil
+    self.stitch, self.cities = nil, nil
     local custom = M.Dungeons and M.Dungeons:CustomFloor(uiMapID)
     local layers = not custom and uiMapID > 0 and C_Map.GetMapArtLayers(uiMapID) or nil
     local layer = layers and layers[1]

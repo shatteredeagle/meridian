@@ -2,7 +2,7 @@
 
 Unreleased (after 0.1.2-alpha):
 
-- Pinned map switches to a capital city's own map (Stormwind, Orgrimmar, Ironforge, Thunder Bluff, Darnassus, Undercity, or any map the client types as a city) when you walk in, and back to the continent when you leave. Opening the map inside a capital does the same.
+- Capital cities (Stormwind, Orgrimmar, Ironforge, Thunder Bluff, Darnassus, Undercity, plus any map the client types as a city) are drawn on the continent view at their real position and fade in as you zoom toward them, so you can zoom from the world into a city's own map. A pinned map zooms in on a city when you walk in and back out to zone level when you leave; opening the map inside a capital does the same. Hovering a city shows its own coordinates and double-clicking opens it.
 
 - Narrower zone blend: the feathered edge on stitched zones is 8% wide instead of 14% (tools/gen_feather.py). Media/feather.tga changed: needs a full client restart.
 
