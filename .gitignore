@@ -4,3 +4,4 @@ dist/
 docs/pixelmap/a-stylize/*
 !docs/pixelmap/a-stylize/README.md
 __pycache__/
+docs/pixelmap/compare.png
