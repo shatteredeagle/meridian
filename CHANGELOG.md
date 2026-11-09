@@ -2,6 +2,8 @@
 
 Unreleased (after 0.1.3-alpha):
 
+- Fixed the map (main and minimap) sometimes stopping following you until clicked: a mouse-up that landed outside the map left it stuck in a drag, which blocked the pin/follow update. A drag now ends as soon as the left button is up.
+
 - Ten more dungeons and raids with maps from the client's own art, for ones ForeverDungeonJournal lacks: Lower and Upper Blackrock Spire, Scholomance, Onyxia's Lair, Molten Core, Blackwing Lair, Zul'Gurub, Temple of Ahn'Qiraj, Naxxramas and Deeprun Tram (floor counts from the art files; Zul'Gurub, Ahn'Qiraj and Naxxramas entrance spots are approximate). They appear in search, on entrance pins and as insets like the others.
 
 0.1.3-alpha:
