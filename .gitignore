@@ -1,2 +1,6 @@
 luac.out
 dist/
+# Pixel map Method A is derived from Blizzard's map art: never commit it (only its README).
+docs/pixelmap/a-stylize/*
+!docs/pixelmap/a-stylize/README.md
+__pycache__/

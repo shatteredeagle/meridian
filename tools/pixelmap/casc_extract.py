@@ -39,6 +39,8 @@ def main():
         if not lib.CascOpenFile(h, ctypes.c_void_p(fid), 0xFFFFFFFF, 3, ctypes.byref(f)):
             print(f"{fid}: open failed {lib.GetCascError()}"); bad += 1; continue
         size = lib.CascGetFileSize(f, None)
+        if size == 0xFFFFFFFF:  # in the index but not stored locally (not downloaded)
+            print(f"{fid}: not available locally"); bad += 1; lib.CascCloseFile(f); continue
         buf = ctypes.create_string_buffer(size)
         n = ctypes.c_uint32()
         if lib.CascReadFile(f, buf, size, ctypes.byref(n)) and n.value == size:
