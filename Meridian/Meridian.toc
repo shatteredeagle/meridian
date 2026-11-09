@@ -30,6 +30,7 @@ Data.lua
 Tooltips.lua
 Overlay.lua
 Route.lua
+FlightData.lua
 Waypoints.lua
 Search.lua
 Pins.lua

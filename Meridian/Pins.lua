@@ -66,16 +66,42 @@ local function rareSource(self, c)
     end
 end
 
--- Flight paths are only readable while a flight master's map is open, so they are remembered in the saved data.
+-- Flight points from the bundled list (FlightData.lua, generated from the game's TaxiNodes table). Each is placed on
+-- the zone map that contains its world position; the player's faction and neutral ones are shown, and when a town has
+-- both a neutral and a faction-specific node, the faction one wins.
+local taxiCache -- array of {name, map, x, y, wx, wy, c} for the player's faction, built on first use
+
+local function taxiNodes()
+    if taxiCache then return taxiCache end
+    taxiCache = {}
+    local faction = UnitFactionGroup and UnitFactionGroup("player")
+    local mine = faction == "Horde" and "H" or faction == "Alliance" and "A" or nil
+    local byName = {}
+    for _, n in ipairs(M.FlightData or {}) do
+        local f = n[5]
+        if not f or f == mine then
+            local key = n[1]
+            local prev = byName[key]
+            if not prev or (f and not prev[5]) then byName[key] = n end
+        end
+    end
+    for _, n in pairs(byName) do
+        local map, v = C_Map.GetMapPosFromWorldPos(n[2], CreateVector2D(n[3], n[4]))
+        local x, y = Pins.xy(v)
+        if map and x then taxiCache[#taxiCache + 1] = { name = n[1], map = map, x = x, y = y, c = n[2], wx = n[3], wy = n[4] } end
+    end
+    table.sort(taxiCache, function(a, b) return a.name < b.name end)
+    return taxiCache
+end
+
 local function taxiSource(self, c)
     if not M.db.pinTaxi then return end
     local cr, cg, cb = M.Overlay.markerColor("taxi")
-    for map, nodes in pairs(M.db.taxi) do
-        if c.mapID == map or c.zones[map] then
-            for _, n in ipairs(nodes) do
-                self:AddMarker(map, { x = n.x, y = n.y, pin = "taxi", size = 16, r = cr, g = cg, b = cb, title = n.name, kind = "taxi",
-                    lines = { "Flight path" } })
-            end
+    for _, n in ipairs(taxiNodes()) do
+        if c.mapID == n.map or c.zones[n.map] or (c.stitch and c.stitch.world == n.c) then
+            self:AddMarker(n.map, { x = n.x, y = n.y, pin = "taxi", size = 16, r = cr, g = cg, b = cb, title = n.name, kind = "taxi",
+                lines = { "Flight point" }, hint = "Click: drop a waypoint here.",
+                onClick = function(_, btn) if btn == "LeftButton" then M.Way:Add(n.map, n.x, n.y, n.name) end end })
         end
     end
 end
@@ -88,24 +114,8 @@ M.Overlay.RegisterSource("taxi", taxiSource)
 -- Events (registered only while a type is on)
 ---------------------------------------------------------------------------------
 
-local function harvestTaxi()
-    if not (M.db.pinTaxi and C_TaxiMap and C_TaxiMap.GetAllTaxiNodes) then return end
-    local map = GetTaxiMapID and GetTaxiMapID() or C_Map.GetBestMapForUnit("player")
-    if not map then return end
-    local list = {}
-    for _, n in ipairs(C_TaxiMap.GetAllTaxiNodes(map) or {}) do
-        local x, y = Pins.xy(n.position)
-        if n.name and x then list[#list + 1] = { name = n.name, x = x, y = y } end
-    end
-    if #list > 0 then
-        M.db.taxi[map] = list
-        M.UI:RefreshAll()
-    end
-end
-
 local lastRefresh = 0
 local function onEvent(_, event)
-    if event == "TAXIMAP_OPENED" then return harvestTaxi() end
     if event == "AREA_POIS_UPDATED" then wipe(poiCache) end
     local now = GetTime()
     if now - lastRefresh < 1 then return end -- vignette events are chatty
@@ -122,7 +132,6 @@ function Pins:Apply()
     end
     local f = self.frame
     f:UnregisterAllEvents()
-    if M.db.pinTaxi then f:RegisterEvent("TAXIMAP_OPENED") end
     if M.db.pinRare then
         f:RegisterEvent("VIGNETTES_UPDATED")
         f:RegisterEvent("VIGNETTE_MINIMAP_UPDATED")

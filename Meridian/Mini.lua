@@ -121,6 +121,8 @@ function UI:CreateMini()
             root:CreateDivider()
             root:CreateCheckbox("Quest areas", function() return M.db.overlays end, function() UI:ToggleOverlays() end)
             root:CreateCheckbox("Quest givers", function() return M.db.avail end, function() UI:ToggleGivers() end)
+            root:CreateCheckbox("Flight points", function() return M.db.pinTaxi end,
+                function() M.db.pinTaxi = not M.db.pinTaxi; M.Pins:Apply(); UI:RefreshAll() end)
             root:CreateCheckbox("Direction arrow", function() return M.db.arrow end, function() M.Arrow:Toggle() end)
             root:CreateCheckbox("Coordinates and N marker", function() return M.db.miniCoords end,
                 function() M.db.miniCoords = not M.db.miniCoords end)

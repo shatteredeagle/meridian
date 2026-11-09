@@ -2,7 +2,7 @@ local ADDON, M = ...
 local L = M.L
 _G.Meridian = M
 
-M.defaults = { zoomMin = 0.5, zoomMax = 4, opacity = 0.75, reveal = "full", overlays = true, tracker = true, mini = false, miniSize = 220, miniZoom = 1.5, miniRound = false, avail = false, turnin = true, greyRange = 7, arrow = false, blizzWay = true, claimWay = true, wayArrive = 10, arrowStyle = 1, iconScale = 1, sortMode = "zone", palette = "default", fontScale = 1, controller = false, polestarRoute = true, mapKey = false, pinTaxi = false, pinRare = false, pinPoi = false, dungeons = true, blend = true, pin = false, openView = true, contrast = false, superTrack = true, launcher = true, launcherAngle = 225, miniCoords = true, scale = 1, alpha = 1, locked = false, width = 900, height = 600 }
+M.defaults = { zoomMin = 0.5, zoomMax = 4, opacity = 0.75, reveal = "full", overlays = true, tracker = true, mini = false, miniSize = 220, miniZoom = 1.5, miniRound = false, avail = false, turnin = true, greyRange = 7, arrow = false, blizzWay = true, claimWay = true, wayArrive = 10, arrowStyle = 1, iconScale = 1, sortMode = "zone", palette = "default", fontScale = 1, controller = false, polestarRoute = true, mapKey = false, pinTaxi = true, pinRare = false, pinPoi = false, dungeons = true, blend = true, pin = false, openView = true, contrast = false, superTrack = true, launcher = true, launcherAngle = 225, miniCoords = true, scale = 1, alpha = 1, locked = false, width = 900, height = 600 }
 
 local function initDB()
     MeridianDB = MeridianDB or {}
