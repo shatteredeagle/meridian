@@ -2,6 +2,8 @@
 
 Unreleased (all items untested in-client unless noted; see docs/test-checklist.md).
 
+- Localization: machine-translated, unreviewed UI text for deDE (now complete), frFR, esES, esMX, itIT, ptBR, ruRU, koKR, zhCN and zhTW (Locales/<locale>.lua). Text uses the client's own fonts, so CJK and Cyrillic render. The locale test checks every key and its format specifiers.
+
 - Quest-giver "!" markers now check profession skill and reputation requirements (QuestieDB requiredSkill / requiredMinRep / requiredMaxRep). If the client can't report skill ids or a faction, the quest stays listed.
 
 - Controller mode: a crosshair marks the map centre; A drops a waypoint there and turns the arrow on, X centres on you, B closes, Y toggles the list, Back toggles pin, D-pad up/down and shoulders cycle quests. Still untested with a real pad.

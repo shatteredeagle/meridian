@@ -64,7 +64,7 @@ Meridian runs on its own. Quest areas, givers and turn-ins use QuestieDB data wh
 - Alpha: much of it has not run in the live client yet.
 - Controller support is minimal and may need tuning for your pad.
 - Quest-giver checks do not cover reputation or skill requirements yet.
-- Localization is scaffolding only: English, plus a small unreviewed German set.
+- Localization: English, plus machine-translated, unreviewed UI text for German, French, Spanish (Spain and Latin America), Italian, Portuguese (Brazil), Russian, Korean and Simplified and Traditional Chinese. Native-speaker corrections welcome; chat messages and some tooltips are still English.
 
 ## Feedback
 

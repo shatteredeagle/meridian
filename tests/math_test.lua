@@ -277,7 +277,7 @@ assert(LM.L["Anything at all"] == "Anything at all", "fallback returns the key")
 GetLocale = function() return "deDE" end
 assert(loadfile("Meridian/Locales/deDE.lua"))("Meridian", LM)
 GetLocale = nil
-assert(LM.L["Zoom in"] ~= "Zoom in" and LM.L["Fit to window"] == "Fit to window", "translated and untranslated keys")
+assert(LM.L["Zoom in"] ~= "Zoom in" and LM.L["Anything at all"] == "Anything at all", "translated and untranslated keys")
 local en = {}
 for k in io.open("Meridian/Locales/enUS.lua"):read("*a"):gmatch('\nL%["(.-)"%] = ') do en[k] = true end
 local missing = {}
@@ -288,6 +288,22 @@ for path in files:gmatch("%S+") do
     end
 end
 assert(#missing == 0, "strings missing from enUS.lua (run tools/extract_strings.py): " .. table.concat(missing, "; "))
+-- every shipped locale translates every key and keeps the same % format specifiers in the same order
+local function specs(s) local t = {} for sp in s:gmatch("%%[%-%+ #0]*%d*%.?%d*[%a%%]") do t[#t + 1] = sp end return table.concat(t, ",") end
+local enList = {}
+for k in io.open("Meridian/Locales/enUS.lua"):read("*a"):gmatch('\nL%["(.-)"%] = ') do enList[#enList + 1] = k end
+for _, loc in ipairs({ "deDE", "frFR", "esES", "esMX", "itIT", "ptBR", "ruRU", "koKR", "zhCN", "zhTW" }) do
+    local LX = {}
+    assert(loadfile("Meridian/Locale.lua"))("Meridian", LX)
+    GetLocale = function() return loc end
+    assert(loadfile("Meridian/Locales/" .. loc .. ".lua"))("Meridian", LX)
+    GetLocale = nil
+    for _, k in ipairs(enList) do
+        local v = rawget(LX.L, k)
+        assert(v and v ~= "", loc .. " lacks a translation for: " .. k)
+        assert(specs(v) == specs(k), loc .. " format specifiers differ for: " .. k)
+    end
+end
 print("locale ok")
 
 -- objects and short NPC lists become one small dot per spawn
