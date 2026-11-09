@@ -2,6 +2,8 @@
 
 Unreleased (after 0.1.3-alpha):
 
+- Territory masks now close the gaps between a zone's pieces (open plains, lakes) and grow a little further, so a zone's own base art covers its whole land and the blurry continent backdrop only shows past the coast and between zones. Regenerated Media/territory (needs a full client restart).
+
 - Fixed the player arrow freezing when the map is panned (or the minimap dragged) away from you: it only moved when the map recentred; it now updates every tick.
 
 - Ocean: Blizzard's own continent map is drawn under the zone maps (option `oceanArt`, on by default), so the sea off the coasts, the coast hatching and the ground between zone maps look like Blizzard's map, and the canvas grows to hold the continent map's whole ocean margin.

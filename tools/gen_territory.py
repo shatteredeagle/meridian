@@ -24,7 +24,8 @@ BUILD = "1.60.1.70450"
 OUT = "Meridian/Media/territory"
 LAYER_W, LAYER_H = 1002, 668      # a classic zone map's art size
 TILE = 256
-GROW = 18                         # px the overlay union is grown by (the land round it: coast, shallows, borders)
+CLOSE = 42                        # px: gaps between a zone's pieces (open plains, lakes) are closed, so its territory has no holes
+GROW = 24                         # px the overlay union is grown by (the land round it: coast, shallows, borders)
 SOFT = 14                         # gaussian sigma of the border, px
 EDGE = 0.06                       # fraction of each side faded to zero (the frame)
 MASK = 128                        # output size (stretched over the zone's rectangle)
@@ -118,7 +119,10 @@ def main():
         land = canvas > 40
         if not land.any():
             continue
-        dist = ndimage.distance_transform_edt(~land)
+        dil = ndimage.distance_transform_edt(~land) <= CLOSE
+        closed = ndimage.distance_transform_edt(np.pad(dil, 1, constant_values=True))[1:-1, 1:-1] > CLOSE
+        closed = ndimage.binary_fill_holes(closed | land)
+        dist = ndimage.distance_transform_edt(~closed)
         grown = (dist <= GROW).astype(np.float32)
         soft = ndimage.gaussian_filter(grown, SOFT)
         # fade the frame so the rectangle's own edge never shows
