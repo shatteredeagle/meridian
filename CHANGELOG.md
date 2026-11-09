@@ -1,6 +1,6 @@
 # Changelog
 
-Unreleased (after 0.1.3-alpha):
+0.1.4-alpha:
 
 - Minimap opacity: an "Opacity" slider in the minimap's right-click menu (a list of steps if the client's menu has no slider) and a "Minimap opacity" slider in options fade the whole minimap (10% to 100%, saved).
 
