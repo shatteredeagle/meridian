@@ -34,6 +34,7 @@ FlightData.lua
 Caves.lua
 TerritoryData.lua
 OverlayPackIDs.lua
+RevealData.lua
 Waypoints.lua
 Search.lua
 Pins.lua

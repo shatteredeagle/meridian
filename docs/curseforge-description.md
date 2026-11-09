@@ -12,7 +12,7 @@ Blizzard's map shows one quest at a time. Meridian shows all of them, overlappin
 
 **The map**
 - One continuous, stitched continent view with feathered zone edges, instead of a pile of separate zone pages.
-- Zone drill-down, a "find me" button, and a fully revealed or explored-only map (fully revealed uses Zygor's map data when it is installed).
+- Zone drill-down, a "find me" button, and a fully revealed or explored-only map (the reveal is built in; it draws every area piece the game defines for each zone).
 - Window scale, opacity and position lock. The window position is remembered.
 
 **Quests**
@@ -57,7 +57,7 @@ Type `/mm` (or `/meridian`) to open the map. Hover any toolbar icon to see what 
 
 ## Optional add-ons
 
-Meridian runs on its own. Quest areas, givers and turn-ins use QuestieDB data when it is installed (Questie, or the standalone QuestieDB). Zygor Guides Viewer enables the fully revealed map, and ForeverDungeonJournal adds dungeon art and quest data. TomTom keeps `/way` if you use it. Polestar's guide route is drawn on Meridian's maps as breadcrumb dots.
+Meridian runs on its own. Quest areas, givers and turn-ins use QuestieDB data when it is installed (Questie, or the standalone QuestieDB). ForeverDungeonJournal adds dungeon art and quest data. TomTom keeps `/way` if you use it. Polestar's guide route is drawn on Meridian's maps as breadcrumb dots.
 
 ## Known limits
 

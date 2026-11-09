@@ -220,8 +220,9 @@ local function drawOverlay(self, f, rect, k, layer, ov, n)
     return n
 end
 
--- Overlays the player has discovered, plus (for a fully revealed map) the rest from Zygor's installed
--- Foglight data, which lists every overlay per uiMapID. Returns an array of {ids, w, h, x, y}.
+-- Overlays the player has discovered, plus (for a fully revealed map) every other piece the game defines for the zone:
+-- from the built-in table generated from the game's own WorldMapOverlay data (RevealData.lua), else Zygor's Foglight data
+-- when that addon happens to be loaded. Returns an array of {ids, w, h, x, y}.
 local function overlaysFor(uiMapID, full)
     local out, have = {}, {}
     for _, e in ipairs(C_MapExplorationInfo.GetExploredMapTextures(uiMapID) or {}) do
@@ -231,9 +232,13 @@ local function overlaysFor(uiMapID, full)
         end
     end
     if full then
-        local zgv = _G.ZGV
-        local data = zgv and zgv.Foglight and zgv.Foglight.DataProvider and zgv.Foglight.DataProvider.data
-        for _, e in ipairs(data and data[uiMapID] or {}) do
+        local list = M.RevealData and M.RevealData[uiMapID]
+        if not list then
+            local zgv = _G.ZGV
+            local data = zgv and zgv.Foglight and zgv.Foglight.DataProvider and zgv.Foglight.DataProvider.data
+            list = data and data[uiMapID]
+        end
+        for _, e in ipairs(list or {}) do
             if not have[e[1][1]] then out[#out + 1] = { ids = e[1], w = e[2], h = e[3], x = e[4], y = e[5] } end
         end
     end

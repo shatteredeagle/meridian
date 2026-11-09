@@ -2,6 +2,8 @@
 
 Unreleased (after 0.1.3-alpha):
 
+- **Reveal map no longer needs Zygor.** The fully revealed map used Zygor Guides Viewer's data and silently drew only explored areas when Zygor was not loaded (the cause of unrevealed parchment in unexplored zones). The pieces now come from a built-in table generated from the game's own WorldMapOverlay data (Meridian/RevealData.lua, tools/gen_reveal.py); Zygor's data is only a fallback.
+
 - Reveal map and pieces the client has not downloaded: some installs stream game files on demand, so the overlay pieces of zones you have never visited can be missing from disk and Reveal had nothing to draw. `tools/install_overlay_pack.py` copies them from wago.tools' mirror of the same build into a local-only addon (MeridianOverlayFiles; Blizzard's art, never committed or released) and Meridian draws them by path when it is present.
 
 - Territory masks now close the gaps between a zone's pieces (open plains, lakes) and grow a little further, so a zone's own base art covers its whole land and the blurry continent backdrop only shows past the coast and between zones. Regenerated Media/territory (needs a full client restart).

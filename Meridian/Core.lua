@@ -177,7 +177,7 @@ SlashCmdList.MERIDIAN = function(raw)
         M:Print("QuestieDB:", _G.LibQuestieDB and "found" or "missing",
             "| ZoneDB:", (_G.QuestieLoader and _G.QuestieLoader:ImportModule("ZoneDB")) and "found" or "missing",
             "| source:", M.Data:Available() and "QuestieDB areas" or "Blizzard POIs",
-            "| reveal data:", (_G.ZGV and _G.ZGV.Foglight and _G.ZGV.Foglight.DataProvider.data) and "Zygor Foglight" or "none (explored areas only)")
+            "| reveal data:", M.RevealData and "built in (game tables)" or "none (explored areas only)")
     else
         M.UI:Toggle()
     end
