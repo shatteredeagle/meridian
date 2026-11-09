@@ -116,15 +116,24 @@ SlashCmdList.MERIDIAN = function(raw)
     elseif msg == "reveal" then
         M.UI:ToggleReveal()
     elseif msg == "overlays" then
-        -- diagnostic for "reveal map leaves terrain hidden": what each source offers for a zone (default: the one you are in)
-        local id = tonumber(rest) or C_Map.GetBestMapForUnit("player")
+        -- diagnostic for "reveal map leaves terrain hidden": what each source offers per zone. The full table is saved
+        -- to MeridianDB.diag (readable in the SavedVariables file after /reload); one line is printed for the current zone.
         local zgv = _G.ZGV
         local data = zgv and zgv.Foglight and zgv.Foglight.DataProvider and zgv.Foglight.DataProvider.data
-        local explored = C_MapExplorationInfo.GetExploredMapTextures(id) or {}
-        local zy = data and data[id] or {}
-        local all = M.OverlaysFor(id, true)
-        M:Print("map", id, "reveal:", M.db.reveal, "| explored overlays:", #explored,
-            "| Zygor data:", data and "loaded" or "MISSING", "entries for this map:", #zy, "| drawn when revealed:", #all)
+        local function line(id)
+            local explored = C_MapExplorationInfo.GetExploredMapTextures(id) or {}
+            local info = C_Map.GetMapInfo(id)
+            return string.format("%d %s explored=%d zygor=%d drawn=%d", id, info and info.name or "?", #explored,
+                data and data[id] and #data[id] or 0, #M.OverlaysFor(id, true))
+        end
+        local ids = {}
+        for id in pairs(data or {}) do ids[#ids + 1] = id end
+        table.sort(ids)
+        local out = { "reveal=" .. tostring(M.db.reveal), "zygor data=" .. (data and "loaded" or "MISSING") }
+        for _, id in ipairs(ids) do out[#out + 1] = line(id) end
+        M.db.diag = out
+        local here = tonumber(rest) or C_Map.GetBestMapForUnit("player")
+        M:Print(line(here), "| full table saved: /reload, then it is in MeridianDB.diag")
     elseif msg == "data" then
         M:Print("QuestieDB:", _G.LibQuestieDB and "found" or "missing",
             "| ZoneDB:", (_G.QuestieLoader and _G.QuestieLoader:ImportModule("ZoneDB")) and "found" or "missing",
