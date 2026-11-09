@@ -59,9 +59,10 @@ def parse_adt(buf):
             if not n_layers:
                 continue
             grid = np.zeros((8, 8), np.uint8)
+            level = np.full((8, 8), -1e9, np.float32)
             for l in range(n_layers):
                 p = base + o_inst + l * 24
-                ltype, _lvf, _mn, _mx, xo, yo, w, h, o_bits, _ov = struct.unpack_from("<HHffBBBBII", buf, p)
+                ltype, _lvf, _mn, mx, xo, yo, w, h, o_bits, _ov = struct.unpack_from("<HHffBBBBII", buf, p)
                 kind = LIQ.get(ltype, 1)
                 bits = None
                 if o_bits:
@@ -73,7 +74,8 @@ def parse_adt(buf):
                         if bits is None or bits[yy, xx]:
                             if 0 <= yo + yy < 8 and 0 <= xo + xx < 8:
                                 grid[yo + yy, xo + xx] = max(grid[yo + yy, xo + xx], kind) if kind != 2 else 2
-            liq[i] = grid
+                                level[yo + yy, xo + xx] = max(level[yo + yy, xo + xx], mx)
+            liq[i] = (grid, level)
     for off, size in mcnks:
         flags, ix, iy = struct.unpack_from("<III", buf, off)
         area = struct.unpack_from("<I", buf, off + 0x34)[0]
@@ -121,7 +123,12 @@ def build_grid(layout, adt_dir, db2, out):
                 # cell value = mean of its 4 corner heights
                 height[gy:gy + 8, gx:gx + 8] = (hts[:-1, :-1] + hts[1:, :-1] + hts[:-1, 1:] + hts[1:, 1:]) / 4
             if lq is not None:
-                liquid[gy:gy + 8, gx:gx + 8] = lq
+                g, lv = lq
+                if hts is not None:
+                    # liquid instances are rectangles; a cell is wet only where the surface is above its lowest corner
+                    low = np.minimum(np.minimum(hts[:-1, :-1], hts[1:, :-1]), np.minimum(hts[:-1, 1:], hts[1:, 1:]))
+                    g = np.where(lv > low, g, 0).astype(np.uint8)
+                liquid[gy:gy + 8, gx:gx + 8] = g
     # sample each art pixel centre: canvas c = art*s + s/2 ; -worldY = c/k + minx ; gx = (ORIGIN - worldY)/CELL
     ax = (np.arange(aw) * s + s / 2) / k + minx       # = -worldY
     ay = (np.arange(ah) * s + s / 2) / k + miny       # = -worldX
@@ -134,7 +141,19 @@ def build_grid(layout, adt_dir, db2, out):
     ars = area[np.ix_(gyc, gxc)]
     mask = np.outer(inside_y, inside_x)
     hs[~mask] = np.nan; ls[~mask] = 0; ars[~mask] = 0
+    # small, near-perfectly rectangular water bodies are liquid tables left under WMOs or terrain holes (e.g. the
+    # Deadmines under Moonbrook), not lakes: drop them
+    from scipy import ndimage
+    lab, _n = ndimage.label(ls > 0)
+    dropped = 0
+    for i, sl in enumerate(ndimage.find_objects(lab), 1):
+        h, w = sl[0].stop - sl[0].start, sl[1].stop - sl[1].start
+        a = int((lab[sl] == i).sum())
+        if a < 600 and min(h, w) >= 3 and a / (h * w) > 0.85:
+            ls[sl][lab[sl] == i] = 0
+            dropped += 1
     np.savez_compressed(out, height=hs, liquid=ls, area=ars)
+    print(f"dropped {dropped} rectangular liquid patches")
     print(f"cells {W}x{H} -> art {aw}x{ah}; land px {np.isfinite(hs).sum()}, liquid px {(ls > 0).sum()}")
 
 
