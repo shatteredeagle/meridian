@@ -2,6 +2,8 @@
 
 Unreleased (all items untested in-client unless noted; see docs/test-checklist.md).
 
+- Quest objectives that are lootable/interactable objects, or NPCs with 3 or fewer spawns, now draw one small circle per spawn (min 9 px on screen) instead of one big area. Mob camps (4+ spawns close together) and lists over 40 objects still collapse into areas.
+
 - Approved on CurseForge: https://www.curseforge.com/wow/addons/meridian (README links it).
 
 - Map art styles (ArtStyles.lua, experimental): toolbar icon or `/mm art [blizzard|a|b|c]` cycles Blizzard's art and three pixel-art Eastern Kingdoms maps. Tiles live in a local-only addon folder MeridianPixelMaps installed separately (not distributed); without it the pixel styles are unavailable and releases are unaffected. `/mm art shift dx dy` nudges alignment. Needs a full client restart after installing.

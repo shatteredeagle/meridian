@@ -31,10 +31,10 @@ print("ok")
 -- geometry: two far-apart groups -> two areas; a lone point gets the minimum radius
 local G2 = {}
 assert(loadfile("Meridian/Geometry.lua"))("Meridian", G2)
-local a = G2.Geometry.areas({ {0.1, 0.1}, {0.12, 0.1}, {0.9, 0.9} })
-assert(#a == 2, "two clusters, got " .. #a)
+local a = G2.Geometry.areas({ {0.1, 0.1}, {0.12, 0.1}, {0.1, 0.12}, {0.12, 0.12}, {0.9, 0.9} })
+assert(#a == 2, "camp + lone spawn, got " .. #a)
 eq(a[1].x, 0.11, "cluster center x")
-assert(a[2].radius >= 0.015, "min radius")
+assert(a[2].radius >= 0.007, "lone spawn is a dot")
 assert(#G2.Geometry.areas({}) == 0, "empty")
 print("geometry ok")
 
@@ -289,3 +289,15 @@ for path in files:gmatch("%S+") do
 end
 assert(#missing == 0, "strings missing from enUS.lua (run tools/extract_strings.py): " .. table.concat(missing, "; "))
 print("locale ok")
+
+-- objects and short NPC lists become one small dot per spawn
+local objs = G2.Geometry.areas({ {0.30, 0.30, -5}, {0.31, 0.30, -5}, {0.60, 0.60, -5}, {0.3001, 0.3001, -6} })
+assert(#objs == 3, "three object dots, got " .. #objs)
+for _, o in ipairs(objs) do assert(o.dot and o.radius < 0.015, "object dot is small") end
+local few = G2.Geometry.areas({ {0.1, 0.1, 7}, {0.5, 0.5, 7} })
+assert(#few == 2 and few[1].dot, "two mob spawns -> two dots")
+local many = {}
+for i = 1, 8 do many[i] = { 0.2 + i * 0.005, 0.2, 9 } end
+local m1 = G2.Geometry.areas(many)
+assert(#m1 == 1 and not m1[1].dot, "a mob camp stays one area")
+print("dots ok")

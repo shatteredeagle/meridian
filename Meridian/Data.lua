@@ -124,7 +124,7 @@ function Data:Provider(uiMapID)
     if not self:Available() then return out end
     for _, q in ipairs(self:LogQuests()) do
         for _, a in ipairs(self:QuestAreasAll(q.questID)[uiMapID] or {}) do
-            out[#out + 1] = { questID = q.questID, x = a.x, y = a.y, radius = a.radius }
+            out[#out + 1] = { questID = q.questID, x = a.x, y = a.y, radius = a.radius, dot = a.dot }
         end
     end
     return out

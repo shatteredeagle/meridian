@@ -112,8 +112,17 @@ function Overlay:AddMarker(zoneID, spec)
     return m
 end
 
+local DOT_MIN_PX = 9 -- a single-spawn circle never draws smaller than this on screen
+
 function Overlay:Rescale()
     local s = 1 / self.canvas.zoom
+    for _, p in ipairs(self.active) do
+        if p.dot then
+            local d = math.max(p.d, DOT_MIN_PX * s)
+            p.r = d / 2
+            p:SetSize(d, d)
+        end
+    end
     local k = M.db.iconScale or 1
     for _, m in ipairs(self.markers) do
         m:SetSize(m.base, m.base)
@@ -160,7 +169,7 @@ function Overlay:Refresh()
             if not M.db.hidden[a.questID] then
                 local p = self:Acquire()
                 local d = a.radius * 2 * math.abs(rect.w)
-                p.questID, p.px, p.py, p.r = a.questID, px, py, d / 2
+                p.questID, p.px, p.py, p.r, p.d, p.dot = a.questID, px, py, d / 2, d, a.dot
                 p:SetSize(d, d)
                 c:PlacePinAt(p, px, py)
                 self.active[#self.active + 1] = p
