@@ -47,6 +47,12 @@ function Art:PackInstalled()
     return self.pack
 end
 
+-- Is the local seam-patch addon present? (tools/seam_patch.py: small pictures that cover bare strips where zone maps meet)
+function Art:SeamPackInstalled()
+    if self.seam == nil then self.seam = M.SeamPatches ~= nil and addonExists("MeridianSeamPatches") end
+    return self.seam
+end
+
 -- Should this continent be drawn with the chosen art style instead of Blizzard's zone maps?
 function Art:Wants(contID)
     local key = self:Current()

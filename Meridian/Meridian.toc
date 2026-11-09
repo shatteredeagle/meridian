@@ -36,6 +36,7 @@ Caves.lua
 TerritoryData.lua
 OverlayPackIDs.lua
 RevealData.lua
+SeamPatches.lua
 Waypoints.lua
 Search.lua
 Pins.lua

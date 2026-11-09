@@ -506,6 +506,7 @@ function Canvas:BuildContinent(contID)
     end
     -- Caves and mines (Blizzard's micro maps): drawn at their real world position, fading in when zoomed right onto them.
     if M.db.caves ~= false and M.CaveData then self:DrawCaves(world, ax, sx, ay, sy, minx, miny) end
+    if M.SeamPatches and M.Art and M.Art:SeamPackInstalled() then self:DrawPatches(world, ax, sx, ay, sy, minx, miny) end
     if self.pixelOn then M.Art:Draw(self) end
     self.zoneCount = #corners
     self:UpdateCityFade()
@@ -580,6 +581,35 @@ function Canvas:DrawCaves(world, ax, sx, ay, sy, minx, miny)
     for i = n + 1, #self.caveFrames do self.caveFrames[i]:Hide() end
 end
 
+-- Local seam patches: small pictures over bare strips between zone maps (positions in yards, so they follow the stitch).
+function Canvas:DrawPatches(world, ax, sx, ay, sy, minx, miny)
+    self.patchFrames = self.patchFrames or {}
+    local n = 0
+    for _, p in ipairs(M.SeamPatches) do
+        if p.world == world then
+            local a, b = { p.maxX, p.maxY }, { p.minX, p.minY }
+            local x0, y0 = (a[ax] * sx - minx) * YARDS_TO_PX, (a[ay] * sy - miny) * YARDS_TO_PX
+            local x1, y1 = (b[ax] * sx - minx) * YARDS_TO_PX, (b[ay] * sy - miny) * YARDS_TO_PX
+            n = n + 1
+            local f = self.patchFrames[n]
+            if not f then
+                f = CreateFrame("Frame", nil, self.canvas)
+                f.tex = f:CreateTexture(nil, "ARTWORK")
+                if self.mask then f.tex:AddMaskTexture(self.mask) end
+                self.patchFrames[n] = f
+            end
+            f:SetFrameLevel(self.canvas:GetFrameLevel() + 280 + n)
+            f:SetAllPoints()
+            f.tex:SetTexture("Interface\\AddOns\\MeridianSeamPatches\\" .. p.name)
+            f.tex:SetSize(math.abs(x1 - x0), math.abs(y1 - y0))
+            f.tex:ClearAllPoints()
+            f.tex:SetPoint("TOPLEFT", f, "TOPLEFT", math.min(x0, x1), -math.min(y0, y1))
+            f:Show()
+        end
+    end
+    for i = n + 1, #self.patchFrames do self.patchFrames[i]:Hide() end
+end
+
 -- City layers fade in as their on-screen size grows from CITY_FADE_FROM to CITY_FADE_TO px wide.
 function Canvas:UpdateCityFade()
     for _, c in ipairs(self.cities or {}) do
@@ -623,6 +653,7 @@ function Canvas:SetMap(uiMapID)
     self.mapID = uiMapID
     for _, f in ipairs(self.zoneFrames) do f:Hide(); f.ovl:Hide() end
     for _, f in ipairs(self.caveFrames or {}) do f:Hide() end
+    for _, f in ipairs(self.patchFrames or {}) do f:Hide() end
     self:HideBackdrop()
     self.pixelOn = nil
     if M.Art then M.Art:Hide(self) end
