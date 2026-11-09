@@ -116,6 +116,24 @@ SlashCmdList.MERIDIAN = function(raw)
         M.UI:ToggleMini()
     elseif msg == "reveal" then
         M.UI:ToggleReveal()
+    elseif msg == "zones" then
+        -- diagnostic for map-stitching problems: every zone on the current canvas with its type and canvas rectangle,
+        -- saved to MeridianDB.diag (in the SavedVariables file after /reload)
+        local c = M.UI.canvas
+        local out = { "map=" .. tostring(c.mapID) .. " canvas=" .. math.floor(c.cw) .. "x" .. math.floor(c.ch) .. " zoom=" .. string.format("%.2f", c.zoom) }
+        local ids = {}
+        for id in pairs(c.zones) do ids[#ids + 1] = id end
+        table.sort(ids)
+        for _, id in ipairs(ids) do
+            local r, info = c.zones[id], id > 0 and C_Map.GetMapInfo(id)
+            out[#out + 1] = string.format("%d %s type=%s parent=%s rect=%d,%d %dx%d", id, info and info.name or "?",
+                tostring(info and info.mapType), tostring(info and info.parentMapID), r.x, r.y, r.w, r.h)
+        end
+        for i, ct in ipairs(c.cities or {}) do
+            out[#out + 1] = string.format("inset/city #%d rect=%d,%d %dx%d alpha=%s", i, ct.rect.x, ct.rect.y, ct.rect.w, ct.rect.h, tostring(ct.alpha))
+        end
+        M.db.diag = out
+        M:Print(#ids, "zones on this canvas; /reload to save the list to MeridianDB.diag")
     elseif msg == "overlays" then
         -- diagnostic for "reveal map leaves terrain hidden": what each source offers per zone. The full table is saved
         -- to MeridianDB.diag (readable in the SavedVariables file after /reload); one line is printed for the current zone.
