@@ -2,6 +2,8 @@
 
 Unreleased (after 0.1.2-alpha):
 
+- Polestar route dots use a solid disc (Media/dot.tga, tools/gen_dot.py) instead of the soft quest-area texture, so they are no longer faint. New texture: needs a full client restart.
+
 - Dungeons work like cities: each dungeon's first-floor map is drawn as a small inset at its entrance on the continent view and fades in when you zoom right in on the entrance (needs "Dungeon maps" on). Leaving a dungeon while pinned returns to the continent at zone-level zoom (it used to land on the bare zone map). Entering one already switched to its floor.
 
 - Capital cities (Stormwind, Orgrimmar, Ironforge, Thunder Bluff, Darnassus, Undercity, plus any map the client types as a city) are drawn on the continent view at their real position and fade in as you zoom toward them, so you can zoom from the world into a city's own map. A pinned map zooms in on a city when you walk in and back out to zone level when you leave; opening the map inside a capital does the same. Hovering a city shows its own coordinates and double-clicking opens it.

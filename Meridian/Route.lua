@@ -6,10 +6,10 @@ local ADDON, M = ...
 local Route = {}
 M.Route = Route
 
-local DOT_PX = 5          -- dot diameter on screen
+local DOT_PX = 6          -- dot diameter on screen
 local GAP_PX = 14         -- distance between dot centres on screen
 local MAX_DOTS = 700      -- per canvas; spacing widens when a route is long
-local DOT = "Interface\\AddOns\\Meridian\\Media\\area"
+local DOT = "Interface\\AddOns\\Meridian\\Media\\dot" -- solid disc (Media/dot.tga, tools/gen_dot.py)
 local YARDS_TO_PX = 0.35
 
 -- Leg kinds that are jumps (nothing to walk) and the colour of each other kind (r, g, b).
@@ -88,7 +88,7 @@ local function dot(f, i)
         }
         d.under:SetTexture(DOT)
         d.under:SetVertexColor(0.02, 0.03, 0.06)
-        d.under:SetAlpha(0.7)
+        d.under:SetAlpha(0.85)
         d.core:SetTexture(DOT)
         f.dots[i] = d
     end
