@@ -305,9 +305,11 @@ function Canvas:DrawZone(uiMapID, rect, zi)
         t:Show()
     end
     local n = 0
-    for _, ov in ipairs(overlaysFor(uiMapID, full)) do
+    local list = overlaysFor(uiMapID, full)
+    for _, ov in ipairs(list) do
         n = drawOverlay(self, f, rect, k, layer, ov, n)
     end
+    f.drawInfo = string.format("full=%s overlays=%d textures=%d zgv=%s", tostring(full), #list, n, tostring(_G.ZGV ~= nil))
 end
 
 -- A dungeon floor the client has no map for, drawn from its own art: a 4x3 tile grid (file prefix + 1..12) or one

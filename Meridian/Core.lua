@@ -143,6 +143,8 @@ SlashCmdList.MERIDIAN = function(raw)
             local ft = first and string.format(" firstTex=%s tw=%.0f th=%.0f a=%.2f", tostring(first:GetTexture()), first:GetWidth(), first:GetHeight(), first:GetAlpha()) or ""
             local tiles = 0
             for _, t in ipairs(f.tiles) do if t:IsShown() then tiles = tiles + 1 end end
+            out[#out + 1] = "  draw: " .. tostring(f.drawInfo) .. string.format(" | now: explored=%d zygor=%d", #(C_MapExplorationInfo.GetExploredMapTextures(f.zoneID or 0) or {}),
+                #(((_G.ZGV and _G.ZGV.Foglight and _G.ZGV.Foglight.DataProvider.data or {})[f.zoneID or 0]) or {}))
             out[#out + 1] = string.format("frame zone=%s shown=%s lvl=%d a=%.2f | ovl shown=%s lvl=%d a=%.2f eff=%.2f fog=%d/%d notLoaded=%d [%s] tiles=%d%s",
                 tostring(f.zoneID), tostring(f:IsShown()), f:GetFrameLevel(), f:GetAlpha(), tostring(f.ovl:IsShown()), f.ovl:GetFrameLevel(),
                 f.ovl:GetAlpha(), f.ovl:GetEffectiveAlpha(), shown, #f.fog, notLoaded, table.concat(missing, ","), tiles, ft)
