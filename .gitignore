@@ -5,3 +5,7 @@ docs/pixelmap/a-stylize/*
 !docs/pixelmap/a-stylize/README.md
 __pycache__/
 docs/pixelmap/compare.png
+
+# Pixel-map experiment: local only, never published
+docs/pixelmap/
+tools/pixelmap/
