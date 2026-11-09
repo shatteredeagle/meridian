@@ -2,6 +2,8 @@
 
 Unreleased (after 0.1.4-alpha):
 
+- A completed quest's areas (circles, polygons and objective icons) leave the map as soon as the quest is ready to turn in; its green turn-in marker stays.
+
 - Quest areas are now polygons with a rim instead of big circles: a quest's mob spawns are grouped by how close they are (nearest first, never wider than about a fifth of the zone map), and each group becomes the outline that wraps its spawns' coverage, drawn as an even fill with a rim that keeps its screen width as you zoom. A long coast of spawns becomes a chain of regions, not one blob over the sea. Single spawns of objects and short mob lists stay small dots. Hovering works on the polygon's real shape. The idea follows Polestar's quest-area regions (independent implementation, offline-tested geometry).
 
 - Objective icons: every quest area and dot gets an icon for what the objective asks: crossed swords (kill), gear (interact with an object), sack (loot an item), tinted in the quest's colour; hover for the quest and its open objectives. Option "Objective icons on quest areas" (on by default). New pin textures: needs a full client restart.

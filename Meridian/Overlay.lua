@@ -15,7 +15,7 @@ Overlay.providers = {}
 Overlay.providers.blizzard = function(uiMapID)
     local out = {}
     for _, q in ipairs(C_QuestLog.GetQuestsOnMap(uiMapID) or {}) do
-        out[#out + 1] = { questID = q.questID, x = q.x, y = q.y, radius = DEFAULT_RADIUS }
+        if not C_QuestLog.IsComplete(q.questID) then out[#out + 1] = { questID = q.questID, x = q.x, y = q.y, radius = DEFAULT_RADIUS } end
     end
     return out
 end

@@ -141,7 +141,8 @@ function Data:Provider(uiMapID)
     local out = {}
     if not self:Available() then return out end
     for _, q in ipairs(self:LogQuests()) do
-        for _, a in ipairs(self:QuestAreasAll(q.questID)[uiMapID] or {}) do
+        -- a finished quest has no objective left to find: its areas go, and only the turn-in marker stays
+        for _, a in ipairs(not q.complete and self:QuestAreasAll(q.questID)[uiMapID] or {}) do
             out[#out + 1] = { questID = q.questID, x = a.x, y = a.y, radius = a.radius, dot = a.dot, hull = a.hull, kind = a.kind }
         end
     end
