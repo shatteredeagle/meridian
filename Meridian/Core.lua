@@ -2,7 +2,7 @@ local ADDON, M = ...
 local L = M.L
 _G.Meridian = M
 
-M.defaults = { zoomMin = 0.5, zoomMax = 4, opacity = 0.75, reveal = "full", overlays = true, tracker = true, mini = false, miniSize = 220, miniZoom = 1.5, miniRound = true, avail = false, turnin = true, greyRange = 7, arrow = false, blizzWay = true, claimWay = true, wayArrive = 10, arrowStyle = 1, iconScale = 1, sortMode = "zone", palette = "default", fontScale = 1, controller = false, pinTaxi = false, pinRare = false, pinPoi = false, dungeons = true, blend = true, pin = false, openView = true, contrast = false, superTrack = true, launcher = true, launcherAngle = 225, miniCoords = true, scale = 1, alpha = 1, locked = false, width = 900, height = 600 }
+M.defaults = { zoomMin = 0.5, zoomMax = 4, opacity = 0.75, reveal = "full", overlays = true, tracker = true, mini = false, miniSize = 220, miniZoom = 1.5, miniRound = true, avail = false, turnin = true, greyRange = 7, arrow = false, blizzWay = true, claimWay = true, wayArrive = 10, arrowStyle = 1, iconScale = 1, sortMode = "zone", palette = "default", fontScale = 1, controller = false, mapKey = false, pinTaxi = false, pinRare = false, pinPoi = false, dungeons = true, blend = true, pin = false, openView = true, contrast = false, superTrack = true, launcher = true, launcherAngle = 225, miniCoords = true, scale = 1, alpha = 1, locked = false, width = 900, height = 600 }
 
 local function initDB()
     MeridianDB = MeridianDB or {}
@@ -25,6 +25,20 @@ BINDING_NAME_MERIDIAN_CENTER = L["Center map on player"]
 BINDING_NAME_MERIDIAN_LIST = L["Toggle quest list"]
 BINDING_NAME_MERIDIAN_PIN = L["Pin map to character"]
 
+-- Optional: the key(s) bound to Blizzard's world map open Meridian instead. Override bindings can't change in combat,
+-- so a change made then waits for combat to end. Turning it off clears our overrides and the stock binding returns.
+local keyOwner = CreateFrame("Frame")
+keyOwner:SetScript("OnEvent", function(self) self:UnregisterEvent("PLAYER_REGEN_ENABLED"); M:ApplyMapKey() end)
+function M:ApplyMapKey()
+    if InCombatLockdown() then return keyOwner:RegisterEvent("PLAYER_REGEN_ENABLED") end
+    ClearOverrideBindings(keyOwner)
+    if not M.db.mapKey then return end
+    local k1, k2 = GetBindingKey("TOGGLEWORLDMAP")
+    if not k1 then k1 = "M" end
+    SetOverrideBinding(keyOwner, true, k1, "MERIDIAN_TOGGLE")
+    if k2 then SetOverrideBinding(keyOwner, true, k2, "MERIDIAN_TOGGLE") end
+end
+
 function M:Print(...) print("|cff66ccffMeridian|r:", ...) end
 
 local f = CreateFrame("Frame")
@@ -42,6 +56,7 @@ f:SetScript("OnEvent", function(_, event, name)
         M.Way:Init()
         M.Options:Register()
         M.Launcher:Create()
+        M:ApplyMapKey()
     end
 end)
 

@@ -102,3 +102,4 @@ L["A small map that follows you."] = "나를 따라다니는 작은 지도입니
 L["Options"] = "설정"
 L["Opacity, marker size, arrow, minimap and more. Also /mm config."] = "투명도, 표시 크기, 화살표, 미니맵 등. /mm config도 사용 가능."
 L["Ctrl-C to copy, then Enter"] = "Ctrl+C로 복사한 후 Enter"
+L["Open Meridian with the world map key (M) instead of Blizzard's map"] = "블리자드 지도 대신 세계 지도 키(M)로 Meridian 열기"

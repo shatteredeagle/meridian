@@ -2,6 +2,8 @@
 
 Unreleased (after 0.1.2-alpha):
 
+- Option "Open Meridian with the world map key (M)" (off by default): overrides whatever key is bound to Blizzard's world map (M unless you rebound it) so it toggles Meridian. Turning it off restores the stock binding. Changes made in combat apply when combat ends.
+
 - Options page: content now scrolls and long checkbox labels wrap, so nothing runs off the bottom of the window.
 
 0.1.2-alpha (all items untested in-client unless noted; see docs/test-checklist.md).

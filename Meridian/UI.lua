@@ -356,6 +356,7 @@ function UI:ApplySettings(after)
     if self.mini then self.mini.overlay:ApplyAlpha() end
     if M.Tracker.SyncSlider then M.Tracker:SyncSlider() end
     M.Launcher:Apply()
+    M:ApplyMapKey()
     M.Pad:Apply()
     M.Pins:Apply()
     self.overlay:Rescale()
