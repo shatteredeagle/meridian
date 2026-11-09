@@ -207,7 +207,7 @@ function UI:Create()
     self.overlay = M.Overlay:New(c)
     c.view.bg = c.view:CreateTexture(nil, "BACKGROUND")
     c.view.bg:SetAllPoints()
-    c.view.bg:SetColorTexture(0, 0, 0, 0.6)
+    c.view.bg:SetColorTexture(0.12, 0.24, 0.30, 1) -- sea colour: ground no zone map covers (coasts, gaps between zones) reads as water, not a black hole
 
     -- resize grip
     local grip = CreateFrame("Button", nil, f)

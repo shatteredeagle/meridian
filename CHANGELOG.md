@@ -2,6 +2,8 @@
 
 Unreleased (after 0.1.2-alpha):
 
+- Ground that no zone map covers (open sea off the coast, gaps between zones on the continent view) is drawn in a sea colour instead of black, on the main map and the minimap.
+
 - Minimap resizes to any shape: the bottom-right grip sets width and height independently (100 to 800 px each, saved). The options "Minimap size" slider resets it to a square. A round minimap becomes an ellipse.
 
 - Minimap sits on the LOW frame strata, so bags, panels and dialogs draw over it instead of the other way round.

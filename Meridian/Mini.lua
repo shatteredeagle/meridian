@@ -27,6 +27,10 @@ function UI:CreateMini()
     c.view:SetPoint("TOPLEFT", 3, -3)
     c.view:SetPoint("BOTTOMRIGHT", -3, 3)
     local overlay = M.Overlay:New(c)
+    c.view.bg = c.view:CreateTexture(nil, "BACKGROUND")
+    c.view.bg:SetAllPoints()
+    c.view.bg:SetColorTexture(0.12, 0.24, 0.30, 1)
+    if c.mask then c.view.bg:AddMaskTexture(c.mask) end
     self:AttachMarker(f, c)
     self.mini = { frame = f, canvas = c, overlay = overlay, follow = true }
     local mini = self.mini
