@@ -71,6 +71,15 @@ SlashCmdList.MERIDIAN = function(raw)
         M.db.controller = not M.db.controller
         M.Pad:Apply()
         M:Print("Controller support:", M.db.controller and "on" or "off")
+    elseif msg == "art" or msg:match("^art ") then
+        local arg = msg:match("^art%s+(%S+)")
+        if arg == "shift" then
+            local dx, dy = msg:match("^art%s+shift%s+(-?[%d%.]+)%s+(-?[%d%.]+)")
+            if dx then M.db.artDx, M.db.artDy = tonumber(dx), tonumber(dy); M.UI.canvas:Rebuild() end
+            M:Print("Pixel art shift (canvas px): auto", M.Art.shift and string.format("%.1f, %.1f", M.Art.shift[1], M.Art.shift[2]) or "-", "extra", M.db.artDx or 0, M.db.artDy or 0, "(usage: /mm art shift dx dy)")
+        else
+            M.Art:Set(arg)
+        end
     elseif msg == "pin" then
         M:Print("Map pinned to you:", M.UI:TogglePin() and "on" or "off")
     elseif msg == "blend" then

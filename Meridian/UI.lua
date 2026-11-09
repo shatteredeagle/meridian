@@ -252,6 +252,8 @@ function UI:Create()
         function() self:ToggleOverlays() end, function() return M.db.overlays end)
     add("givers", L["Quest givers"], L["Markers for quests you can pick up now."],
         function() self:ToggleGivers() end, function() return M.db.avail end)
+    add("art", L["Map art style"], L["Cycle the map art: Blizzard, then the three pixel-art experiments (Eastern Kingdoms continent view). Also /mm art [blizzard|a|b|c]."],
+        function() M.Art:Set() end, function() return M.Art:Current() ~= "blizzard" end)
     add("dungeons", L["Dungeon maps"], L["Dungeon entrances on the map (click one to open that dungeon's map, with its floors). Also /mm dungeons."],
         function() M.Dungeons:Toggle() end, function() return M.db.dungeons end)
     add("arrow", L["Direction arrow"], L["Points to the nearest quest area. Shift-click a quest in the list to pick one."],

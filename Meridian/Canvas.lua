@@ -245,6 +245,7 @@ function Canvas:DrawZone(uiMapID, rect, zi)
     f:Show()
     for _, t in ipairs(f.tiles) do t:Hide() end
     for _, t in ipairs(f.fog) do t:Hide() end
+    if self.pixelOn then return end
 
     local custom = M.Dungeons and M.Dungeons:CustomFloor(uiMapID)
     if custom then return self:DrawCustom(f, custom, rect) end
@@ -346,10 +347,12 @@ function Canvas:BuildContinent(contID)
     table.sort(corners, function(a, b) return a.area > b.area end) -- big zones behind small ones
     self.cw, self.ch = (maxx - minx) * YARDS_TO_PX, (maxy - miny) * YARDS_TO_PX
     self.canvas:SetSize(self.cw, self.ch)
+    self.pixelOn = M.Art and M.Art:Wants(contID) -- pixel-art tiles replace the zone art (zones still define hit areas)
     for zi, c in ipairs(corners) do
         self.zones[c.id] = c.rect
         self:DrawZone(c.id, c.rect, zi)
     end
+    if self.pixelOn then M.Art:Draw(self) end
     self.zoneCount = #corners
     return true
 end
@@ -383,6 +386,8 @@ end
 function Canvas:SetMap(uiMapID)
     self.mapID = uiMapID
     for _, f in ipairs(self.zoneFrames) do f:Hide() end
+    self.pixelOn = nil
+    if M.Art then M.Art:Hide(self) end
     self.zones = {}
     local info = uiMapID > 0 and C_Map.GetMapInfo(uiMapID)
     if not (info and info.mapType == Enum.UIMapType.Continent and self:BuildContinent(uiMapID)) then

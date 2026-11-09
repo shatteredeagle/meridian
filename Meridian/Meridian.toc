@@ -23,6 +23,7 @@ Waypoints.lua
 Search.lua
 Pins.lua
 Dungeons.lua
+ArtStyles.lua
 UI.lua
 Tracker.lua
 Mini.lua

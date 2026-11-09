@@ -67,6 +67,7 @@ def star(cx, cy, ro, ri, n=5):
             cy - (ro if i % 2 == 0 else ri) * math.cos(math.pi * i / n)) for i in range(2 * n)]
     return union(*[tri(cx, cy, *pts[i], *pts[(i + 1) % (2 * n)]) for i in range(2 * n)])
 
+ICONS["art"] = union(frame(.12, .18, .88, .82, .08), disc(.7, .38, .07), tri(.2, .74, .45, .42, .6, .74), tri(.42, .74, .66, .5, .84, .74))  # picture frame with a mountain and sun
 ICONS["pin"] = lambda x, y: (disc(.5, .36, .26)(x, y) or tri(.27, .5, .73, .5, .5, .92)(x, y)) and not disc(.5, .36, .1)(x, y)  # map pin with a hole
 ICONS["dungeons"] = union(ICONS["dungeons"], arc(.5, .46, .3, 180, 360, .09), box(.42, .6, .58, .88))  # arched doorway
 
