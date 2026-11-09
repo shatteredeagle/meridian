@@ -63,7 +63,9 @@ local function makeCheck(panel, opt, key, label)
     local b = CreateFrame("CheckButton", nil, panel, "UICheckButtonTemplate")
     b:SetSize(24, 24)
     b.label = b:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-    b.label:SetPoint("LEFT", b, "RIGHT", 2, 0)
+    b.label:SetPoint("TOPLEFT", b, "TOPRIGHT", 2, -5)
+    b.label:SetWidth(COL_W - 44)
+    b.label:SetJustifyH("LEFT")
     b.label:SetText(label)
     b:SetScript("OnClick", function(s)
         M.db[key] = s:GetChecked() and true or false
@@ -147,28 +149,42 @@ function Options:Build()
     title:SetPoint("TOPLEFT", 16, -16)
     title:SetText("Meridian")
 
+    -- everything below the title scrolls, so a long page never runs off the bottom of the window
+    local sf = CreateFrame("ScrollFrame", nil, p, "UIPanelScrollFrameTemplate")
+    sf:SetPoint("TOPLEFT", 0, -44)
+    sf:SetPoint("BOTTOMRIGHT", -28, 8)
+    local content = CreateFrame("Frame", nil, sf)
+    content:SetSize(2 * COL_W + 20, 600)
+    sf:SetScrollChild(content)
+    self.content = content
+
     -- two columns, filled top to bottom; a header with newcol starts the second one
-    local col, y = 0, -50
+    local col, y, deepest = 0, -6, 0
     for _, o in ipairs(OPTIONS) do
         local kind = o[1]
         local x = 16 + col * COL_W
         if kind == "header" then
-            if o.newcol then col, y, x = 1, -50, 16 + COL_W end
-            local fs = p:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+            if o.newcol then col, y, x = 1, -6, 16 + COL_W end
+            local fs = content:CreateFontString(nil, "ARTWORK", "GameFontNormal")
             fs:SetPoint("TOPLEFT", x, y)
             fs:SetText(o[2])
             y = y - 22
         else
             local w
-            if kind == "check" then w = makeCheck(p, o, o[2], o[3]); y = y - 2
-            elseif kind == "slider" then w = makeSlider(p, o, o[2], o[3], o[4], o[5], o[6], o[7])
-            elseif kind == "choice" then w = makeChoice(p, o, o[2], o[3], o[4])
-            elseif kind == "button" then w = makeButton(p, o[2], o[3]) end
+            if kind == "check" then w = makeCheck(content, o, o[2], o[3]); y = y - 2
+            elseif kind == "slider" then w = makeSlider(content, o, o[2], o[3], o[4], o[5], o[6], o[7])
+            elseif kind == "choice" then w = makeChoice(content, o, o[2], o[3], o[4])
+            elseif kind == "button" then w = makeButton(content, o[2], o[3]) end
             w:SetPoint("TOPLEFT", x + (kind == "check" and 0 or 4), y)
             self.controls[#self.controls + 1] = w
-            y = y - (kind == "slider" and ROW_H + 6 or 28)
+            local step = kind == "slider" and ROW_H + 6 or 28
+            if kind == "check" and w.label then step = math.max(step, (w.label:GetStringHeight() or 0) + 10) end
+            y = y - step
         end
+        deepest = math.min(deepest, y)
     end
+    content:SetHeight(-deepest + 16)
+    y = deepest
     self.bottomY = y
     p:SetScript("OnShow", function() self:Refresh() end)
     return p
