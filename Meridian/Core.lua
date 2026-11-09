@@ -115,6 +115,16 @@ SlashCmdList.MERIDIAN = function(raw)
         M.UI:ToggleMini()
     elseif msg == "reveal" then
         M.UI:ToggleReveal()
+    elseif msg == "overlays" then
+        -- diagnostic for "reveal map leaves terrain hidden": what each source offers for a zone (default: the one you are in)
+        local id = tonumber(rest) or C_Map.GetBestMapForUnit("player")
+        local zgv = _G.ZGV
+        local data = zgv and zgv.Foglight and zgv.Foglight.DataProvider and zgv.Foglight.DataProvider.data
+        local explored = C_MapExplorationInfo.GetExploredMapTextures(id) or {}
+        local zy = data and data[id] or {}
+        local all = M.OverlaysFor(id, true)
+        M:Print("map", id, "reveal:", M.db.reveal, "| explored overlays:", #explored,
+            "| Zygor data:", data and "loaded" or "MISSING", "entries for this map:", #zy, "| drawn when revealed:", #all)
     elseif msg == "data" then
         M:Print("QuestieDB:", _G.LibQuestieDB and "found" or "missing",
             "| ZoneDB:", (_G.QuestieLoader and _G.QuestieLoader:ImportModule("ZoneDB")) and "found" or "missing",
