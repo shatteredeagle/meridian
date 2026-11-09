@@ -5,7 +5,7 @@
 ## X-License: MIT
 ## X-Website: https://www.curseforge.com/wow/addons/meridian
 ## X-Curse-Project-ID: 1792982
-## Version: 0.1.1
+## Version: 0.1.2
 ## OptionalDeps: QuestieDB, Questie, ZygorGuidesViewerForever
 ## SavedVariables: MeridianDB
 ## IconTexture: Interface\Icons\INV_Misc_Map_01

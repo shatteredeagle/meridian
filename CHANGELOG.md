@@ -1,6 +1,6 @@
 # Changelog
 
-Unreleased (all items untested in-client unless noted; see docs/test-checklist.md).
+0.1.2-alpha (all items untested in-client unless noted; see docs/test-checklist.md).
 
 - Localization: machine-translated, unreviewed UI text for deDE (now complete), frFR, esES, esMX, itIT, ptBR, ruRU, koKR, zhCN and zhTW (Locales/<locale>.lua). Text uses the client's own fonts, so CJK and Cyrillic render. The locale test checks every key and its format specifiers.
 
