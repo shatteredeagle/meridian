@@ -68,6 +68,7 @@ M.Canvas = Canvas
 function Canvas:New(parent, opts)
     local self = setmetatable({}, Canvas)
     self.zones = {}
+    self.alwaysFull = opts and opts.alwaysFull -- the minimap never fogs: it is for finding your way, not for exploring
     local view = CreateFrame("Frame", nil, parent)
     view:SetClipsChildren(true)
     view:EnableMouse(true)
@@ -256,7 +257,7 @@ function Canvas:DrawZone(uiMapID, rect, zi)
     local k = rect.w / layer.layerWidth
     local tw, th = layer.tileWidth * k, layer.tileHeight * k
     local cols = math.ceil(layer.layerWidth / layer.tileWidth)
-    local full = M.db.reveal == "full"
+    local full = self.alwaysFull or M.db.reveal == "full"
     -- Maps with no exploration overlays in any source (cities, many instances) can't be "explored", so never dim them.
     local dim = (full or #overlaysFor(uiMapID, true) == 0) and 1 or 0.3
     for i, file in ipairs(files) do

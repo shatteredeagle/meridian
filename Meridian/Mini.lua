@@ -18,7 +18,7 @@ function UI:CreateMini()
     if not M.db.miniRound then f:SetBackdrop({ edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", edgeSize = 12 }) end
     f:SetFrameStrata("MEDIUM")
 
-    local c = M.Canvas:New(f, { round = M.db.miniRound })
+    local c = M.Canvas:New(f, { round = M.db.miniRound, alwaysFull = true })
     c.view:SetPoint("TOPLEFT", 3, -3)
     c.view:SetPoint("BOTTOMRIGHT", -3, 3)
     local overlay = M.Overlay:New(c)
@@ -78,6 +78,9 @@ function UI:CreateMini()
     grab.tex = grab:CreateTexture(nil, "OVERLAY")
     grab.tex:SetAllPoints()
     grab.tex:SetColorTexture(1, 1, 1, 0.12)
+    grab.tex:Hide() -- only shown while the mouse is over the strip
+    grab:SetScript("OnEnter", function() grab.tex:Show() end)
+    grab:SetScript("OnLeave", function() grab.tex:Hide() end)
     local re = M.Widgets.IconButton(f, "locate", "Follow me", "Re-center and keep following.", function() mini.follow = true end,
         { size = 18, iconSize = 12 })
     re:SetPoint("TOPRIGHT", -2, -2)
