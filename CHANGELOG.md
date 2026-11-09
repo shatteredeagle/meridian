@@ -2,6 +2,8 @@
 
 Unreleased (after 0.1.2-alpha):
 
+- Minimap resizes to any shape: the bottom-right grip sets width and height independently (100 to 800 px each, saved). The options "Minimap size" slider resets it to a square. A round minimap becomes an ellipse.
+
 - Minimap sits on the LOW frame strata, so bags, panels and dialogs draw over it instead of the other way round.
 
 - Minimap: resizing keeps your zoom (mouse-wheel zoom is now saved as the minimap zoom) and never drops follow-me; if you had panned away, the same spot stays centred.

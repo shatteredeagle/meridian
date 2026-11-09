@@ -360,6 +360,7 @@ function UI:ApplySettings(after)
     M.Pad:Apply()
     M.Pins:Apply()
     self.overlay:Rescale()
+    if after == "mini" then M.db.miniW, M.db.miniH = nil, nil end -- the size slider means a square again
     if self.mini then self.mini.overlay:Rescale(); self:ApplyMini() end
     M.Arrow:ApplyStyle()
     self.mini.frame:SetShown(M.db.mini)

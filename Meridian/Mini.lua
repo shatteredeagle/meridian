@@ -2,12 +2,17 @@
 local ADDON, M = ...
 local UI = M.UI
 
-local MIN_SIZE, MAX_SIZE = 120, 600
+local MIN_SIZE, MAX_SIZE = 100, 800
+
+-- Width and height: the grip sets them freely; the options slider resets both to one square size.
+local function miniSize()
+    return M.db.miniW or M.db.miniSize, M.db.miniH or M.db.miniSize
+end
 
 function UI:CreateMini()
     local f = CreateFrame("Frame", "MeridianMini", UIParent, "BackdropTemplate")
-    local s = M.db.miniSize
-    f:SetSize(s, s)
+    local w, h = miniSize()
+    f:SetSize(w, h)
     if M.db.miniPos then
         f:SetPoint(M.db.miniPos[1], UIParent, M.db.miniPos[2], M.db.miniPos[3], M.db.miniPos[4])
     else
@@ -47,7 +52,7 @@ function UI:CreateMini()
     grip:SetPoint("BOTTOMRIGHT", -1, 1)
     grip:SetFrameLevel(f:GetFrameLevel() + 60)
     -- a circle's corner is empty, so tuck the grip onto the rim at the lower right
-    if M.db.miniRound then grip:SetPoint("BOTTOMRIGHT", -(f:GetWidth() * 0.12), f:GetWidth() * 0.12) end
+    if M.db.miniRound then grip:SetPoint("BOTTOMRIGHT", -(f:GetWidth() * 0.12), f:GetHeight() * 0.12) end
     grip:SetNormalTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Up")
     grip:SetHighlightTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Highlight")
     grip:SetPushedTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Down")
@@ -55,18 +60,19 @@ function UI:CreateMini()
         if btn ~= "LeftButton" or M.db.locked then return end
         local cx, cy = GetCursorPosition()
         local sc = f:GetEffectiveScale()
-        grip.sx, grip.sy, grip.size, grip.scale = cx / sc, cy / sc, f:GetWidth(), sc
+        grip.sx, grip.sy, grip.w, grip.h, grip.scale = cx / sc, cy / sc, f:GetWidth(), f:GetHeight(), sc
         grip.wasFollow = mini.follow
         grip:SetScript("OnUpdate", function()
             local x, y = GetCursorPosition()
             local dx, dy = x / grip.scale - grip.sx, grip.sy - y / grip.scale
-            local size = math.max(MIN_SIZE, math.min(MAX_SIZE, math.floor(grip.size + math.max(dx, dy) + 0.5)))
-            if size ~= M.db.miniSize then
-                local delta = size - M.db.miniSize
-                M.db.miniSize = size
+            local w = math.max(MIN_SIZE, math.min(MAX_SIZE, math.floor(grip.w + dx + 0.5)))
+            local h = math.max(MIN_SIZE, math.min(MAX_SIZE, math.floor(grip.h + dy + 0.5)))
+            local ow, oh = miniSize()
+            if w ~= ow or h ~= oh then
+                M.db.miniW, M.db.miniH = w, h
                 UI:ApplyMini(true)
                 -- the view grows from its top-left corner; shift the map by half so the same spot stays in the middle
-                if not mini.follow then c:SetOffset(c.offX + delta / 2, c.offY + delta / 2) end
+                if not mini.follow then c:SetOffset(c.offX + (w - ow) / 2, c.offY + (h - oh) / 2) end
             end
         end)
     end)
@@ -189,9 +195,9 @@ end
 -- Size and zoom from settings (live).
 function UI:ApplyMini(sizeOnly)
     local mini = self.mini
-    local s = M.db.miniSize
-    mini.frame:SetSize(s, s)
-    mini.grab:SetWidth(s - 30)
+    local w, h = miniSize()
+    mini.frame:SetSize(w, h)
+    mini.grab:SetWidth(w - 30)
     if sizeOnly then return end
     if mini.canvas.mapID and mini.canvas.zoom ~= M.db.miniZoom and mini.zoomApplied ~= M.db.miniZoom then
         mini.zoomApplied = M.db.miniZoom
