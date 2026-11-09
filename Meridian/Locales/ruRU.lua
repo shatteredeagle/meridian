@@ -108,3 +108,4 @@ L["Show my corpse on the map and minimap"] = "Показывать мой тру
 L["Point the arrow at my corpse when I die (cleared when I am alive)"] = "Указывать стрелкой на мой труп после смерти (убирается при воскрешении)"
 L["Boats and zeppelins (docks, for your faction)"] = "Корабли и дирижабли (причалы вашей фракции)"
 L["Minimap opacity"] = "Прозрачность миникарты"
+L["Objective icons on quest areas (kill, interact, loot)"] = "Значки целей на зонах заданий (убить, взаимодействовать, добыча)"

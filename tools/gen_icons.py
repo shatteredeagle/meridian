@@ -83,6 +83,9 @@ PINS = {
     "corpse": lambda x, y: (disc(.5, .4, .34)(x, y) or box(.32, .55, .68, .9)(x, y)) and not (disc(.38, .42, .09)(x, y) or disc(.62, .42, .09)(x, y) or box(.46, .6, .54, .7)(x, y)),  # skull
     "boat": union(tri(.1, .6, .9, .6, .78, .88), tri(.1, .6, .78, .88, .22, .88), box(.47, .12, .53, .6), tri(.55, .16, .55, .56, .88, .56)),  # sailing ship
     "zeppelin": union(lambda x, y: ((x - .5) / .44) ** 2 + ((y - .38) / .22) ** 2 <= 1, box(.36, .64, .64, .8), tri(.1, .38, .22, .2, .22, .5)),  # airship
+    "kill": union(line(.16, .16, .84, .84, .12), line(.84, .16, .16, .84, .12), disc(.14, .86, .09), disc(.86, .86, .09), line(.62, .26, .74, .38, .1), line(.38, .26, .26, .38, .1)),  # crossed swords: kill
+    "interact": lambda x, y: (lambda d, a: (d <= .3 and d >= .13) or (.3 < d <= .45 and abs(((a * 4 / math.pi) % 1) - .5) < .27))(math.hypot(x - .5, y - .5), math.atan2(y - .5, x - .5)),  # gear: interact
+    "loot": union(disc(.5, .66, .3), tri(.3, .5, .7, .5, .5, .16), line(.34, .22, .66, .22, .1)),   # sack: loot
     "party": union(box(.2, .2, .8, .8)),
     "dungeon": union(box(.16, .45, .84, .9), box(.16, .12, .28, .45), box(.44, .12, .56, .45), box(.72, .12, .84, .45)),  # castle gate                                           # square
 }

@@ -108,3 +108,4 @@ L["Show my corpse on the map and minimap"] = "在地图和小地图上显示我�
 L["Point the arrow at my corpse when I die (cleared when I am alive)"] = "死亡时用箭头指向我的尸体（复活后清除）"
 L["Boats and zeppelins (docks, for your faction)"] = "船只和飞艇（你阵营的码头）"
 L["Minimap opacity"] = "小地图不透明度"
+L["Objective icons on quest areas (kill, interact, loot)"] = "任务区域上的目标图标（击杀、交互、拾取）"

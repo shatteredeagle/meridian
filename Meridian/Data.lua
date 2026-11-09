@@ -89,14 +89,19 @@ function Data:QuestAreasAll(questID)
     local result = {}
     if obj then
         local npcs, objects = {}, {}
-        for _, c in ipairs(obj[1] or {}) do npcs[#npcs + 1] = c[1] end
-        for _, o in ipairs(obj[2] or {}) do objects[#objects + 1] = o[1] end
+        local npcKind, objKind = {}, {} -- what each source is for: kill it, interact with it, or loot it for an item
+        for _, c in ipairs(obj[1] or {}) do npcs[#npcs + 1] = c[1]; npcKind[c[1]] = "kill" end
+        for _, o in ipairs(obj[2] or {}) do objects[#objects + 1] = o[1]; objKind[o[1]] = "interact" end
         for _, it in ipairs(obj[3] or {}) do -- item objectives: where the item drops
-            for _, n in ipairs(db.Item.npcDrops(it[1]) or {}) do npcs[#npcs + 1] = n end
-            for _, o in ipairs(db.Item.objectDrops(it[1]) or {}) do objects[#objects + 1] = o end
+            for _, n in ipairs(db.Item.npcDrops(it[1]) or {}) do npcs[#npcs + 1] = n; npcKind[n] = npcKind[n] or "loot" end
+            for _, o in ipairs(db.Item.objectDrops(it[1]) or {}) do objects[#objects + 1] = o; objKind[o] = objKind[o] or "loot" end
         end
-        for _, c in ipairs(obj[5] or {}) do npcs[#npcs + 1] = c[1] end -- kill-credit objectives
+        for _, c in ipairs(obj[5] or {}) do npcs[#npcs + 1] = c[1]; npcKind[c[1]] = "kill" end -- kill-credit objectives
         for ui, pts in pairs(bucket(db, zones, npcs, objects)) do
+            for _, p in ipairs(pts) do
+                local id = p[3]
+                p[4] = id and (id < 0 and objKind[-id] or npcKind[id]) or nil
+            end
             result[ui] = M.Geometry.areas(pts)
         end
     end
@@ -137,7 +142,7 @@ function Data:Provider(uiMapID)
     if not self:Available() then return out end
     for _, q in ipairs(self:LogQuests()) do
         for _, a in ipairs(self:QuestAreasAll(q.questID)[uiMapID] or {}) do
-            out[#out + 1] = { questID = q.questID, x = a.x, y = a.y, radius = a.radius, dot = a.dot }
+            out[#out + 1] = { questID = q.questID, x = a.x, y = a.y, radius = a.radius, dot = a.dot, hull = a.hull, kind = a.kind }
         end
     end
     return out

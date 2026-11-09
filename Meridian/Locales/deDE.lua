@@ -108,3 +108,4 @@ L["Show my corpse on the map and minimap"] = "Meine Leiche auf Karte und Minikar
 L["Point the arrow at my corpse when I die (cleared when I am alive)"] = "Pfeil auf meine Leiche richten, wenn ich sterbe (entfernt, wenn ich lebe)"
 L["Boats and zeppelins (docks, for your faction)"] = "Schiffe und Zeppeline (Anlegestellen deiner Fraktion)"
 L["Minimap opacity"] = "Minikarten-Deckkraft"
+L["Objective icons on quest areas (kill, interact, loot)"] = "Zielsymbole auf Questgebieten (töten, interagieren, plündern)"

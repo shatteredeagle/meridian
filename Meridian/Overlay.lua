@@ -40,7 +40,7 @@ local function color(questID) return Overlay.paletteColor(M.db and M.db.palette,
 Overlay.color = color
 
 function Overlay:New(canvas)
-    local o = setmetatable({ canvas = canvas, pool = {}, active = {}, questPos = {}, areas = {}, markerPool = {}, markers = {} }, Overlay)
+    local o = setmetatable({ canvas = canvas, pool = {}, polyPool = {}, active = {}, questPos = {}, areas = {}, markerPool = {}, markers = {} }, Overlay)
     local prev = canvas.OnChanged
     canvas.OnChanged = function(...) if prev then prev(...) end; o:Rescale() end
     o:AttachHover()
@@ -118,7 +118,9 @@ function Overlay:Rescale()
     local s = 1 / self.canvas.zoom
     if M.Route then M.Route:Draw(self.canvas) end
     for _, p in ipairs(self.active) do
-        if p.dot then
+        if p.isPoly then
+            if p.laidAt ~= self.canvas.zoom then p.laidAt = self.canvas.zoom; p:Layout(p.verts, RIM_PX / self.canvas.zoom) end
+        elseif p.dot then
             local d = math.max(p.d, DOT_MIN_PX * s)
             p.r = d / 2
             p:SetSize(d, d)
@@ -131,6 +133,112 @@ function Overlay:Rescale()
         m:ClearAllPoints()
         m:SetPoint("CENTER", self.canvas.pinLayer, "TOPLEFT", m.px / (s * k), -m.py / (s * k))
     end
+end
+
+-- Quest-area polygons: solid textures whose quads SetVertexOffset bends onto the region's corners (a fan fills the inside,
+-- one quad per edge makes the rim). Pieces that share an edge rasterise without a seam or an overlap, so the fill is even at
+-- any alpha. The rim keeps its width on screen as the canvas zooms. (The technique follows Polestar's hull drawing.)
+local WHITE = "Interface\\Buttons\\WHITE8X8"
+local RIM_PX = 2
+local Poly = {}
+Poly.__index = Poly
+
+function Poly:Piece(list, i)
+    local t = list[i]
+    if not t then
+        t = self.layer:CreateTexture(nil, "ARTWORK")
+        t:SetTexture(WHITE)
+        t:SetBlendMode("ADD")
+        if t.SetSnapToPixelGrid then t:SetSnapToPixelGrid(false) end
+        if t.SetTexelSnappingBias then t:SetTexelSnappingBias(0) end
+        if self.mask then t:AddMaskTexture(self.mask) end
+        list[i] = t
+    end
+    return t
+end
+
+local function bend(t, hw, hh, ax, ay, bx, by, cx, cy, dx, dy)
+    t:SetVertexOffset(1, ax + hw, ay - hh) -- upper left
+    t:SetVertexOffset(3, bx - hw, by - hh) -- upper right
+    t:SetVertexOffset(4, cx - hw, cy + hh) -- lower right
+    t:SetVertexOffset(2, dx + hw, dy + hh) -- lower left
+end
+
+-- verts: { x1, y1, ... } in canvas px (y down); rim: its width in canvas units.
+function Poly:Layout(verts, rim)
+    local n = #verts / 2
+    local cx, cy = 0, 0
+    for i = 1, n do cx, cy = cx + verts[2 * i - 1], cy + verts[2 * i] end
+    cx, cy = cx / n, cy / n
+    local px, py, hw, hh = {}, {}, 1, 1
+    for i = 1, n do
+        px[i], py[i] = verts[2 * i - 1] - cx, -(verts[2 * i] - cy) -- local units, y up
+        hw, hh = math.max(hw, math.abs(px[i])), math.max(hh, math.abs(py[i]))
+    end
+    local area2 = 0
+    for i = 1, n do
+        local j = i % n + 1
+        area2 = area2 + px[i] * py[j] - px[j] * py[i]
+    end
+    if area2 > 0 then -- counter-clockwise: the quads' corners run clockwise
+        for i = 1, math.floor(n / 2) do
+            local j = n + 1 - i
+            px[i], px[j], py[i], py[j] = px[j], px[i], py[j], py[i]
+        end
+    end
+    local ix, iy = {}, {}
+    for i = 1, n do
+        local d = math.sqrt(px[i] * px[i] + py[i] * py[i])
+        local w = math.min(rim, d * 0.4)
+        local f = d > 0 and (1 - w / d) or 0
+        ix[i], iy[i] = px[i] * f, py[i] * f
+    end
+    local nf, nr = 0, 0
+    for k = 2, n - 1, 2 do -- fan from the first corner: quads 1, k, k+1, k+2
+        nf = nf + 1
+        local t = self:Piece(self.fill, nf)
+        local k2 = math.min(k + 2, n)
+        t:ClearAllPoints()
+        t:SetPoint("CENTER", self.layer, "TOPLEFT", cx, -cy)
+        t:SetSize(2 * hw, 2 * hh)
+        bend(t, hw, hh, ix[1], iy[1], ix[k], iy[k], ix[k + 1], iy[k + 1], ix[k2], iy[k2])
+        t:Show()
+    end
+    for i = 1, n do
+        local j = i % n + 1
+        nr = nr + 1
+        local t = self:Piece(self.rim, nr)
+        t:ClearAllPoints()
+        t:SetPoint("CENTER", self.layer, "TOPLEFT", cx, -cy)
+        t:SetSize(2 * hw, 2 * hh)
+        bend(t, hw, hh, px[i], py[i], px[j], py[j], ix[j], iy[j], ix[i], iy[i])
+        t:Show()
+    end
+    for i = nf + 1, #self.fill do self.fill[i]:Hide() end
+    for i = nr + 1, #self.rim do self.rim[i]:Hide() end
+    self:Tint()
+end
+
+function Poly:Tint()
+    local r, g, b, a = self.cr or 1, self.cg or 1, self.cb or 1, self.ca or 0.35
+    for _, t in ipairs(self.fill) do t:SetVertexColor(r, g, b, a * 0.5) end
+    for _, t in ipairs(self.rim) do t:SetVertexColor(r, g, b, math.min(1, a * 1.6)) end
+end
+
+function Poly:SetVertexColor(r, g, b, a)
+    self.cr, self.cg, self.cb, self.ca = r, g, b, a
+    self:Tint()
+end
+
+function Poly:Hide()
+    for _, t in ipairs(self.fill) do t:Hide() end
+    for _, t in ipairs(self.rim) do t:Hide() end
+end
+
+function Overlay:AcquirePoly()
+    local p = table.remove(self.polyPool)
+    if not p then p = setmetatable({ layer = self.canvas.pinLayer, mask = self.canvas.mask, fill = {}, rim = {}, isPoly = true }, Poly) end
+    return p
 end
 
 function Overlay:Acquire()
@@ -146,7 +254,7 @@ function Overlay:Acquire()
 end
 
 function Overlay:Clear()
-    for _, p in ipairs(self.active) do p:Hide(); self.pool[#self.pool + 1] = p end
+    for _, p in ipairs(self.active) do p:Hide(); local pool = p.isPoly and self.polyPool or self.pool; pool[#pool + 1] = p end
     wipe(self.active)
     wipe(self.questPos)
     for _, m in ipairs(self.markers) do m:Hide(); self.markerPool[#self.markerPool + 1] = m end
@@ -166,14 +274,27 @@ function Overlay:Refresh()
         for _, a in ipairs(list) do
             local px, py = c:ZoneToCanvas(zoneID, a.x, a.y)
             if not self.questPos[a.questID] then self.questPos[a.questID] = { px, py } end
-            self.areas[#self.areas + 1] = { questID = a.questID, zone = zoneID, x = a.x, y = a.y }
+            self.areas[#self.areas + 1] = { questID = a.questID, zone = zoneID, x = a.x, y = a.y, kind = a.kind }
             if not M.db.hidden[a.questID] then
-                local p = self:Acquire()
-                local d = a.radius * 2 * math.abs(rect.w)
-                p.questID, p.px, p.py, p.r, p.d, p.dot = a.questID, px, py, d / 2, d, a.dot
-                p:SetSize(d, d)
-                c:PlacePinAt(p, px, py)
-                self.active[#self.active + 1] = p
+                if a.hull then
+                    local verts = {}
+                    for k = 1, #a.hull - 1, 2 do
+                        local vx, vy = c:ZoneToCanvas(zoneID, a.hull[k], a.hull[k + 1])
+                        verts[#verts + 1], verts[#verts + 2] = vx, vy
+                    end
+                    local p = self:AcquirePoly()
+                    p.questID, p.px, p.py, p.r, p.verts = a.questID, px, py, a.radius * math.abs(rect.w), verts
+                    p.laidAt = c.zoom
+                    p:Layout(verts, RIM_PX / c.zoom)
+                    self.active[#self.active + 1] = p
+                else
+                    local p = self:Acquire()
+                    local d = a.radius * 2 * math.abs(rect.w)
+                    p.questID, p.px, p.py, p.r, p.d, p.dot = a.questID, px, py, d / 2, d, a.dot
+                    p:SetSize(d, d)
+                    c:PlacePinAt(p, px, py)
+                    self.active[#self.active + 1] = p
+                end
             end
         end
     end
@@ -186,6 +307,27 @@ function Overlay:RefreshMarkers()
     self:Rescale()
     if M.db.focus then self:ApplyAlpha() end
 end
+
+-- Objective icons: one pin per quest area or spawn dot, by what the objective asks for (kill, interact, loot), tinted like
+-- the quest's area; hover for the quest and its open objectives.
+local function objectiveSource(self, c)
+    if M.db.objIcons == false or not M.db.overlays then return end
+    for _, a in ipairs(self.areas) do
+        if a.kind and not M.db.hidden[a.questID] then
+            local r, g, b = color(a.questID)
+            self:AddMarker(a.zone, { x = a.x, y = a.y, pin = a.kind, size = 14, r = r, g = g, b = b, kind = "objective", questID = a.questID,
+                title = C_QuestLog.GetTitleForQuestID(a.questID) or ("Quest " .. a.questID),
+                lines = function()
+                    local out = {}
+                    for _, o in ipairs(C_QuestLog.GetQuestObjectives(a.questID) or {}) do
+                        if o.text and o.text ~= "" and not o.finished then out[#out + 1] = o.text end
+                    end
+                    return out
+                end })
+        end
+    end
+end
+Overlay.RegisterSource("objectives", objectiveSource)
 
 -- Quest-giver markers for quests the player could accept now (needs the QuestieDB starter index).
 local function giverSource(self, c)
@@ -269,8 +411,12 @@ end
 function Overlay:QuestsAt(px, py)
     local hits = {}
     for _, p in ipairs(self.active) do
-        local dx, dy = px - p.px, py - p.py
-        if dx * dx + dy * dy <= p.r * p.r then hits[#hits + 1] = p end
+        if p.isPoly then
+            if M.Geometry.inside(p.verts, px, py) then hits[#hits + 1] = p end
+        else
+            local dx, dy = px - p.px, py - p.py
+            if dx * dx + dy * dy <= p.r * p.r then hits[#hits + 1] = p end
+        end
     end
     table.sort(hits, function(a, b) return a.r < b.r end)
     local out, seen = {}, {}

@@ -32,6 +32,7 @@ L["Open zoomed in on me and pinned (otherwise keep the last view)"] = "Open zoom
 L["Open Meridian with the world map key (M) instead of Blizzard's map"] = "Open Meridian with the world map key (M) instead of Blizzard's map"
 L["Pin the map to my character (follows you; dragging unpins)"] = "Pin the map to my character (follows you; dragging unpins)"
 L["Show quest areas"] = "Show quest areas"
+L["Objective icons on quest areas (kill, interact, loot)"] = "Objective icons on quest areas (kill, interact, loot)"
 L["Show quest givers"] = "Show quest givers"
 L["Show turn-in markers"] = "Show turn-in markers"
 L["Dungeon maps (entrances on zone maps, multi-floor dungeon views)"] = "Dungeon maps (entrances on zone maps, multi-floor dungeon views)"

@@ -108,3 +108,4 @@ L["Show my corpse on the map and minimap"] = "지도와 미니맵에 내 시체 
 L["Point the arrow at my corpse when I die (cleared when I am alive)"] = "사망 시 화살표로 내 시체 안내 (부활하면 해제)"
 L["Boats and zeppelins (docks, for your faction)"] = "배와 비행선 (내 진영의 선착장)"
 L["Minimap opacity"] = "미니맵 불투명도"
+L["Objective icons on quest areas (kill, interact, loot)"] = "퀘스트 지역의 목표 아이콘 (처치, 상호작용, 전리품)"

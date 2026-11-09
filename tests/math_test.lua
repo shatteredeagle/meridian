@@ -345,3 +345,26 @@ eq(pts[3][1], 10, "dot on the corner"); eq(pts[3][2], 0, "corner y")
 assert(pts[4][1] == 10 and pts[4][2] == 4, "carry past the corner")
 assert(#RM.Route.spaced({ {0, 0} }, 4) == 0, "single point has no dots")
 print("route ok")
+
+-- polygon regions: cover every spawn, long chains split, point-in-polygon
+local GG = G2.Geometry
+local camp = {}
+for i = 0, 5 do camp[#camp + 1] = { 0.40 + i * 0.012, 0.40 + (i % 2) * 0.02, 5 } end
+local reg = GG.areas(camp)
+assert(#reg == 1 and reg[1].hull, "one polygon for a camp")
+for _, p in ipairs(camp) do assert(GG.inside(reg[1].hull, p[1], p[2]), "polygon covers every spawn") end
+assert(not GG.inside(reg[1].hull, 0.9, 0.9), "a far point is outside")
+local chain = {}
+for i = 0, 14 do chain[#chain + 1] = { 0.1 + i * 0.03, 0.5, 5 } end   -- 0.42 long, links of 0.03
+local pieces = GG.areas(chain)
+assert(#pieces >= 2, "a long chain splits into several regions, got " .. #pieces)
+for _, r in ipairs(pieces) do
+  if r.hull then
+    local x0, x1 = 1e9, -1e9
+    for i = 1, #r.hull - 1, 2 do x0, x1 = math.min(x0, r.hull[i]), math.max(x1, r.hull[i]) end
+    assert(x1 - x0 <= 0.22 + 0.04, "a region stays near the span cap")
+  end
+end
+local kinds = GG.areas({ { 0.2, 0.2, 5, "kill" }, { 0.21, 0.2, 5, "kill" }, { 0.2, 0.21, 5, "loot" }, { 0.21, 0.21, 5, "kill" } })
+assert(kinds[1].kind == "kill", "a region takes its members' commonest kind")
+print("regions ok")
