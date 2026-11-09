@@ -214,6 +214,55 @@ local function fromFDJ(out)
     end
 end
 
+-- Dungeons and raids ForeverDungeonJournal has no map for but the client ships art for (the same
+-- Interface\\WorldMap\\<Name>\\<Name><floor>_1..12 tile grids it uses for its own maps). `entrance` is a zone map
+-- position (the first three also appear in the Journal's entrance data); `world` is a world position from the game's
+-- own point-of-interest table, converted to the zone map at load. Positions marked approximate are from memory.
+local BUILTIN = {
+    { name = "Lower Blackrock Spire", folder = "BlackrockSpire", floors = 7,
+      entrance = { map = 1427, x = 0.348, y = 0.840, detail = "Blackrock Mountain: climb to the upper ledge to the Blackrock Spire portal" } },
+    { name = "Upper Blackrock Spire", folder = "UpperBlackrockSpire", floors = 3,
+      entrance = { map = 1427, x = 0.348, y = 0.840, detail = "Blackrock Mountain: through Lower Blackrock Spire, or the key from the Spire portal" } },
+    { name = "Scholomance", folder = "Scholomance", floors = 4,
+      entrance = { map = 1422, x = 0.697, y = 0.732, detail = "Caer Darrow, Western Plaguelands: the crypt door at the back of the keep" } },
+    { name = "Onyxia's Lair", folder = "OnyxiasLair", floors = 1,
+      world = { zone = 1445, c = 1, x = -4698.06, y = -3720.58 } },
+    { name = "Molten Core", folder = "MoltenCore", floors = 1,
+      entrance = { map = 1427, x = 0.348, y = 0.840, detail = "Entered through the Molten Core portal at the bottom of Blackrock Depths" } },
+    { name = "Blackwing Lair", folder = "BlackwingLair", floors = 4,
+      entrance = { map = 1427, x = 0.348, y = 0.840, detail = "Entered through Upper Blackrock Spire (orb of command)" } },
+    { name = "Zul'Gurub", folder = "ZulGurub", floors = 1, flat = true,
+      entrance = { map = 1434, x = 0.539, y = 0.175, detail = "Stranglethorn Vale, up the ramp in the north (approximate)" } },
+    { name = "Temple of Ahn'Qiraj", folder = "AhnQiraj", floors = 3,
+      entrance = { map = 1451, x = 0.243, y = 0.873, detail = "Silithus, past the Scarab Wall (approximate)" } },
+    { name = "Naxxramas", folder = "Naxxramas", floors = 6,
+      entrance = { map = 1423, x = 0.390, y = 0.260, detail = "Eastern Plaguelands: the floating necropolis (approximate)" } },
+    { name = "Deeprun Tram", folder = "DeepRunTram", floors = 2 },
+}
+
+local function fromBuiltin(out)
+    local have = {}
+    for _, d in ipairs(out) do have[Dungeons.norm(d.name)] = true end
+    for _, b in ipairs(BUILTIN) do
+        if not have[Dungeons.norm(b.name)] then
+            local d = { name = b.name, floors = {}, source = "builtin" }
+            for i = 1, b.floors do
+                fakeKey = fakeKey - 1
+                local prefix = "Interface\\WorldMap\\" .. b.folder .. "\\" .. b.folder .. (b.flat and "" or (i .. "_"))
+                d.floors[i] = { index = i, key = fakeKey, label = floorLabel(i, b.floors, b.name), tiles = prefix, custom = true }
+            end
+            local e = b.entrance
+            if b.world and C_Map and C_Map.GetMapPosFromWorldPos then
+                local ok, _, v = pcall(C_Map.GetMapPosFromWorldPos, b.world.c, CreateVector2D(b.world.x, b.world.y), b.world.zone)
+                local x, y = xy(ok and v or nil)
+                if x and x >= 0 and x <= 1 and y >= 0 and y <= 1 then e = { map = b.world.zone, x = x, y = y } end
+            end
+            if e then d.entrance = { map = e.map, x = e.x, y = e.y, label = b.name .. " Entrance", detail = e.detail } end
+            out[#out + 1] = d
+        end
+    end
+end
+
 -- Every client map of type Dungeon with art, grouped into dungeons.
 local function fromClient(out)
     if not (C_Map and C_Map.GetMapInfo and Enum and Enum.UIMapType) then return end
@@ -276,6 +325,7 @@ function Dungeons:List()
     if self.list then return self.list end
     local list = {}
     local ok1, e1 = pcall(fromFDJ, list)
+    pcall(fromBuiltin, list)
     local ok2, e2 = pcall(fromClient, list)
     if not ok1 or not ok2 then M:Print("Dungeon scan problem: " .. tostring(ok1 and e2 or e1)) end
     self.byKey = {}

@@ -1,5 +1,9 @@
 # Changelog
 
+Unreleased (after 0.1.3-alpha):
+
+- Ten more dungeons and raids with maps from the client's own art, for ones ForeverDungeonJournal lacks: Lower and Upper Blackrock Spire, Scholomance, Onyxia's Lair, Molten Core, Blackwing Lair, Zul'Gurub, Temple of Ahn'Qiraj, Naxxramas and Deeprun Tram (floor counts from the art files; Zul'Gurub, Ahn'Qiraj and Naxxramas entrance spots are approximate). They appear in search, on entrance pins and as insets like the others.
+
 0.1.3-alpha:
 
 - Polestar route dots use a solid disc (Media/dot.tga, tools/gen_dot.py) instead of the soft quest-area texture, so they are no longer faint. New texture: needs a full client restart.
