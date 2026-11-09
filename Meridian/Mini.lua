@@ -2,6 +2,8 @@
 local ADDON, M = ...
 local UI = M.UI
 
+local MIN_SIZE, MAX_SIZE = 120, 600
+
 function UI:CreateMini()
     local f = CreateFrame("Frame", "MeridianMini", UIParent, "BackdropTemplate")
     local s = M.db.miniSize
@@ -35,7 +37,41 @@ function UI:CreateMini()
         local point, _, rel, x, y = f:GetPoint()
         M.db.miniPos = { point, rel, x, y }
     end)
+    grab:SetHeight(14)
     mini.grab = grab
+
+    -- resize grip (bottom-right): drag to scale the square; the size is saved
+    local grip = CreateFrame("Button", nil, f)
+    grip:SetSize(16, 16)
+    grip:SetPoint("BOTTOMRIGHT", -1, 1)
+    grip:SetFrameLevel(f:GetFrameLevel() + 20)
+    grip:SetNormalTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Up")
+    grip:SetHighlightTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Highlight")
+    grip:SetPushedTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Down")
+    grip:SetScript("OnMouseDown", function(_, btn)
+        if btn ~= "LeftButton" or M.db.locked then return end
+        local cx, cy = GetCursorPosition()
+        local sc = f:GetEffectiveScale()
+        grip.sx, grip.sy, grip.size, grip.scale = cx / sc, cy / sc, f:GetWidth(), sc
+        grip:SetScript("OnUpdate", function()
+            local x, y = GetCursorPosition()
+            local dx, dy = x / grip.scale - grip.sx, grip.sy - y / grip.scale
+            local size = math.max(MIN_SIZE, math.min(MAX_SIZE, math.floor(grip.size + math.max(dx, dy) + 0.5)))
+            if size ~= M.db.miniSize then
+                M.db.miniSize = size
+                UI:ApplyMini()
+            end
+        end)
+    end)
+    grip:SetScript("OnMouseUp", function() grip:SetScript("OnUpdate", nil) end)
+    grip:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_LEFT")
+        GameTooltip:SetText("Drag to resize")
+        GameTooltip:AddLine("Drag the top strip to move.", 1, 1, 1)
+        GameTooltip:Show()
+    end)
+    grip:SetScript("OnLeave", GameTooltip_Hide)
+    mini.grip = grip
     grab.tex = grab:CreateTexture(nil, "OVERLAY")
     grab.tex:SetAllPoints()
     grab.tex:SetColorTexture(1, 1, 1, 0.12)

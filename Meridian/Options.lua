@@ -47,7 +47,7 @@ local OPTIONS = {
     { "check", "claimWay", L["Handle /way (needs reload; TomTom keeps it)"], after = "reload" },
     { "header", L["Minimap"] },
     { "check", "mini", L["Show minimap"] },
-    { "slider", "miniSize", L["Minimap size"], 120, 400, 10, "%d" },
+    { "slider", "miniSize", L["Minimap size"], 120, 600, 10, "%d" },
     { "slider", "miniZoom", L["Minimap zoom"], 0.5, 4, 0.1, "%.1f" },
     { "check", "miniCoords", L["Coordinates and N marker on minimap"] },
     { "check", "launcher", L["Button on the Blizzard minimap"], after = "launcher" },
