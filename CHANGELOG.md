@@ -2,6 +2,8 @@
 
 Unreleased (after 0.1.2-alpha):
 
+- Minimap sits on the LOW frame strata, so bags, panels and dialogs draw over it instead of the other way round.
+
 - Minimap: resizing keeps your zoom (mouse-wheel zoom is now saved as the minimap zoom) and never drops follow-me; if you had panned away, the same spot stays centred.
 
 - Minimap: right-click opens a menu (zoom, follow me, quest areas / givers / arrow / coordinates / lock toggles, open map, options, hide).

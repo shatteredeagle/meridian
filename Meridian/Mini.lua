@@ -16,7 +16,7 @@ function UI:CreateMini()
     f:SetMovable(true)
     f:SetClampedToScreen(true)
     if not M.db.miniRound then f:SetBackdrop({ edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", edgeSize = 12 }) end
-    f:SetFrameStrata("MEDIUM")
+    f:SetFrameStrata("LOW") -- below bags, the character panel and dialogs; the minimap never covers other windows
 
     local c = M.Canvas:New(f, { round = M.db.miniRound, alwaysFull = true })
     c.view:SetPoint("TOPLEFT", 3, -3)
