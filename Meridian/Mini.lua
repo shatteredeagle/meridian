@@ -38,13 +38,16 @@ function UI:CreateMini()
         M.db.miniPos = { point, rel, x, y }
     end)
     grab:SetHeight(14)
+    grab:SetFrameLevel(f:GetFrameLevel() + 60) -- above the canvas and its pins, or the strip never gets the mouse
     mini.grab = grab
 
     -- resize grip (bottom-right): drag to scale the square; the size is saved
     local grip = CreateFrame("Button", nil, f)
     grip:SetSize(16, 16)
     grip:SetPoint("BOTTOMRIGHT", -1, 1)
-    grip:SetFrameLevel(f:GetFrameLevel() + 20)
+    grip:SetFrameLevel(f:GetFrameLevel() + 60)
+    -- a circle's corner is empty, so tuck the grip onto the rim at the lower right
+    if M.db.miniRound then grip:SetPoint("BOTTOMRIGHT", -(f:GetWidth() * 0.12), f:GetWidth() * 0.12) end
     grip:SetNormalTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Up")
     grip:SetHighlightTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Highlight")
     grip:SetPushedTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Down")
@@ -78,6 +81,7 @@ function UI:CreateMini()
     local re = M.Widgets.IconButton(f, "locate", "Follow me", "Re-center and keep following.", function() mini.follow = true end,
         { size = 18, iconSize = 12 })
     re:SetPoint("TOPRIGHT", -2, -2)
+    re:SetFrameLevel(f:GetFrameLevel() + 60)
     c.view:HookScript("OnMouseDown", function() mini.follow = false end)
 
     -- north marker (the map never rotates) and player coordinates

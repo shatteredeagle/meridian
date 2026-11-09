@@ -2,6 +2,8 @@
 
 Unreleased (after 0.1.2-alpha):
 
+- Minimap: move strip, resize grip and follow button now sit above the canvas (they were covered and never got the mouse); new installs default to the square minimap (existing saves keep their setting: uncheck "Round minimap" and /reload).
+
 - Minimap: bottom-right grip resizes the square (120 to 600 px, saved; the options slider follows), and the top move strip is taller (14 px). Locked windows can't be moved or resized.
 
 - Option "Open Meridian with the world map key (M)" (off by default): overrides whatever key is bound to Blizzard's world map (M unless you rebound it) so it toggles Meridian. Turning it off restores the stock binding. Changes made in combat apply when combat ends.
