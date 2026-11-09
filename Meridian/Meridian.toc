@@ -3,6 +3,7 @@
 ## Notes: Pan/zoom world map with overlapping quest areas (Carbonite-style). Built for WoW Forever.
 ## Author: jesse
 ## X-License: MIT
+## X-Website: https://www.curseforge.com/wow/addons/meridian
 ## X-Curse-Project-ID: 1792982
 ## Version: 0.1.1
 ## OptionalDeps: QuestieDB, Questie, ZygorGuidesViewerForever

@@ -2,6 +2,8 @@
 
 Carbonite-style pan/zoom map for WoW Forever: custom map window, overlapping quest areas, waypoints, quest list and minimap. Kept modular so unused features cost nothing (extra pins and controller support are off by default).
 
+Download: [CurseForge](https://www.curseforge.com/wow/addons/meridian) (approved, alpha).
+
 Install (friends): download `Meridian-<version>.zip` from the GitHub Releases page, unzip it into `World of Warcraft/_forever_/Interface/AddOns/` so you end up with `AddOns/Meridian/Meridian.toc`, then `/reload` and type `/mm`. Releases are built by CI when a `v*` tag is pushed (`git tag v0.1.2 && git push github v0.1.2`; a `-alpha`/`-beta` suffix marks a pre-release).
 
 Install (development): copy or symlink `Meridian/` into `World of Warcraft/_retail_/Interface/AddOns/` (Forever's folder; check yours).

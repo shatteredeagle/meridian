@@ -2,6 +2,8 @@
 
 Unreleased (all items untested in-client unless noted; see docs/test-checklist.md).
 
+- Approved on CurseForge: https://www.curseforge.com/wow/addons/meridian (README links it).
+
 - Map art styles (ArtStyles.lua, experimental): toolbar icon or `/mm art [blizzard|a|b|c]` cycles Blizzard's art and three pixel-art Eastern Kingdoms maps (docs/pixelmap). Tiles live in a local-only addon folder MeridianPixelMaps written by `python3 tools/pixelmap/install_tiles.py`; without it the pixel styles are unavailable and releases are unaffected. `/mm art shift dx dy` nudges alignment. Needs a full client restart after installing.
 
 - Default view on open (`/mm`): the stitched continent zoomed to about one zone, centred on you and pinned to you. Option "Open zoomed in on me and pinned" (default on; off keeps the last view). Player position now resolves from cities and sub-zones on the stitched continent too (Stormwind etc.), so Find me, the marker and pinning work there.
