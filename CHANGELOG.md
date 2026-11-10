@@ -2,6 +2,8 @@
 
 Unreleased (after 0.1.4-alpha):
 
+- Fixed an error while dead or a ghost (`ny` nil in AddMarker): the corpse marker read its map position through `a and f()`, which keeps only the first return value, so y was lost.
+
 - Fixed two nil-global bugs: `RIM_PX` (used by the quest-area polygons' zoom relayout before it was declared: an error on every zoom) and `WORLD`/`DIVE` (the world-map zoom hooks read them before they were declared, so the world map never switched back into a continent). Found by scanning the compiled files for global accesses.\n
 - A completed quest's areas (circles, polygons and objective icons) leave the map as soon as the quest is ready to turn in; its green turn-in marker stays.
 

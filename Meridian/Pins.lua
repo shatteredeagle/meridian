@@ -112,7 +112,8 @@ local function corpseSource(self, c)
     local api = C_DeathInfo
     if not (api and api.GetCorpseMapPosition and UnitIsDeadOrGhost and UnitIsDeadOrGhost("player")) then return end
     for zoneID in pairs(c.zones) do
-        local x, y = zoneID > 0 and Pins.xy(api.GetCorpseMapPosition(zoneID))
+        local x, y
+        if zoneID > 0 then x, y = Pins.xy(api.GetCorpseMapPosition(zoneID)) end -- (`a and f()` would keep only f's first value)
         if x then
             local cr, cg, cb = M.Overlay.markerColor("corpse")
             self:AddMarker(zoneID, { x = x, y = y, pin = "corpse", size = 22, r = cr, g = cg, b = cb, title = "Your corpse", kind = "corpse",
